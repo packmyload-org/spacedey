@@ -16,15 +16,15 @@ export default function Header() {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 sm:gap-8 lg:gap-12 text-sm text-white">
-            <a href="#" className="hover:text-neutral-900">Search</a>
+            <Link href="/search" className="hover:text-neutral-900">Search</Link>
             <Link href="/locations" className="hover:text-neutral-900">Locations</Link>
-            <a href="#" className="hover:text-neutral-900">Sizing</a>
-            <a href="#" className="hover:text-neutral-900">Landlord</a>
-            <a href="#" className="hover:text-neutral-900">Products</a>
-            <a href="#" className="hover:text-neutral-900">Blog</a>
-            <a href="#" className="hover:text-neutral-900">Refer a Friend</a>
-            <a href="#" className="hover:text-neutral-900">(833)380 7883</a>
-            <a href="#" className="hover:text-neutral-900">Log in</a>
+            <Link href="/sizing" className="hover:text-neutral-900">Sizing</Link>
+            <Link href="/landlord" className="hover:text-neutral-900">Landlord</Link>
+            <Link href="/products" className="hover:text-neutral-900">Products</Link>
+            <Link href="/blog" className="hover:text-neutral-900">Blog</Link>
+            <Link href="/refer" className="hover:text-neutral-900">Refer a Friend</Link>
+            <a href="tel:8333807883" className="hover:text-neutral-900">(833)380 7883</a>
+            <Link href="/login" className="hover:text-neutral-900">Log in</Link>
           </nav>
 
           <div className="hidden md:flex lg:ml-2">
@@ -74,11 +74,14 @@ export default function Header() {
           </div>
 
           <nav className="mt-8 flex flex-col gap-5 text-lg text-neutral-800">
+            <Link href="/search" onClick={() => setOpen(false)} className="hover:text-neutral-900">Search</Link>
             <Link href="/locations" onClick={() => setOpen(false)} className="hover:text-neutral-900">Locations</Link>
-            <a href="#" className="hover:text-neutral-900">Sizing</a>
-            <a href="#" className="hover:text-neutral-900">Pricing</a>
-            <a href="#" className="hover:text-neutral-900">FAQ</a>
-            <a href="#" className="hover:text-neutral-900">About</a>
+            <Link href="/sizing" onClick={() => setOpen(false)} className="hover:text-neutral-900">Sizing</Link>
+            <Link href="/landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link>
+            <Link href="/products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
+            <Link href="/blog" onClick={() => setOpen(false)} className="hover:text-neutral-900">Blog</Link>
+            <Link href="/refer" onClick={() => setOpen(false)} className="hover:text-neutral-900">Refer a Friend</Link>
+            <Link href="/login" onClick={() => setOpen(false)} className="hover:text-neutral-900">Log in</Link>
           </nav>
 
           <div className="mt-auto pt-6">

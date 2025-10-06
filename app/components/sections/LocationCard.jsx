@@ -1,22 +1,10 @@
+"use client";
+
 import React from "react";
-import Card from "@/app/components/ui/Card";
-import PrimaryButton from "@/app/components/ui/PrimaryButton";
+import Card from "../../components/ui/Card";
+import PrimaryButton from "../../components/ui/PrimaryButton.jsx";
 
-export interface LocationCardProps {
-  name?: string;
-  address?: string;
-  hours?: string;
-  onBook?: () => void;
-  variant?: "primary" | "secondary" | "outline" | "link" | "custom";
-}
-
-export default function LocationCard({
-  name = "Stuf Storage - Placeholder",
-  address = "123 Main St, City, ST",
-  hours = "6am - 10pm",
-  onBook,
-  variant = "outline",
-}: LocationCardProps) {
+function LocationCard({ name = "Stuf Storage - Placeholder", address = "123 Main St, City, ST", hours = "6am - 10pm", onBook = () => {}, variant = "outline" }) {
   return (
     <Card className="p-5 sm:p-6">
       <div className="flex flex-col gap-3">
@@ -38,5 +26,8 @@ export default function LocationCard({
     </Card>
   );
 }
+
+export default LocationCard;
+
 
 
