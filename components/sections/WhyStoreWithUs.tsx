@@ -19,7 +19,12 @@ const features = [
   { id: 4, text: "Complimentary padlock", iconUrl: "/images/Lock.jpg" },
 ];
 
-const FeatureItem = ({ iconUrl, text }) => {
+interface FeatureItemProps {
+  iconUrl: string;
+  text: string;
+}
+
+const FeatureItem = ({ iconUrl, text }: FeatureItemProps) => {
     return (
         // The flex basis ensures 4 items per row on larger screens and stacks responsively
         <div className="flex flex-col items-center text-center p-4 max-w-[280px] min-w-[200px]">

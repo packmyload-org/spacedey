@@ -2,7 +2,7 @@
 
 import React from "react";
 
-type ButtonVariant = "primary" | "secondary" | "outline" | "link" | "custom";
+export type ButtonVariant = "primary" | "secondary" | "outline" | "link" | "custom";
 
 export interface PrimaryButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {

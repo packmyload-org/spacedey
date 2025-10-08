@@ -1,14 +1,14 @@
 'use client';
-import Header from "@/app/components/layout/Header";
-import Footer from "@/app/components/layout/Footer";
-import HeroSection from "@/app/components/sections/HeroSection";
-import QuoteSection from "@/app/components/sections/QuoteSection";
-import InfoBlock from "@/app/components/sections/InfoBlock";
-import WhyStoreWithUs from "@/app/components/sections/WhyStoreWithUs";
-import FinalCtaBlock from "@/app/components/sections/FinalCtaBlock";
-import NotAverageStorage from "@/app/components/sections/NotAverageStorage";
-import CitiesStatesNav from "@/app/components/sections/CitiesStatesNav";
-import FeatureList from "@/app/components/sections/FeatureList";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import HeroSection from "@/components/sections/HeroSection";
+import QuoteSection from "@/components/sections/QuoteSection";
+import InfoBlock from "@/components/sections/InfoBlock";
+import WhyStoreWithUs from "@/components/sections/WhyStoreWithUs";
+import FinalCtaBlock from "@/components/sections/FinalCtaBlock";
+import NotAverageStorage from "@/components/sections/NotAverageStorage";
+import CitiesStatesNav from "@/components/sections/CitiesStatesNav";
+import FeatureList from "@/components/sections/FeatureList";
 
 export default function Home() {
   return (

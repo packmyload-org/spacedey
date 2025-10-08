@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import PrimaryButton from "../../components/ui/PrimaryButton.jsx";
-import InputSearch from "../../components/ui/InputSearch.jsx";
+import Image from "next/image";
+import PrimaryButton from "../../components/ui/PrimaryButton";
+import InputSearch from "../../components/ui/InputSearch";
 // Using public/ images served by Next.js
 
 function HeroSection() {
@@ -80,6 +81,7 @@ function HeroSection() {
                 inputClassName="text-base border-neutral-300 focus:ring-orange-500"
               />
               <PrimaryButton 
+                variant="primary"
                 className="bg-[#D96541] hover:bg-[#B85737] text-white px-8 py-4 whitespace-nowrap border-0 rounded-lg focus:ring-orange-500"
               >
                 Find storage near me
@@ -99,10 +101,13 @@ function HeroSection() {
         </button>
       </div>
       <div className="mt-6">
-      <img 
-      src="/images/HeroM.jpg"
-      alt="Hero image"
-       />
+      <Image 
+        src="/images/HeroM.jpg"
+        alt="Hero image"
+        width={800}
+        height={400}
+        className="w-full h-auto"
+      />
       </div>
       
     </section>

@@ -1,10 +1,20 @@
 "use client";
 
 import React from "react";
-import Card from "../../components/ui/Card";
-import PrimaryButton from "../../components/ui/PrimaryButton.jsx";
+import Card from "../ui/Card";
+import PrimaryButton from "../ui/PrimaryButton";
 
-function LocationCard({ name = "Stuf Storage - Placeholder", address = "123 Main St, City, ST", hours = "6am - 10pm", onBook = () => {}, variant = "outline" }) {
+import type { ButtonVariant } from "../ui/PrimaryButton";
+
+interface LocationCardProps {
+  name?: string;
+  address?: string;
+  hours?: string;
+  onBook?: () => void;
+  variant?: ButtonVariant;
+}
+
+function LocationCard({ name = "Stuf Storage - Placeholder", address = "123 Main St, City, ST", hours = "6am - 10pm", onBook = () => {}, variant = "outline" }: LocationCardProps) {
   return (
     <Card className="p-5 sm:p-6">
       <div className="flex flex-col gap-3">

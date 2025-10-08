@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import LocationCard from "@/app/components/sections/LocationCard";
+import type { JSX } from "react";
+import LocationCard from "@/components/sections/LocationCard";
 
 export default function LocationsPageContent(): JSX.Element {
   const items = React.useMemo(() => (
@@ -16,7 +17,7 @@ export default function LocationsPageContent(): JSX.Element {
     <main className="container-px py-8 lg:py-12">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         <div className="h-72 lg:h-[600px] bg-neutral-200 border border-neutral-300 rounded-xl flex items-center justify-center text-neutral-600">
-          <span>// [Placeholder: Map Component]</span>
+          {/* [Placeholder: Map Component] */}
         </div>
         <div className="h-96 lg:h-[600px] overflow-auto pr-2">
           <div className="space-y-4">
