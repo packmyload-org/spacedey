@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import PrimaryButton from "@/app/components/ui/PrimaryButton";
+import PrimaryButton from "@/components/ui/PrimaryButton";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);

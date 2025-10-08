@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Location = {
@@ -65,7 +66,7 @@ export default function FeatureList() {
                 <div key={idx} className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
                   <div className="bg-white p-5 rounded-3xl shadow-lg overflow-hidden h-full border border-gray-50">
                     <div className="relative overflow-hidden mb-3">
-                      <img src={location.image} alt={`${location.city} skyline`} className="w-full h-48 object-cover rounded-xl" />
+                      <Image src={location.image} alt={`${location.city} skyline`} width={600} height={192} className="w-full h-48 object-cover rounded-xl" />
                     </div>
                     <div className=" items-center ">
                       <h3 className="text-xl font-bold text-[#0A1E5E] ">Storage in {location.city}</h3>

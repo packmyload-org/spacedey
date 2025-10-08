@@ -1,4 +1,5 @@
 // import React from "react";
+import Image from "next/image";
 // import ImagePlaceholder from "../../components/ui/ImagePlaceholder.jsx";
 // import SectionTitle from "../../components/ui/SectionTitle.jsx";
 // import PrimaryButton from "../../components/ui/PrimaryButton.jsx";
@@ -62,7 +63,7 @@ const IMAGES = [
 export default function TestimonialSection() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleDotClick = (index) => {
+  const handleDotClick = (index: number) => {
     setCurrentIndex(index);
   };
 
@@ -143,26 +144,32 @@ export default function TestimonialSection() {
             {/* Left Column - Two stacked images */}
             <div className="flex flex-col gap-3">
               <div className="rounded-2xl overflow-hidden shadow-lg">
-                <img
-                  src={IMAGES[0]}
-                  alt="Storage facility interior"
-                  className="w-full h-48 object-cover"
-                />
+                <Image
+                    src={IMAGES[0]}
+                    alt="Storage facility interior"
+                    width={400}
+                    height={192}
+                    className="w-full h-48 object-cover"
+                  />
               </div>
               <div className="rounded-2xl overflow-hidden shadow-lg">
-                <img
-                  src={IMAGES[1]}
-                  alt="Stuf branded box"
-                  className="w-full h-28 object-cover"
-                />
+                <Image
+                    src={IMAGES[1]}
+                    alt="Stuf branded box"
+                    width={400}
+                    height={112}
+                    className="w-full h-28 object-cover"
+                  />
               </div>
             </div>
 
             {/* Right Column - One tall image spanning 2 rows */}
             <div className="row-span-2 rounded-2xl overflow-hidden shadow-lg">
-              <img
+              <Image
                 src={IMAGES[2]}
                 alt="Person accessing storage unit"
+                width={400}
+                height={266}
                 className="w-full h-full object-cover"
                 style={{ minHeight: "266px" }}
               />

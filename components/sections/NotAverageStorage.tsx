@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Image from "next/image";
 
 // Replace this with your actual import path
 // Use public image path
@@ -74,10 +75,12 @@ export default function StorageLanding() {
           {/* Right Column - Image */}
           <div className="flex justify-center items-center">
             <div className="relative w-full max-w-md lg:max-w-lg">
-              <img 
+              <Image 
                 src={DigitalKey} 
                 alt="Digital Key App Interface" 
-                className="w-full h-auto rounded-[3rem]  object-cover"
+                width={600}
+                height={400}
+                className="w-full h-auto rounded-[3rem] object-cover"
               />
             </div>
           </div>
