@@ -31,7 +31,7 @@ export default function FeatureList() {
 
   return (
     <section className="py-16 px-4 bg-white">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto ">
         <div className="flex items-center justify-between mb-12">
           <div className="flex-1" />
           <div className="text-center">
@@ -57,13 +57,13 @@ export default function FeatureList() {
         </div>
 
         <div className="relative overflow-hidden">
-          <div className="px-10">
+          <div className="p-0">
             <div
               className="flex transition-transform duration-500 ease-in-out"
               style={{ transform: `translateX(-${currentIndex * (100 / 3)}%)` }}
             >
               {LOCATIONS.map((location, idx) => (
-                <div key={idx} className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
+                <div key={idx} className="w-full sm:w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
                   <div className="bg-white p-5 rounded-3xl shadow-lg overflow-hidden h-full border border-gray-50">
                     <div className="relative overflow-hidden mb-3">
                       <Image src={location.image} alt={`${location.city} skyline`} width={600} height={192} className="w-full h-48 object-cover rounded-xl" />

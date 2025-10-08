@@ -71,7 +71,7 @@ export default function TestimonialSection() {
     <section className="relative overflow-hidden bg-white">
       <div className="flex flex-col lg:flex-row min-h-[600px]">
         {/* Left Side - Blue Curved Background with Content */}
-        <div className="relative lg:w-[85%] bg-[#0A2472] rounded-r-full text-white px-8 lg:px-16 py-16 lg:py-20">
+        <div className="relative lg:w-[85%] sm:h-full bg-[#0A2472] lg:rounded-r-full text-white lg:px-16  lg:py-20">
           {/* Curved Edge */}
           <div className="hidden lg:block absolute top-0 right-0 bottom-0 w-32">
             <svg
@@ -83,16 +83,16 @@ export default function TestimonialSection() {
             </svg>
           </div>
 
-          <div className="relative flex flex-col justify-center z-10 max-w-2xl ml-36">
+          <div className="relative flex flex-col justify-center z-10 max-w-2xl p-2 m-6">
             {/* Title */}
             <div className="mb-12 ">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-3">
+              <h2 className="text-3xl text-center lg:text-4xl font-bold mb-3">
                 What Stuf members are saying
               </h2>
-              <div className="w-12 h-1 bg-[#D96541]"></div>
+              <div className="w-12 ml-26 h-1 bg-[#D96541]"></div>
             </div>
 
-            <div className="flex-row-reverse">
+            <div className="flex-row-reverse md:pl-16">
               {/* Testimonial Content */}
               <div className="flex justify-between flex-reverse mb-8">
                 <h3 className="text-2xl font-bold mb-6">
@@ -122,7 +122,7 @@ export default function TestimonialSection() {
             </div>
 
             {/* Carousel Dots */}
-            <div className="flex gap-3 mt-12">
+            <div className="flex gap-2 mt-12 md:pl-16">
               {TESTIMONIALS.map((_, index) => (
                 <button
                   key={index}
@@ -139,7 +139,7 @@ export default function TestimonialSection() {
           </div>
         </div>
 
-        <div className=" p-8 lg:p-16 flex items-center justify-center min-h-full">
+        <div className=" p-8 lg:p-16 flex sm:bg-[#0A2472] lg:bg-white items-center justify-center min-h-full">
           <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
             {/* Left Column - Two stacked images */}
             <div className="flex flex-col gap-3">
