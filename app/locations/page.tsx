@@ -2,12 +2,19 @@ import React from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import LocationsPageContent from "@/components/pages/locations/PageContent";
+import Hero from "@/components/pages/locations/Hero";
+import LocationsSection from "@/components/pages/locations/LocationsSection";
+import StorageLocationsMap from "@/components/pages/locations/StorageLocationsMap";
+import StorageLocationsByCity from "@/components/pages/locations/StorageLocationsByCity";
 
 export default function LocationsPage() {
   return (
     <>
       <Header />
-      <LocationsPageContent />
+      <Hero/>
+      <LocationsSection />
+      <StorageLocationsMap />
+      <StorageLocationsByCity />
       <Footer />
     </>
   );
