@@ -1,34 +1,4 @@
-// import React from "react";
 import Image from "next/image";
-// import ImagePlaceholder from "../../components/ui/ImagePlaceholder.jsx";
-// import SectionTitle from "../../components/ui/SectionTitle.jsx";
-// import PrimaryButton from "../../components/ui/PrimaryButton.jsx";
-
-// function InfoBlock() {
-//   return (
-//     <section className="container-px py-20 lg:py-28">
-//       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-//         <div>
-//           <ImagePlaceholder aspect="fourThree" />
-//         </div>
-//         <div>
-//           <SectionTitle as="h2" className="mb-5">Storage made simple, but with a human touch.</SectionTitle>
-//           <p className="text-neutral-600 leading-relaxed text-base sm:text-lg max-w-prose">
-//             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-//             dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-//             ex ea commodo consequat.
-//           </p>
-//           <div className="mt-7">
-//             <PrimaryButton>Find Your Space</PrimaryButton>
-//           </div>
-//         </div>
-//       </div>
-//     </section>
-//   );
-// }
-
-// export default InfoBlock;
-
 import React, { useState } from "react";
 import { Star } from "lucide-react";
 
