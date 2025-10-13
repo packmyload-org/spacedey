@@ -333,7 +333,7 @@ const ComparisonSizes = () => {
         <div className="text-center">
           <button
             type="button"
-            className="w-full sm:w-auto px-8 py-3 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors duration-200"
+            className="w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200"
           >
             Explore all locations
           </button>
