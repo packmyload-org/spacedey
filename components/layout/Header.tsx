@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 
 export default function Header() {
@@ -12,7 +13,9 @@ export default function Header() {
       <div className="container-px">
         <div className="flex items-center justify-between h-16 lg:h-16">
           <div className="flex items-center gap-3 lg:gap-4">
-            <div className="w-32 h-8 bg-neutral-200 rounded-md" aria-label="Logo"></div>
+            <div className="w-32 h-8 bg-neutral-200 rounded-md" aria-label="Logo">
+              <Image src="/images/SpacedeyLogo1.jpg" alt="Spacedey Logo" width={228} height={52} className="object-contain w-full h-full" priority />
+            </div>
           </div>
 
           <nav className="hidden md:flex items-center gap-6 sm:gap-8 lg:gap-12 text-sm text-white">
@@ -59,7 +62,9 @@ export default function Header() {
       >
         <div className="container-px h-full flex flex-col py-6">
           <div className="flex items-center justify-between">
-            <div className="w-32 h-8 bg-neutral-200 rounded-md" aria-label="Logo"></div>
+            <div className="w-32 h-8 bg-neutral-200 rounded-md" aria-label="Logo">
+              <Image src="/images/SpacedeyLogo1.jpg" alt="Spacedey Logo" width={128} height={32} className="object-contain w-full h-full" priority />
+            </div>
             <button
               className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-300"
               aria-label="Close Menu"

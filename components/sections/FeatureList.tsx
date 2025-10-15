@@ -10,12 +10,11 @@ type Location = {
 };
 
 const LOCATIONS: Location[] = [
-  { city: "Lagos", image: "/images/Atlanta.jpg" },
-  { city: "Abuja", image: "/images/Boston.jpg" },
-  { city: "Kano", image: "/images/LosAngeles.jpg" },
-  { city: "Ibadan", image: "/images/NewJersey.jpg" },
-  { city: "Port Harcourt", image: "/images/NewYork.jpg" },
-  { city: "Benin City", image: "/images/SanDiego.jpg" },
+  { city: "Lagos", image: "/images/Lagos.jpg" },
+  { city: "Abuja", image: "/images/Abuja.jpeg" },
+  { city: "Kano", image: "/images/Kano.png" },
+  { city: "Ibadan", image: "/images/Ibadan.jpg" },
+  { city: "Port Harcourt", image: "/images/LocationHero.jpg" }, 
 ];
 
 export default function FeatureList() {
