@@ -7,7 +7,7 @@ export default function UnitSizes() {
     <section className="bg-[#f9faff] min-h-full flex flex-col items-center justify-center px-4 py-12">
       {/* Heading */}
       <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold text-[#1a1d23]">
+        <h2 className="text-3xl font-bold text-[#003087]">
           Find The Right Size
         </h2>
         <div className="w-12 h-1 bg-[#e65c3a] mx-auto mt-3 rounded"></div>
@@ -53,8 +53,8 @@ export default function UnitSizes() {
       </div>
 
       {/* Explore Button */}
-      <div className="mt-10">
-        <button className="px-6 py-2 border-2 border-blue-600 text-blue-600 font-medium rounded-full hover:bg-blue-600 hover:text-white transition">
+      <div className="my-10">
+        <button className="px-14 py-2 border-1 font-semibold border-blue-600 text-blue-600  rounded-full hover:bg-blue-600 hover:text-white transition">
           Explore All Unit Sizes
         </button>
       </div>

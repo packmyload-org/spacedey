@@ -1,19 +1,17 @@
 const StorageLocationsByCity = () => {
   const cities = [
-    'Atlanta',
-    'Boston',
-    'Brooklyn',
-    'Culver City',
-    'Long Island City',
-    'Los Angeles',
-    'New York',
-    'Oakland',
-    'Pasadena',
-    'Queens',
-    'San Francisco',
-    'Seattle',
-    'Walnut Creek',
-    'Washington, DC'
+   'Lagos',
+   'Abuja',
+   'Kano',
+   'Ibadan',
+   'Port Harcourt',
+   'Benin City',
+   'Jos',
+   'Enugu',
+   'Kaduna',
+   'Abeokuta',
+    'Adamawa',
+    'Cross River', 
   ];
 
   return (
