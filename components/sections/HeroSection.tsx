@@ -9,15 +9,16 @@ function HeroSection() {
   const [activeCity, setActiveCity] = useState("");
 
   const cities = [
-    "Atlanta",
-    "Boston",
-    "Los Angeles",
-    "New Jersey",
-    "New York",
-    "San Diego",
-    "San Francisco",
-    "Seattle",
-    "Washington DC"
+  'Lagos',
+  'Abuja',
+  'Kano',
+  'Ibadan',
+  'Port Harcourt',
+  'Benin City',
+  'Jos',
+  'Enugu',
+  'Kaduna',
+  'Abeokuta',
   ];
 
   return (

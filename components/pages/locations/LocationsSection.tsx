@@ -1,11 +1,11 @@
 const LocationsSection = () => {
   const locations = [
-    'California',
-    'Georgia',
-    'Massachusetts',
-    'New York',
-    'Washington',
-    'Washington, DC'
+  'Lagos',
+  'Abuja',
+  'Kano',
+  'Ibadan',
+  'Port Harcourt',
+  'Benin City',
   ];
 
   return (
