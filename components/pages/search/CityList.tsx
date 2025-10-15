@@ -54,7 +54,7 @@ export default function CityList({
           ))
         ) : (
           <div className="text-center py-8 text-gray-500 px-6">
-            No cities found matching "{searchQuery}"
+            No cities found matching &quot;{searchQuery}&quot;
           </div>
         )}
       </div>
