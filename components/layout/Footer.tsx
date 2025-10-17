@@ -1,4 +1,6 @@
 import React from "react";
+import Link from "next/link";
+import Image from 'next/image';
 import { Facebook, Instagram, Twitter } from "lucide-react";
 
 export default function Footer() {
@@ -6,10 +8,17 @@ export default function Footer() {
     <footer className="bg-[#0d1d73] text-white ">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 grid grid-cols-1 md:grid-cols-4 gap-12">
         <div>
-          <div className="flex items-center gap-2 mb-6">
+          {/* <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 bg-white rounded-md"></div>
             <span className="text-2xl font-bold">spacedey</span>
+          </div> */}
+          <div>
+                <Link href="/" aria-label="Logo"> 
+              <Image src="/images/SpacedeyLogo.png" alt="Spacedey Logo" width={90} height={20} className=" border-1   rounded-xl" priority />
+            </Link>
+
           </div>
+         
           <h3 className="uppercase font-bold text-sm mb-3">Reach Out To Us</h3>
           <p className="mb-2">(833) 380-7883</p>
           <p className="mb-4">info@spacedey.com</p>
