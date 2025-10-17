@@ -8,11 +8,11 @@ export default function Footer() {
         <div>
           <div className="flex items-center gap-2 mb-6">
             <div className="w-8 h-8 bg-white rounded-md"></div>
-            <span className="text-2xl font-bold">stuf</span>
+            <span className="text-2xl font-bold">spacedey</span>
           </div>
           <h3 className="uppercase font-bold text-sm mb-3">Reach Out To Us</h3>
           <p className="mb-2">(833) 380-7883</p>
-          <p className="mb-4">info@stufstorage.com</p>
+          <p className="mb-4">info@spacedey.com</p>
           <div className="w-12 h-[2px] bg-[#e65c3a] mb-6"></div>
           <div className="flex gap-4 text-white">
             <a href="#" aria-label="Facebook">
@@ -51,7 +51,7 @@ export default function Footer() {
 
       <div className="border-t border-[#e65c3a] w-24 mx-auto"></div>
       <div className="text-center text-sm py-6">
-        Copyright © {new Date().getFullYear()} Stuf Inc. All rights reserved.
+        Copyright © {new Date().getFullYear()} Packmyload Inc. All rights reserved.
       </div>
     </footer>
   );

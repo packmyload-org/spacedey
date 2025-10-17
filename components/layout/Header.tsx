@@ -9,21 +9,22 @@ export default function Header() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <header className="fixed w-full top-0 z-50 bg-[#1642F0] backdrop-blur border-b border-[#1642F0]">
+    <header className="fixed w-full top-0 z-50 bg-[#1642F0] backdrop-blur border-b border-[#1642F0] px-10">
       <div className="container-px">
         <div className="flex items-center justify-between h-16 lg:h-16">
           <div className="flex items-center gap-3 lg:gap-4">
-            <div className="w-32 h-8 bg-neutral-200 rounded-md" aria-label="Logo">
-              <Image src="/images/SpacedeyLogo1.jpg" alt="Spacedey Logo" width={228} height={52} className="object-contain w-full h-full" priority />
+             <Link href="/" aria-label="Logo"> 
+              <Image src="/images/SpacedeyLogo.png" alt="Spacedey Logo" width={78} height={10} className="  rounded-xl" priority />
+            </Link>
             </div>
-          </div>
+           
 
           <nav className="hidden md:flex items-center gap-6 sm:gap-8 lg:gap-12 text-sm text-white">
             <Link href="/search" className="hover:text-neutral-900">Search</Link>
             <Link href="/locations" className="hover:text-neutral-900">Locations</Link>
             <Link href="/sizing" className="hover:text-neutral-900">Sizing</Link>
-            <Link href="/landlord" className="hover:text-neutral-900">Landlord</Link>
-            <Link href="/products" className="hover:text-neutral-900">Products</Link>
+            <Link href="/#landlords" className="hover:text-neutral-900">Landlord</Link>
+            <Link href="/#product" className="hover:text-neutral-900">Products</Link>
             <Link href="/blog" className="hover:text-neutral-900">Blog</Link>
             <Link href="/refer" className="hover:text-neutral-900">Refer a Friend</Link>
             <a href="tel:8333807883" className="hover:text-neutral-900">(833)380 7883</a>

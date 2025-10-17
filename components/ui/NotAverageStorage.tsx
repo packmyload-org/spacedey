@@ -14,7 +14,7 @@ export default function StorageLanding() {
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-8 lg:py-10">
         {/* Header */}
         <div className="mb-10 lg:mb-12">
-          <h1 className="text-4xl lg:text-5xl font-bold text-[#003087] mb-5 leading-tight">
+          <h1 className="text-4xl lg:text-4xl font-bold text-[#003087] mb-5 leading-tight">
             Not Your Average Storage
           </h1>
           <div className="w-16 h-1 bg-[#ff6b35]"></div>
