@@ -83,8 +83,8 @@ export default function Header() {
             <Link href="/search" onClick={() => setOpen(false)} className="hover:text-neutral-900">Search</Link>
             <Link href="/locations" onClick={() => setOpen(false)} className="hover:text-neutral-900">Locations</Link>
             <Link href="/sizing" onClick={() => setOpen(false)} className="hover:text-neutral-900">Sizing</Link>
-            <Link href="/landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link>
-            <Link href="/products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
+            <Link href="/#landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link>
+            <Link href="/#products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
             <Link href="/blog" onClick={() => setOpen(false)} className="hover:text-neutral-900">Blog</Link>
             <Link href="/refer" onClick={() => setOpen(false)} className="hover:text-neutral-900">Refer a Friend</Link>
             <Link href="/login" onClick={() => setOpen(false)} className="hover:text-neutral-900">Log in</Link>
