@@ -5,14 +5,35 @@ import React, { useState } from 'react';
 export default function CitiesStatesNav() {
   const [activeTab, setActiveTab] = useState('cities');
 
+  // Major Nigerian cities (common/popular selections)
   const cities = [
-    'Atlanta', 'Boston', 'Brooklyn', 'Culver City', 'Los Angeles', 
-    'New York', 'Oakland', 'Queens', 'San Francisco', 'Seattle', 'Walnut Creek'
+  'Lekki',
+  'Ikeja',
+  'Surulere',
+  'Maitama',
+  'Garki',
+  'Kano',
+  'Ibadan',
+  'Port Harcourt',
+  'Benin City',
+  'Jos',
+  'Enugu',
+  'Kaduna',
+  'Abeokuta',
   ];
 
+  // Nigerian states + Federal Capital Territory (FCT)
   const states = [
-    'California', 'District of Columbia', 'Georgia', 'Massachusetts', 
-    'New York', 'Washington'
+  'Lagos',
+  'Abuja',
+  'Kano',
+  'Oyo',
+  'Rivers',
+  'Edo',
+  'Plateau',
+  'Enugu',
+  'Kaduna',
+  'Ogun',
   ];
 
   return (
@@ -54,11 +75,11 @@ export default function CitiesStatesNav() {
                 </a>
               ))}
             </div>
-            <div className="mt-6">
+            {/* <div className="mt-6">
               <a href="#" className="text-blue-900 font-semibold text-lg hover:underline">
                 Washington, DC
               </a>
-            </div>
+            </div> */}
           </>
         ) : (
           <div className="flex flex-wrap gap-x-8 gap-y-6">
