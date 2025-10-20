@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import Image from 'next/image';
-import { HelpCircle } from 'lucide-react';
 
 interface MemberBenefitsProps {
   title?: ReactNode;
