@@ -12,6 +12,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.builder.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'blog.stufstorage.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lp.stufstorage.com',
+      },
     ],
   },
   // experimental: {},
