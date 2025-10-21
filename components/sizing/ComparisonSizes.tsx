@@ -90,7 +90,7 @@ const ComparisonSizes = () => {
       {/* Content */}
       <div className="relative z-10">
         {/* Title */}
-        <h2 className="text-center text-blue-900 text-3xl lg:text-5xl font-bold mb-6">
+        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Compare sizes before you rent
         </h2>
 

@@ -51,7 +51,7 @@ export default function StorageUnitSizes() {
         
         {/* Title: 'Storage unit sizes' */}
         <div className="text-center mb-10">
-          <h2 className="text-center text-blue-900 text-3xl lg:text-5xl font-bold mb-6">
+          <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
             Storage unit sizes
             {/* Orange underline for the title */}
             <span className="absolute left-1/2 transform -translate-x-1/2 bottom-1 w-12 h-1 bg-orange-500 rounded-full"></span>

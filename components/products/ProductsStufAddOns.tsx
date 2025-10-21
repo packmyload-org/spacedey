@@ -64,7 +64,7 @@ export default function ProductsStufAddOns({
         {/* Header */}
 
         <div className="text-center mb-16">
-          <h1 className="text-5xl lg:text-5xl font-bold text-blue-900 mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold text-blue-900 mb-8">
             {title}
           </h1>
           <div className="flex justify-center">

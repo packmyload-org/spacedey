@@ -141,7 +141,7 @@ const SizingDetails = () => {
   return (
     <section>
       <div className="sizing-details-sec py-12 lg:px-20 px-6">
-        <h2 className="text-center text-blue-900 text-3xl lg:text-5xl font-bold mb-6">
+        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Sizing details
         </h2>
         <hr className="h-[3px] w-[50px] mt-6 lg:mb-12 mb-10 mx-auto bg-brand-orange border-0" />

@@ -139,7 +139,7 @@ const SizingFaq = () => {
     <section>
       {/* Container styling and custom background color preserved */}
       <div className={`lg:py-28 py-12 lg:px-20 px-6 ${sectionBgColor}`}>
-        <h2 className="text-center text-blue-900 text-3xl lg:text-5xl font-bold mb-6">
+        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Frequently asked questions
         </h2>
         {/* Separator HR styling preserved */}

@@ -42,7 +42,7 @@ const WhyStoreWithus: React.FC = () => {
       <div className="lg:py-28 py-12 lg:px-20 px-6 max-w-7xl mx-auto">
         
         {/* Title Section */}
-        <h2 className="text-center text-blue-900 text-3xl lg:text-5xl font-bold mb-6">
+        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Why store with us?
         </h2>
         {/* Horizontal Rule/Underline */}

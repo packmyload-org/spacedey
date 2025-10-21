@@ -9,62 +9,133 @@ export default function Header() {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <header className="fixed w-full top-0 z-50 bg-[#1642F0] backdrop-blur border-b border-[#1642F0] px-10">
-      <div className="container-px">
-        <div className="flex items-center justify-between h-16 lg:h-16">
-          <div className="flex items-center gap-3 lg:gap-4">
-             <Link href="/" aria-label="Logo"> 
-              <Image src="/images/SpacedeyLogo.png" alt="Spacedey Logo" width={78} height={10} className="  rounded-xl" priority />
-            </Link>
-            </div>
-           
+    <header className="fixed w-full top-0 z-40">
+      <div className="bg-[#1642F0] transition-colors duration-300 font-serif border-b-2 border-[#1642F0]">
+        <div className="flex flex-row px-3 lg:px-8 items-center justify-between h-20">
+          {/* Mobile Menu Toggle */}
+          <div className="lg:hidden">
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="text-white hover:cursor-pointer"
+              aria-label="Toggle menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256">
+                <path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128ZM40,72H216a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16ZM216,184H40a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Z"></path>
+              </svg>
+            </button>
+          </div>
 
-          <nav className="hidden md:flex items-center gap-6 sm:gap-8 lg:gap-12 text-sm text-white">
-            <Link href="/search" className="hover:text-neutral-900">Search</Link>
-            <Link href="/locations" className="hover:text-neutral-900">Locations</Link>
-            <Link href="/sizing" className="hover:text-neutral-900">Sizing</Link>
-            <Link href="/#landlords" className="hover:text-neutral-900">Landlord</Link>
-            <Link href="/#product" className="hover:text-neutral-900">Products</Link>
-            <Link href="/blog" className="hover:text-neutral-900">Blog</Link>
-            <Link href="/refer" className="hover:text-neutral-900">Refer a Friend</Link>
-            <a href="tel:8333807883" className="hover:text-neutral-900">(833)380 7883</a>
-            <Link href="/login" className="hover:text-neutral-900">Log in</Link>
+          {/* Logo */}
+          <div className="flex items-start justify-start h-20 z-10 pt-">
+            <Link href="/">
+              <Image 
+                src="/images/SpacedeyLogo.png" 
+                alt="Spacedey Logo" 
+                width={107} 
+                height={28} 
+                className="rounded-xl" 
+                priority 
+              />
+            </Link>
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="space-x-8 hidden lg:flex mx-8">
+            <Link 
+              href="/search" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Search
+            </Link>
+            <Link 
+              href="/locations" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Locations
+            </Link>
+            <Link 
+              href="/sizing" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Sizing
+            </Link>
+            <Link 
+              href="/landlord" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Landlord
+            </Link>
+            <Link 
+              href="/products" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Products
+            </Link>
+            <Link 
+              href="/blog" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Blog
+            </Link>
+            <Link 
+              href="/refer" 
+              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+            >
+              Refer a Friend
+            </Link>
           </nav>
 
-          <div className="hidden md:flex lg:ml-2">
-            <Link href="/locations">
-              <PrimaryButton className="text-[#1642F0] bg-white">Reserve Now</PrimaryButton>
-            </Link>
-          </div>
-
-          <div className="md:hidden">
-            <Link href="/locations">
-              <PrimaryButton className="px-4 py-2 text-sm">Reserve Now</PrimaryButton>
-            </Link>
-          </div>
-
-          <button
-            className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-300"
-            aria-label="Open Menu"
-            onClick={() => setOpen((v) => !v)}
-          >
-            <span className="sr-only">Toggle menu</span>
-            <div className="space-y-1.5">
-              <span className={`block h-0.5 w-6 bg-neutral-900 transition-transform ${open ? "translate-y-1.5 rotate-45" : ""}`}></span>
-              <span className={`block h-0.5 w-6 bg-neutral-900 transition-opacity ${open ? "opacity-0" : ""}`}></span>
-              <span className={`block h-0.5 w-6 bg-neutral-900 transition-transform ${open ? "-translate-y-1.5 -rotate-45" : ""}`}></span>
+          {/* Desktop Right Side Actions */}
+          <div className="hidden lg:flex items-center justify-end lg:gap-2 gap-8 ml-8">
+            <a 
+              href="tel:(833)3807883" 
+              className="flex items-center"
+            >
+              <p className="text-white font-bold mr-3 text-sm xl:text-base">
+                (833) 380-7883
+              </p>
+            </a>
+            <div className="hidden lg:flex items-start justify-end">
+              <Link 
+                href="/login" 
+                className="font-bold inline-flex text-center items-center hover:cursor-pointer text-white text-xs lg:text-xs xl:text-base py-1.5 px-3.5"
+              >
+                Log in
+              </Link>
             </div>
-          </button>
+            <div className="hidden lg:flex items-start justify-end">
+              <Link 
+                href="/search" 
+                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-white border-white text-[#1642F0] rounded-full border-2 text-xs lg:text-xs xl:text-base truncate py-3 px-6"
+              >
+                Reserve Now
+              </Link>
+            </div>
+          </div>
+
+          {/* Mobile Right Side Actions */}
+          <div className="flex flex-row gap-4 lg:hidden">
+            <a 
+              href="tel:(833)3807883" 
+              className="flex flex-row items-center" 
+              title="Support"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 256 256" className="my-auto text-white">
+                <path d="M222.37,158.46l-47.11-21.11-.13-.06a16,16,0,0,0-15.17,1.4,8.12,8.12,0,0,0-.75.56L134.87,160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16,16,0,0,0,1.32-15.06l0-.12L97.54,33.64a16,16,0,0,0-16.62-9.52A56.26,56.26,0,0,0,32,80c0,79.4,64.6,144,144,144a56.26,56.26,0,0,0,55.88-48.92A16,16,0,0,0,222.37,158.46ZM176,208A128.14,128.14,0,0,1,48,80,40.2,40.2,0,0,1,82.87,40a.61.61,0,0,0,0,.12l21,47L83.2,111.86a6.13,6.13,0,0,0-.57.77,16,16,0,0,0-1,15.7c9.06,18.53,27.73,37.06,46.46,46.11a16,16,0,0,0,15.75-1.14,8.44,8.44,0,0,0,.74-.56L168.89,152l47,21.05h0s.08,0,.11,0A40.21,40.21,0,0,1,176,208Z"></path>
+              </svg>
+            </a>
+          </div>
         </div>
       </div>
 
+      {/* Mobile Menu Overlay */}
       <div
         className={`md:hidden fixed inset-0 z-40 bg-white/95 backdrop-blur-sm border-t border-neutral-200 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
       >
-        <div className="container-px h-full flex flex-col py-6">
+        <div className="h-full flex flex-col py-6 px-3">
           <div className="flex items-center justify-between">
-            <div className="w-32 h-8 bg-neutral-200 rounded-md" aria-label="Logo">
-              <Image src="/images/SpacedeyLogo1.jpg" alt="Spacedey Logo" width={128} height={32} className="object-contain w-full h-full" priority />
+            <div className="w-32 h-8  rounded-md" aria-label="Logo">
+              <Image src="/images/SpacedeyLogo.png" alt="Spacedey Logo" width={128} height={32} className="object-contain w-full h-full" priority />
             </div>
             <button
               className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-300"
@@ -83,15 +154,15 @@ export default function Header() {
             <Link href="/search" onClick={() => setOpen(false)} className="hover:text-neutral-900">Search</Link>
             <Link href="/locations" onClick={() => setOpen(false)} className="hover:text-neutral-900">Locations</Link>
             <Link href="/sizing" onClick={() => setOpen(false)} className="hover:text-neutral-900">Sizing</Link>
-            <Link href="/#landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link>
-            <Link href="/#products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
+            <Link href="/landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link>
+            <Link href="/products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
             <Link href="/blog" onClick={() => setOpen(false)} className="hover:text-neutral-900">Blog</Link>
             <Link href="/refer" onClick={() => setOpen(false)} className="hover:text-neutral-900">Refer a Friend</Link>
             <Link href="/login" onClick={() => setOpen(false)} className="hover:text-neutral-900">Log in</Link>
           </nav>
 
           <div className="mt-auto pt-6">
-            <Link href="/locations" onClick={() => setOpen(false)}>
+            <Link href="/search" onClick={() => setOpen(false)}>
               <PrimaryButton className="w-full py-3 bg-white text-[#1642F0]">Reserve Now</PrimaryButton>
             </Link>
           </div>
@@ -100,5 +171,3 @@ export default function Header() {
     </header>
   );
 }
-
-
