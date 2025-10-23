@@ -27,7 +27,7 @@ export default function StorageFeatures() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="storage-features-header text-center mb-12">
-          <h2 className="storage-features-header-heading text-4xl font-bold mb-4">
+          <h2 className="storage-features-header-heading text-3xl lg:text-4xl font-bold mb-4">
             HOW IT WORKS
           </h2>
           <div className="richtext">

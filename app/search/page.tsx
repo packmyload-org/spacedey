@@ -36,7 +36,7 @@ export default function SearchPage() {
           </div>
         </div>
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

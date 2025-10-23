@@ -9,7 +9,7 @@ export default function HeroSection() {
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column - Content */}
           <div className="space-y-8 z-10">
-            <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold leading-[1.1] text-white">
+            <h1 className="text-3xl md:text-4xl lg:text-4xl font-bold leading-[1.1] text-white">
               Transform unsellable space into rent
             </h1>
 

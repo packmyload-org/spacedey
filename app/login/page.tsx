@@ -1,5 +1,14 @@
+import Footer from '@/components/layout/Footer';
 import LoginForm from '../../components/login/LoginForm';
+import Header from '@/components/layout/Header';
 
 export default function LoginPage() {
-	return <LoginForm />;
+	return (
+       <div>
+        <Header />
+        
+        <LoginForm />
+        
+       </div>
+  );
 }
