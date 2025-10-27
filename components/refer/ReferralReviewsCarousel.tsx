@@ -33,7 +33,7 @@ export default function ReferralReviewsCarousel() {
       avatar: "https://lh3.googleusercontent.com/a-/ALV-UjWzHp57-T26LygbjzFJ3wUb34UJcpT7Orc498s6TULuJ7V3ZEA=s120-c-rp-mo-ba4-br100",
       rating: 5,
       date: "1 year ago",
-      text: "We've had a great experience so far when the Stuf storage in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
+      text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
       verified: true
     },
     {
@@ -69,7 +69,7 @@ export default function ReferralReviewsCarousel() {
       avatar: "https://lh3.googleusercontent.com/a-/ALV-UjWzHp57-T26LygbjzFJ3wUb34UJcpT7Orc498s6TULuJ7V3ZEA=s120-c-rp-mo-ba4-br100",
       rating: 5,
       date: "1 year ago",
-      text: "We've had a great experience so far when the Stuf storage in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
+      text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
       verified: true
     },
   ];

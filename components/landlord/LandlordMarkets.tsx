@@ -44,7 +44,7 @@ const LandlordMarkets = () => {
             <div className="relative w-full max-w-[320px] aspect-[9/16]">
               <Image
                 src="https://cdn.builder.io/api/v1/image/assets%2F7da5f814e22c4159ae621921e3f9d5ff%2F17dec6ae0201415a9973afcb30ade863?width=539"
-                alt="Phone screen showing Stuf Storage locations"
+                alt="Phone screen showing Spacedey locations"
                 fill
                 className="object-contain drop-shadow-2xl"
                 sizes="(max-width: 640px) 80vw, (max-width: 1024px) 50vw, 400px"

@@ -14,7 +14,7 @@ interface LocationCardProps {
   variant?: ButtonVariant;
 }
 
-function LocationCard({ name = "Stuf Storage - Placeholder", address = "123 Main St, City, ST", hours = "6am - 10pm", onBook = () => {}, variant = "outline" }: LocationCardProps) {
+function LocationCard({ name = "Spacedey - Placeholder", address = "123 Main St, City, ST", hours = "6am - 10pm", onBook = () => {}, variant = "outline" }: LocationCardProps) {
   return (
     <Card className="p-5 sm:p-6">
       <div className="flex flex-col gap-3">

@@ -43,7 +43,7 @@ const  LandlordPress = () => {
     {
       url: 'https://abc7.com/stuf-storage-self-los-angeles-abc7-solutions/11225139/',
       publication: 'ABC7',
-      title: 'Stuf Storage Offers a Convenient Alternative to Traditional Storage Space',
+      title: 'Spacedey Offers a Convenient Alternative to Traditional Storage Space',
     },
   ];
 
