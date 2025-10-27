@@ -66,7 +66,7 @@ const LandlordWhatWeLookFor = () => {
             <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/197d7aadf2295bc3b17447d3706cd3c19f06cd5373edd4f06c9e11cc37dbd649?placeholderIfAbsent=true&width=596"
-                alt="Stuf storage facility entrance"
+                alt="Spacedey facility entrance"
                 width={396}
                 height={600}
                 className="object-cover w-full h-auto"

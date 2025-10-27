@@ -7,7 +7,7 @@ import LocationCard from "@/components/sections/LocationCard";
 export default function SearchPageContent(): JSX.Element {
   const items = React.useMemo(() => (
     Array.from({ length: 6 }).map((_, i) => ({
-      name: `Stuf Storage - Location ${i + 1}`,
+      name: `Spacedey - Location ${i + 1}`,
       address: `${100 + i} Market St, City, ST`,
       hours: "6am - 10pm",
     }))
