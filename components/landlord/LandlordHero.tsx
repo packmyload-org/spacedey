@@ -26,7 +26,7 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          {/* Right Column - Image with rounded border */}
+          {/* Right Column - Image with rounded border. */}
           <div className="relative z-10 flex sm:justify-center lg:justify-end left-0">
             <div className="relative w-full max-w-full aspect-[4/3]  ">
               <div className="relative w-full h-full sm:ml-0 lg:ml-[64px]">

@@ -49,7 +49,7 @@ const HeavyLiftingSection = () => {
   return (
     <section className="w-full px-10 py-12 md:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto">
-        {/* Heading */}
+        {/* Heading. */}
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-3xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
             Let us do the heavy lifting
@@ -57,7 +57,7 @@ const HeavyLiftingSection = () => {
           <div className="w-16 h-1 bg-orange-500 mx-auto"></div>
         </div>
 
-        {/* Features Grid */}
+        {/* Features Grid. */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12 mb-10 md:mb-12">
           {features.map((feature, index) => (
             <FeatureCard
