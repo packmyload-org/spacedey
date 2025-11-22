@@ -63,7 +63,7 @@ const LandlordStoragePartnership = () => {
               <div className="pt-4">
                 <Link
                   href="#get-in-touch"
-                  className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                  className="border-1 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full font-semibold transition-colors duration-200"
                 >
                   Partner with us
                 </Link>

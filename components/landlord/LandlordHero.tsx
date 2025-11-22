@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function HeroSection() {
   return (
     <section>
-    <div className="relative w-full h-full bg-[#1642F0] overflow-hidden">
+    <div className="relative w-full h-full bg-[#1642F0] pt-12 overflow-hidden">
       <div className="max-w-full mx-auto px-6 md:px-12 lg:px-20 pt-16 pb-6 md:pt-24 md:pb-8 lg:pt-32 lg:pb-10">
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Column - Content */}

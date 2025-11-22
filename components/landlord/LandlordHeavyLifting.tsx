@@ -15,7 +15,7 @@ const FeatureCard = ({ icon, title }: FeatureCardProps) => {
           alt=""
           fill
           className="object-contain"
-          sizes="(max-width: 638px) 32vw, (max-width: 998px) 21vw, 15vw"
+          sizes="(max-width: 538px) 32vw, (max-width: 898px) 21vw, 15vw"
           loading="lazy"
         />
       </div>
@@ -29,7 +29,7 @@ const FeatureCard = ({ icon, title }: FeatureCardProps) => {
 const HeavyLiftingSection = () => {
   const features = [
     {
-      icon: 'https://cdn.builder.io/api/v1/image/assets/TEMP/e059d07574c105345ca0792bf09ed1826da58b7dbce085db826ccda8dd5ad503?placeholderIfAbsent=true&width=200',
+      icon: 'https://cdn.builder.io/api/v1/image/assets/TEMP/e059d07574c105345ca0792bf09ed1826da58b7dbce085db826ccda8dd5ad503?placeholderIfAbsent=true&width=400',
       title: 'We design, build, and maintain the space',
     },
     {
@@ -41,13 +41,13 @@ const HeavyLiftingSection = () => {
       title: 'We manage sales and marketing to get new customers',
     },
     {
-      icon: 'https://cdn.builder.io/api/v1/image/assets/TEMP/3fd6a3bdb470f5095f840b72f5716e9b23ccc8a6627df310f59a48bd53948d4b?placeholderIfAbsent=true&width=200',
+      icon: 'https://cdn.builder.io/api/v1/image/assets/TEMP/3fd6a3bdb470f5095f840b72f5716e9b23ccc8a6627df310f59a48bd53948d4b?placeholderIfAbsent=true&width=400',
       title: 'We pay percentage rent to our landlord partners',
     },
   ];
 
   return (
-    <section className="w-full px-6 py-12 md:py-16 lg:py-20 bg-white">
+    <section className="w-full px-10 py-12 md:py-16 lg:py-20 bg-white">
       <div className="max-w-7xl mx-auto">
         {/* Heading */}
         <div className="text-center mb-8 md:mb-12">
@@ -72,7 +72,7 @@ const HeavyLiftingSection = () => {
         <div className="text-center">
           <Link
             href="#get-in-touch"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+            className="border-1 border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-full font-semibold transition-colors duration-200"
           >
             Partner with us
           </Link>

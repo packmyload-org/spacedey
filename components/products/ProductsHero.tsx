@@ -17,7 +17,7 @@ export default function MemberBenefits({
   image = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&h=700&fit=crop",
 }: MemberBenefitsProps) {
   return (
-    <div className="w-full">
+    <div className="w-full pt-16">
   <div className="w-full bg-[#1642F0] pt-16 lg:pt-24 pb-6 px-6 sm:px-8 lg:px-12 relative">
       {/* Wave Background at Bottom
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-white" style={{

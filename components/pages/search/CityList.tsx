@@ -31,7 +31,7 @@ export default function CityList({
   );
 
   return (
-    <div className="z-10 bg-brand-page-bg p-6">
+    <div className="z-10 bg-brand-page-bg p-6 pt-20">
       <h1 className="font-semibold text-2xl mb-3 capitalize">
         Explore self storage facilities
       </h1>
