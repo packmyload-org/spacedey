@@ -20,7 +20,7 @@ export default function Footer() {
           </div>
          
           <h3 className="uppercase font-bold text-sm mb-3">Reach Out To Us</h3>
-          <p className="mb-2">(833) 380-7883</p>
+          <p className="mb-2">09166680777</p>
           <p className="mb-4">info@spacedey.com</p>
           <div className="w-12 h-[2px] bg-[#e65c3a] mb-6"></div>
           <div className="flex gap-4 text-white">

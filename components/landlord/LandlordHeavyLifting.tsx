@@ -68,7 +68,7 @@ const HeavyLiftingSection = () => {
           ))}
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Button. */}
         <div className="text-center">
           <Link
             href="#get-in-touch"
