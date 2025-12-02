@@ -10,7 +10,7 @@ export default function LocationSection() {
       {/* Blue Background + Pattern */}
       <div
         className="relative lg:p-20 bg-[#1642F0] flex flex-col lg:flex-row items-center justify-center bg-cover bg-no-repeat overflow-hidden"
-        style={{ backgroundImage: "url('/blue-wave.png')" }}
+
       >
         {/* SVG Curve — sits above blue bg but below image */}
         <svg

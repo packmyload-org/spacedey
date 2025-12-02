@@ -28,7 +28,7 @@ const defaultAddOns: AddOn[] = [
     description:
       "With Stuf Blue, you're in control. Say goodbye to price increases and hello to hassle-free storage — cancel anytime with no strings.",
     image:
-      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=400&fit=crop",
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/930a6f1acb33012e44ec75f131fe284e89eb661e6882f48ca472eec205e7a88d?format=webp&placeholderIfAbsent=true&width=2000",
     features: [
       { icon: "✓", text: "12 month price lock" },
       { icon: "✓", text: "Prices start at $10/month" },
@@ -40,7 +40,7 @@ const defaultAddOns: AddOn[] = [
     name: "Insurance",
     description: "Convenient, easy-to-add protection plans from Minico",
     image:
-      "https://images.unsplash.com/photo-1460925895917-adf4e5fbc4e7?w=400&h=400&fit=crop",
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/4b9dfee66be3d92388290aa6aee5f4e9b2e98250952a6a743caff00366b2711d?format=webp&placeholderIfAbsent=true&width=2000",
     features: [
       { icon: "✓", text: "Protects up to $5,000" },
       { icon: "✓", text: "$0 deductible" },

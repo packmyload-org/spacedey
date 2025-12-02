@@ -32,7 +32,7 @@ const LandlordMarkets = () => {
             <div className="pt-2">
               <Link
                 href="#get-in-touch"
-                className="inline-block bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold px-8 py-3 rounded-full transition-all duration-300 text-base"
+                className="inline-block bg-white border-1 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold px-8 py-3 rounded-full transition-all duration-300 text-base"
               >
                 Partner with us
               </Link>
