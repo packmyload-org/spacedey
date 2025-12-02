@@ -1,97 +1,99 @@
-import Image from 'next/image';
+"use client";
+
+// src/components/WhyStoreWithUs.jsx
 import React from 'react';
+import PrimaryButton from "../ui/PrimaryButton"; 
 
-// 1. Define a TypeScript interface for the data structure
-interface Feature {
-  id: number;
-  iconSrc: string; // The URL/path for the image icon
-  iconAlt: string;
-  title: string;
-}
+// Define the custom colors used in the layout for easy reference
+const COLORS = {
+    TITLE_NAVY: '#172a58',
+    UNDERLINE_ORANGE: '#e59976',
+    BUTTON_BLUE: '#4a7eff',
+};
 
-// 2. Define the data array
-const storeFeatures: Feature[] = [
-  {
-    id: 1,
-    // NOTE: Replace these with your actual static image paths (e.g., from the /public folder)
-    // The original code used /_next/static/media/Dollar.66bc4a77.png, which suggests a file import structure.
-    // For a clean conversion, we'll assume the assets are in the /public folder.
-    iconSrc: '/images/Dollar.png', // Assuming asset path
-    iconAlt: 'Dollar Icon',
-    title: 'No "Admin" fees',
-  },
-  {
-    id: 2,
-    iconSrc: '/images/LocationPin.png', // Assuming asset path
-    iconAlt: 'Location Pin Icon',
-    title: 'Storage in your neighborhood',
-  },
-  {
-    id: 3,
-    iconSrc: '/images/Lock.png', // Assuming asset path
-    iconAlt: 'Lock Icon',
-    title: 'Complimentary lock',
-  },
+// Define the feature data and placeholder URLs
+const features = [
+  { id: 1, text: "No hidden or additional fees", iconUrl: "/images/Dollar.jpg" },
+  { id: 2, text: "Storage near home and work", iconUrl: "/images/LocationPin.jpg" },
+  { id: 3, text: "Month to Month Leases", iconUrl: "/images/Calendar.jpg" },
+  // { id: 4, text: "Complimentary padlock", iconUrl: "/images/Lock.jpg" },
 ];
 
-// 3. Define the component
-const WhyStoreWithus: React.FC = () => {
-  return (
-    <section>
-      {/* Container with padding and max-width management */}
-      <div className="lg:py-28 py-12 lg:px-20 px-6 max-w-7xl mx-auto">
-        
-        {/* Title Section */}
-        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
-          Why store with us?
-        </h2>
-        {/* Horizontal Rule/Underline */}
-        <hr className="h-[3px] w-[50px] mt-6 lg:mb-20 mb-10 mx-auto bg-brand-orange border-0" />
-        
-        {/* Features Grid */}
-        <div className="flex lg:flex-row flex-col justify-between xl:gap-20 gap-10 lg:mb-20 mb-10">
-          {storeFeatures.map((feature) => (
-            <div
-              key={feature.id}
-              // Tailwind class to achieve the custom column width from the original HTML: 
-              // xl:w-[calc((100%/3)-(80px/2))] lg:w-[calc((100%/3)-(40px/2))]
-              className="xl:w-[calc((100%/3)-40px)] lg:w-[calc((100%/3)-20px)] text-center w-full"
+interface FeatureItemProps {
+  iconUrl: string;
+  text: string;
+}
+
+const FeatureItem = ({ iconUrl, text }: FeatureItemProps) => {
+    return (
+        // The flex basis ensures 4 items per row on larger screens and stacks responsively
+        <div className="flex flex-col items-center text-center p-4 max-w-[280px] min-w-[200px]">
+            {/* Icon Placeholder */}
+            <div 
+                className="w-[150px] h-[150px] mb-4 bg-contain bg-no-repeat bg-center"
+                style={{ backgroundImage: `url(${iconUrl})` }} 
+                role="img" 
+                aria-label={text.split(' ').slice(0, 2).join(' ') + " icon"}
             >
-              {/* Image Component for optimization */}
-              <Image
-                src={feature.iconSrc}
-                alt={feature.iconAlt}
-                width={150}
-                height={150}
-                className="mx-auto mb-6"
-                // The 'draggable' attribute is unnecessary in the Image component
-                // 'loading' is managed by Next.js.
-              />
-              <h4 className="font-serif text-2xl font-medium text-brand-dark-blue">
-                {feature.title}
-              </h4>
+                {/* The actual image or SVG goes here */}
             </div>
+            
+            <p className="text-gray-800 text-lg font-medium leading-relaxed px-2">
+                {text}
+            </p>
+        </div>
+    );
+};
+
+
+const WhyStoreWithUs = () => {
+  return (
+    <section className="py-16 md:py-24 px-4 bg-white">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Title */}
+        <h2 
+          className="text-4xl font-bold text-center mb-1" 
+          style={{ color: COLORS.TITLE_NAVY }}
+        >
+          Why Store With Us?
+        </h2>
+        
+        {/* Underline */}
+        <div 
+          className="w-12 h-1 mx-auto mb-16"
+          style={{ backgroundColor: COLORS.UNDERLINE_ORANGE }}
+        ></div>
+
+        {/* Features Grid: Responsive layout */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center gap-y-12 gap-x-4 lg:gap-x-6">
+          {features.map(feature => (
+            <FeatureItem 
+              key={feature.id} 
+              iconUrl={feature.iconUrl} 
+              text={feature.text} 
+            />
           ))}
         </div>
-        
-        {/* Button Section */}
-        <div className="text-center">
-          {/* NOTE: I've replaced the complex MuiButton classes with clean Tailwind/React structure. 
-                     You will need to ensure 'brand-orange' is defined in your tailwind config 
-                     if you want the exact styling of the original button.
-          */}
-          <button 
-            className="w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200"
-            type="button"
+
+        {/* CTA Button */}
+        <div className="text-center mt-16">
+          <PrimaryButton 
+            variant="custom" // Use the 'custom' variant for full Tailwind control
+            className="px-8 py-3 text-lg font-semibold border-2"
+            // Use inline styles to enforce the custom blue color
+            style={{ 
+                borderColor: COLORS.BUTTON_BLUE, 
+                color: COLORS.BUTTON_BLUE,
+                // Add hover styles if they aren't fully covered by your PrimaryButton component
+            }}
           >
-            <span className="lg:block hidden">Find A Storage Unit</span>
-            <span className="lg:hidden">Book a unit</span>
-          </button>
+            Find A Storage Unit
+          </PrimaryButton>
         </div>
-        
       </div>
     </section>
   );
 };
 
-export default WhyStoreWithus;
+export default WhyStoreWithUs;

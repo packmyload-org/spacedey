@@ -45,7 +45,7 @@ export default function ReferralFAQAccordion() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col justify-center lg:flex-row gap-8 lg:gap-12 items-start">
           {/* Image Column */}
-          <div className="">
+          <div className="flex sm:self-center md:self-start">
             <img 
               src="https://lp.stufstorage.com/hubfs/faqs-content-img.png" 
               alt="faqs-content-img"

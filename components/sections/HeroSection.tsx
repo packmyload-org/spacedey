@@ -77,7 +77,7 @@ function HeroSection() {
               <InputSearch
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by city or zip code"
+                placeholder="Search by city or location"
                 className="flex-1"
                 inputClassName="text-base border-neutral-300 focus:ring-orange-500"
               />
@@ -85,7 +85,7 @@ function HeroSection() {
                 variant="primary"
                 className="bg-[#D96541] hover:bg-[#B85737] text-white px-8 py-4 whitespace-nowrap border-0 rounded-lg focus:ring-orange-500"
               >
-                Find storage near me
+                Reserve now
               </PrimaryButton>
             </div>
           </div>
