@@ -72,10 +72,47 @@ export default function ReferralReviewsCarousel() {
       text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
       verified: true
     },
+
+    {
+      id: 7,
+      author: "Max Asante",
+      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXExXfjQ6YP43tdOe-64QQ-rCrohG-eViwgf_bFLQbODG5HRWBd=s120-c-rp-mo-br100",
+      rating: 4,
+      date: "2 months ago",
+      text: "I was assisted with making a reservation last minute by Meagan Weld at the call center. She was very helpful detailed and patient with all my questions. I was able to make it the facility almost by 5pm and was assisted by Magdalene Brown the property manager. She walked me through the facility and gave me the rundown. I was impressed and signed the contract to start the same day instead of the next day which would be Sat. Rates were amazing and I was assured they wouldn't have any major increases ever 6 months like extra space storage.",
+      verified: true
+    },
+    {
+      id: 8,
+      author: "Katie H",
+      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjWzHp57-T26LygbjzFJ3wUb34UJcpT7Orc498s6TULuJ7V3ZEA=s120-c-rp-mo-ba4-br100",
+      rating: 5,
+      date: "1 year ago",
+      text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
+      verified: true
+    },
   ];
 
-  const itemsPerSlide = 2;
-  const totalSlides = Math.ceil(reviews.length / itemsPerSlide);
+  // Responsive items per slide
+  const getItemsPerSlide = (width: number) => {
+    if (width < 640) return 1; // small screens: single card
+    if (width < 1024) return 2; // medium
+    return 4; // large
+  };
+
+  const [itemsPerSlide, setItemsPerSlide] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1;
+    return getItemsPerSlide(window.innerWidth);
+  });
+
+  useEffect(() => {
+    const onResize = () => setItemsPerSlide(getItemsPerSlide(window.innerWidth));
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const totalSlides = Math.max(1, Math.ceil(reviews.length / itemsPerSlide));
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
@@ -96,6 +133,13 @@ export default function ReferralReviewsCarousel() {
     const start = currentSlide * itemsPerSlide;
     return reviews.slice(start, start + itemsPerSlide);
   };
+
+  // Ensure currentSlide is within bounds when itemsPerSlide / totalSlides change
+  useEffect(() => {
+    if (currentSlide >= totalSlides) {
+      setCurrentSlide(totalSlides - 1);
+    }
+  }, [itemsPerSlide, totalSlides, currentSlide]);
 
   return (
     <div className="w-full py-12 px-4 bg-white">
