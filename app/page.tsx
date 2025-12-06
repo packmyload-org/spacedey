@@ -17,11 +17,11 @@ export default function Home() {
       <main>
         <HeroSection />
         <FeatureList />
+         <FinalCtaBlock />
         <QuoteSection />
         <InfoBlock />
         <WhyStoreWithUs />
         <NotAverageStorage />
-        <FinalCtaBlock />
         <CitiesStatesNav />
       </main>
       <Footer />
