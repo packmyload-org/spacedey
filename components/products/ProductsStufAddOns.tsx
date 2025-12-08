@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Check, Shield } from "lucide-react";
+import { Shield } from "lucide-react";
 
 interface AddOnFeature {
   icon: string;
@@ -148,7 +148,9 @@ export default function ProductsStufAddOns({
         </div>
       </div>
       <div className="mt-12">
-        <img src="/images/Products3.svg" className="w-full h-auto" alt="" />
+        <div className="relative w-full h-[240px] md:h-[320px]">
+          <Image src="/images/Products3.svg" alt="" fill className="object-contain" />
+        </div>
       </div>
     </div>
   );

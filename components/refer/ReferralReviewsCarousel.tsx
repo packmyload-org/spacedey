@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 
 interface Review {
@@ -17,7 +18,7 @@ export default function ReferralReviewsCarousel() {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [expandedReviews, setExpandedReviews] = useState<Record<number, boolean>>({});
 
-  const reviews = [
+  const reviews: Review[] = [
     {
       id: 1,
       author: "Max Asante",
@@ -178,11 +179,15 @@ export default function ReferralReviewsCarousel() {
                     {/* Author Block */}
                     <div className="flex items-start gap-3 mb-4">
                       <div className="relative flex-shrink-0">
-                        <img
-                          src={review.avatar}
-                          alt={review.author}
-                          className="w-12 h-12 rounded-full"
-                        />
+                        <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                          <Image
+                            src={review.avatar}
+                            alt={review.author}
+                            fill
+                            unoptimized
+                            className="object-cover"
+                          />
+                        </div>
                         <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center">
                           <svg className="w-4 h-4" viewBox="0 0 24 25" fill="none">
                             <path fill="#fff" stroke="#fff" strokeWidth="2" d="M11.8 1.5C5.835 1.5 1 6.335 1 12.3v.4c0 5.965 4.835 10.8 10.8 10.8 5.965 0 10.8-4.835 10.8-10.8v-.4c0-5.965-4.835-10.8-10.8-10.8Z"/>

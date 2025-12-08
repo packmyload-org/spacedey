@@ -75,7 +75,6 @@ export default function MapView({ selectedCity }: MapViewProps) {
           // initialize map
           // runtime access to window.google must use a permissive cast
           // runtime access to window.google
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const gw = window as any;
           mapRef.current = new gw.google.maps.Map(mapDomRef.current, {
             center,
@@ -84,7 +83,6 @@ export default function MapView({ selectedCity }: MapViewProps) {
           }) as MapLike;
 
           // create marker
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           markerRef.current = new gw.google.maps.Marker({
             position: center,
             map: mapRef.current as unknown as object,

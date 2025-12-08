@@ -48,6 +48,8 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
   const [mapsError, setMapsError] = useState<string | null>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+  const serializedDisplayLocations = JSON.stringify(displayLocations);
+
   useEffect(() => {
     if (!mapDomRef.current) return;
 
@@ -60,13 +62,11 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
         await loadGoogleMaps(apiKey!);
 
         if (!mounted || !mapDomRef.current) return;
-        // runtime access to window.google
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const gw = window as any;
+  // runtime access to window.google
+  const gw = window as any;
         const bounds = new gw.google.maps.LatLngBounds();
 
         if (!mapRef.current) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           mapRef.current = new gw.google.maps.Map(mapDomRef.current, {
             center: { lat: displayLocations[0].lat, lng: displayLocations[0].lng },
             zoom: 4,
@@ -80,7 +80,6 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
 
         // Add markers
         displayLocations.forEach((loc) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const marker = new gw.google.maps.Marker({
             position: { lat: loc.lat, lng: loc.lng },
             map: mapRef.current as unknown as object,
@@ -112,7 +111,7 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
       markersRef.current = [];
     };
   // Use a stable serialized key for location array to avoid complex deps
-  }, [JSON.stringify(displayLocations), apiKey]);
+  }, [serializedDisplayLocations, apiKey]);
 
   // loader delegated to lib/loadGoogleMaps
 
