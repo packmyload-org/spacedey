@@ -30,11 +30,12 @@ export default function FeatureList() {
 
   return (
     <section className="py-16 px-4 bg-white">
-      <div className="max-w-7xl mx-auto ">
+      <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <div className="flex-1" />
           <div className="text-center">
-            <h2 className="text-4xl lg:text-4xl font-bold text-[#0A1E5E] inline-block">Discover Our Locations</h2>
+            {/* <h2 className="text-4xl lg:text-4xl font-bold text-[#0A1E5E] inline-block">Discover Our Locations</h2> */}
+            <button className="text-center text-xl p-3 font-bold mt-  pt-5 text-[#1642F0] hover:bg-[#f0f1f6]  rounded-3xl">Explore All Locations</button>
             <div className="w-16 h-1 bg-[#D96541] mx-auto mt-3" />
           </div>
           <div className="flex-1 flex justify-end items-start mt-20 gap-3">
@@ -80,7 +81,7 @@ export default function FeatureList() {
           </div>
         </div>
       </div>
-      <div className="text-center text-xl font-bold mt-5 pt-5 text-[#1642F0]">Explore All Locations</div>
+      {/* <div className="text-center text-xl font-bold mt-5  pt-5 text-[#1642F0] bg-[#FF00FF]">Explore All Locations</div> */}
     </section>
   );
 }

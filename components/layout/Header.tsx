@@ -106,7 +106,7 @@ export default function Header() {
             <div className="hidden lg:flex items-start justify-end">
               <Link 
                 href="/search" 
-                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-white border-white text-[#1642F0] rounded-full border-2 text-xs lg:text-xs xl:text-base truncate py-3 px-6"
+                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-[#D96541] text-white rounded-full border-2 text-xs lg:text-xs xl:text-base truncate py-3 px-6"
               >
                 Reserve Now
               </Link>

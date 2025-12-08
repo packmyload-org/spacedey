@@ -16,7 +16,7 @@ const features = [
   { id: 1, text: "No hidden or additional fees", iconUrl: "/images/Dollar.jpg" },
   { id: 2, text: "Storage near home and work", iconUrl: "/images/LocationPin.jpg" },
   { id: 3, text: "Month to Month Leases", iconUrl: "/images/Calendar.jpg" },
-  { id: 4, text: "Complimentary padlock", iconUrl: "/images/Lock.jpg" },
+  { id: 4, text: "Complimentary padlock (T&C Appy)", iconUrl: "/images/Lock.jpg" },
 ];
 
 interface FeatureItemProps {

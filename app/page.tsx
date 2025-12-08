@@ -18,8 +18,8 @@ export default function Home() {
         <HeroSection />
         <FeatureList />
          <FinalCtaBlock />
-        <QuoteSection />
-        <InfoBlock />
+        {/* <QuoteSection /> */}
+        {/* <InfoBlock /> */}
         <WhyStoreWithUs />
         <NotAverageStorage />
         <CitiesStatesNav />

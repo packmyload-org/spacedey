@@ -35,7 +35,7 @@ const LandlordStoragePartnership = () => {
                   New rental stream for ownership
                 </h3>
                 <p className="text-base md:text-lg text-gray-600">
-                  Generate $90-500k in annual rent on space that was generating $0
+                  Generate ₦90-500k in annual rent on space that was generating ₦0
                 </p>
               </div>
 

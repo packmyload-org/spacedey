@@ -18,8 +18,9 @@ const LandlordMarkets = () => {
 
             {/* City List */}
             <div className="py-2">
-              <p className="text-xl md:text-2xl lg:text-3xl font-bold text-[#002366] tracking-wide">
-                LA | NY | DC | SF | BOS | SEA | ATL
+              <p className="text-xl md:text-2xl lg:text-3
+              2xl font-bold text-[#002366] tracking-wide">
+                LAG | ABJ | KN | PHC | BEN | JOS | KD
               </p>
             </div>
 
