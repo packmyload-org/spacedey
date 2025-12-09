@@ -34,6 +34,14 @@ const CITY_COORDINATES: Record<string, { lat: number; lng: number; price: number
 
 export default function MapView({ selectedCity }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
+  type GoogleMapsLike = {
+     google: {
+       maps: {
+         Map: new (el: HTMLElement, opts: unknown) => unknown;
+         Marker: new (opts: unknown) => unknown;
+       };
+     };
+   };
   const mapDomRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [mapsLoading, setMapsLoading] = useState(false);
@@ -71,22 +79,26 @@ export default function MapView({ selectedCity }: MapViewProps) {
           lng: currentLocation.lng,
         };
 
+        const gw = window as unknown as GoogleMapsLike;
+
         if (!mapRef.current) {
           // initialize map
-          // runtime access to window.google must use a permissive cast
-          // runtime access to window.google
-          const gw = window as any;
-          mapRef.current = new gw.google.maps.Map(mapDomRef.current, {
-            center,
-            zoom: 12,
-            disableDefaultUI: true,
-          }) as MapLike;
+          mapRef.current = new (gw.google.maps.Map as unknown as { new (el: HTMLElement, opts: unknown): unknown })(
+            mapDomRef.current,
+            {
+              center,
+              zoom: 12,
+              disableDefaultUI: true,
+            }
+          ) as MapLike;
 
           // create marker
-          markerRef.current = new gw.google.maps.Marker({
-            position: center,
-            map: mapRef.current as unknown as object,
-          }) as MarkerLike;
+          markerRef.current = new (gw.google.maps.Marker as unknown as { new (opts: unknown): unknown })(
+            {
+              position: center,
+              map: mapRef.current as unknown as object,
+            }
+          ) as MarkerLike;
         } else {
           // pan to new location
           mapRef.current.panTo(center);
