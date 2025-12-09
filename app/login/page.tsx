@@ -1,4 +1,3 @@
-import Footer from '@/components/layout/Footer';
 import LoginForm from '../../components/login/LoginForm';
 import Header from '@/components/layout/Header';
 

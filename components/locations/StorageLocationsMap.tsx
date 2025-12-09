@@ -48,6 +48,8 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
   const [mapsError, setMapsError] = useState<string | null>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+  const serializedDisplayLocations = JSON.stringify(displayLocations);
+
   useEffect(() => {
     if (!mapDomRef.current) return;
 
@@ -60,18 +62,33 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
         await loadGoogleMaps(apiKey!);
 
         if (!mounted || !mapDomRef.current) return;
-        // runtime access to window.google
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const gw = window as any;
-        const bounds = new gw.google.maps.LatLngBounds();
+
+        // Parse a stable, serialized copy of locations to avoid complex deps
+        const locs: MapLocation[] = JSON.parse(serializedDisplayLocations);
+
+        // runtime access to window.google with minimal typed shape (avoid `any`)
+        type GoogleMapsLike = {
+          google: {
+            maps: {
+              LatLngBounds: new () => unknown;
+              Map: new (el: HTMLElement, opts: unknown) => unknown;
+              Marker: new (opts: unknown) => unknown;
+            };
+          };
+        };
+
+        const gw = window as unknown as GoogleMapsLike;
+  const bounds = new (gw.google.maps.LatLngBounds as unknown as { new (): unknown })();
 
         if (!mapRef.current) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          mapRef.current = new gw.google.maps.Map(mapDomRef.current, {
-            center: { lat: displayLocations[0].lat, lng: displayLocations[0].lng },
-            zoom: 4,
-            disableDefaultUI: true,
-          }) as unknown as MapLike;
+          mapRef.current = new (gw.google.maps.Map as unknown as { new (el: HTMLElement, opts: unknown): unknown })(
+            mapDomRef.current,
+            {
+              center: { lat: locs[0].lat, lng: locs[0].lng },
+              zoom: 4,
+              disableDefaultUI: true,
+            }
+          ) as unknown as MapLike;
         }
 
         // Clear existing markers
@@ -79,22 +96,27 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
         markersRef.current = [];
 
         // Add markers
-        displayLocations.forEach((loc) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const marker = new gw.google.maps.Marker({
-            position: { lat: loc.lat, lng: loc.lng },
-            map: mapRef.current as unknown as object,
-            title: loc.name,
-          }) as unknown as MarkerLike;
+        locs.forEach((loc) => {
+          const marker = new (gw.google.maps.Marker as unknown as { new (opts: unknown): unknown })(
+            {
+              position: { lat: loc.lat, lng: loc.lng },
+              map: mapRef.current as unknown as object,
+              title: loc.name,
+            }
+          ) as unknown as MarkerLike;
           markersRef.current.push(marker);
-          bounds.extend((marker as unknown as { getPosition(): unknown }).getPosition());
+          const boundsExt = bounds as unknown as { extend(pos: unknown): void };
+          const markerPos = (marker as unknown as { getPosition(): unknown }).getPosition();
+          boundsExt.extend(markerPos);
         });
 
-        if (displayLocations.length === 1) {
-          mapRef.current.setCenter({ lat: displayLocations[0].lat, lng: displayLocations[0].lng });
+        if (locs.length === 1) {
+          mapRef.current.setCenter({ lat: locs[0].lat, lng: locs[0].lng });
           mapRef.current.setZoom(12);
         } else {
-          mapRef.current.fitBounds(bounds);
+          // fitBounds expects a LatLngBounds-like object — call via the typed wrapper
+          const mapWithFit = mapRef.current as unknown as { fitBounds(bounds: unknown): void };
+          mapWithFit.fitBounds(bounds);
         }
       } catch (e) {
         setMapsError(String(e ?? 'Failed to load Google Maps'));
@@ -112,7 +134,7 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
       markersRef.current = [];
     };
   // Use a stable serialized key for location array to avoid complex deps
-  }, [JSON.stringify(displayLocations), apiKey]);
+  }, [serializedDisplayLocations, apiKey]);
 
   // loader delegated to lib/loadGoogleMaps
 

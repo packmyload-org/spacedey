@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
@@ -319,10 +318,12 @@ function BlogCard({ post }: { post: BlogPost }) {
     >
       {/* Image */}
       <div className="relative h-48 overflow-hidden bg-gray-200">
-        <img
+        <Image
           src={post.image}
           alt={post.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          fill
+          unoptimized
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
 
@@ -505,10 +506,12 @@ export default function BlogList() {
               className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="relative h-56 overflow-hidden bg-gray-200">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1556746753-b2406de998e8?w=500&h=400&fit=crop"
                   alt="Spring storage guide"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  fill
+                  unoptimized
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="flex flex-col flex-1 p-6">
@@ -528,10 +531,12 @@ export default function BlogList() {
               className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="relative h-56 overflow-hidden bg-gray-200">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=500&h=400&fit=crop"
                   alt="Storage facilities guide"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  fill
+                  unoptimized
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="flex flex-col flex-1 p-6">

@@ -6,25 +6,25 @@ import Image from "next/image";
 const storageData = {
   small: {
     sizes: [
-      { label: "3 x 5", image: "/images/storage-small-3x5.jpg" },
-      { label: "5 x 5", image: "/images/storage-small-5x5.jpg" },
-      { label: "5 x 10", image: "/images/storage-small-5x10.jpg" },
+      { label: "3 x 5", image: "/images/Size1a.jpg" },
+      { label: "5 x 5", image: "/images/Size1b.jpg" },
+      { label: "5 x 10", image: "/images/Size1c.jpg" },
     ],
     description:
       "About the size of a hall closet or small walk-in closet, these storage units are great for clearing out a little extra space at home. Common uses include storing seasonal decorations, yard tools, kids’ clothing and toys, or serving as summer storage for college students.",
   },
   medium: {
     sizes: [
-      { label: "6 x 10", image: "/images/storage-medium-6x10.jpg" },
-      { label: "10 x 10", image: "/images/storage-medium-10x10.jpg" },
+      { label: "6 x 10", image: "/images/Size2a.jpg" },
+      { label: "10 x 10", image: "/images/Size2b.jpg" },
     ],
     description:
       "About the size of a small bedroom or large walk-in closet, medium storage units are great for storing the contents of a one-bedroom apartment. Common uses include holding furniture like a bed, sofa, and dining set, storing boxes of household items, or keeping things organized during a move or home renovation.",
   },
   large: {
     sizes: [
-      { label: "10 x 15", image: "/images/storage-large-10x15.jpg" },
-      { label: "10 x 20", image: "/images/storage-large-10x20.jpg" },
+      { label: "10 x 15", image: "/images/Size3a.jpg" },
+      { label: "10 x 20", image: "/images/Size3b.jpg" },
     ],
     description:
       "About the size of a standard one-car garage, large storage units are perfect for storing the contents of a two- to three-bedroom home. They can hold big items like living room furniture, multiple mattresses, kitchen appliances, and dozens of boxes—ideal for moving, remodeling, or business storage needs.",

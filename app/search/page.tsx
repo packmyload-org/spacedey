@@ -1,12 +1,11 @@
 "use client";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import SearchPageContent from "@/components/pages/search/PageContent";
-
-import { useState } from "react";
 import SearchBar from "@/components/pages/search/SearchBar";
 import CityList from "@/components/pages/search/CityList";
 import MapView from "@/components/pages/search/MapView";
+
+import { useState } from "react";
+// Footer and SearchPageContent were intentionally not used here
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");

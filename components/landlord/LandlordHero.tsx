@@ -45,16 +45,12 @@ export default function HeroSection() {
       </div>
     
     </div>
-        <img
-          src="/images/LandlordHero2.jpg"
-          alt=""
-          className="w-full h-24 object-cover "
-        />
-        <img
-          src="/images/Landlordpartners.jpg"
-          alt=""
-          className="w-full h-24 object-cover my-10 "
-        />
+        <div className="relative w-full h-24">
+          <Image src="/images/LandlordHero2.jpg" alt="" fill className="object-cover" />
+        </div>
+        <div className="relative w-full h-24 my-10">
+          <Image src="/images/Landlordpartners.jpg" alt="" fill className="object-cover" />
+        </div>
     </section>
   );
 }

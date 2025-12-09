@@ -2,8 +2,7 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/sections/HeroSection";
-import QuoteSection from "@/components/sections/QuoteSection";
-import InfoBlock from "@/components/sections/InfoBlock";
+// QuoteSection and InfoBlock imports removed because they are commented out in the render tree
 import WhyStoreWithUs from "@/components/sections/WhyStoreWithUs";
 import FinalCtaBlock from "@/components/ui/FinalCtaBlock";
 import NotAverageStorage from "@/components/ui/NotAverageStorage";
@@ -17,11 +16,11 @@ export default function Home() {
       <main>
         <HeroSection />
         <FeatureList />
-        <QuoteSection />
-        <InfoBlock />
+         <FinalCtaBlock />
+        {/* <QuoteSection /> */}
+        {/* <InfoBlock /> */}
         <WhyStoreWithUs />
         <NotAverageStorage />
-        <FinalCtaBlock />
         <CitiesStatesNav />
       </main>
       <Footer />

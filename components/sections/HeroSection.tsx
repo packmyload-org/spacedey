@@ -56,7 +56,7 @@ function HeroSection() {
           {/* Search Card */}
           <div className="bg-white rounded-2xl shadow-2xl max-w-6xl  mx-2 py-4">
             {/* City Navigation */}
-            <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-4 mb-5">
+            <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-10 mb-5">
               {cities.map((city) => (
                 <button
                   key={city}
@@ -77,7 +77,7 @@ function HeroSection() {
               <InputSearch
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by city or location"
+                placeholder="Enter your city or location"
                 className="flex-1"
                 inputClassName="text-base border-neutral-300 focus:ring-orange-500"
               />
@@ -88,6 +88,15 @@ function HeroSection() {
                 Reserve now
               </PrimaryButton>
             </div>
+            {/* Thumbnails moved below the search card (rendered after this card) */}
+          </div>
+          {/* Thumbnails displayed under the search card */}
+          <div className="mt-6 flex items-center justify-center gap-4">
+            {/* <Image src="/images/hero1.jpg" alt="hero 1" width={340} height={300} /> */}
+            <Image src="/images/hero2.jpg" alt="hero 2" width={300} height={340} />
+            <Image src="/images/hero3.jpg" alt="hero 3" width={300} height={340} />
+            <Image src="/images/hero4.jpg" alt="hero 4" width={300} height={340} />
+            <Image src="/images/hero5.jpg" alt="hero 5" width={300} height={340} />
           </div>
         </div>
       </div>
@@ -100,8 +109,9 @@ function HeroSection() {
           </div>
           {/* <span className="font-medium">Support</span> */}
         </button>
+          {/* Support area only (images moved into search card) */}
       </div>
-      <div className="mt-6">
+      {/* <div className="mt-6">
       <Image 
         src="/images/HeroM.jpg"
         alt="Hero image"
@@ -110,7 +120,7 @@ function HeroSection() {
         className="w-full h-auto"
       />
       </div>
-      
+       */}
     </section>
   );
 }

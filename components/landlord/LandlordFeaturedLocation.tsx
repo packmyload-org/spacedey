@@ -1,5 +1,4 @@
 import Image from 'next/image';
-import { HelpCircle } from 'lucide-react';
 
 interface FeaturedLocationProps {
   title?: string;
@@ -10,8 +9,6 @@ interface FeaturedLocationProps {
   openingDate?: string;
   occupancy?: string;
   beforeImage?: string;
-  afterImage?: string;
-  supportLink?: string;
   partnerLink?: string;
 }
 
@@ -24,8 +21,6 @@ export default function LandlordFeaturedLocation({
   openingDate = "November 2021",
   occupancy = "averaged 93% occupancy in 2023",
   beforeImage = "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop",
-  afterImage = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&h=600&fit=crop",
-  supportLink = "#",
   partnerLink = "#get-in-touch"
 }: FeaturedLocationProps) {
   return (

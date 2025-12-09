@@ -1,4 +1,5 @@
-'use client'
+"use client"
+import Image from 'next/image';
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
@@ -46,11 +47,15 @@ export default function ReferralFAQAccordion() {
         <div className="flex flex-col justify-center lg:flex-row gap-8 lg:gap-12 items-start">
           {/* Image Column */}
           <div className="flex sm:self-center md:self-start">
-            <img 
-              src="https://lp.stufstorage.com/hubfs/faqs-content-img.png" 
-              alt="faqs-content-img"
-              className="w-full h-auto"
-            />
+            <div className="relative w-full h-auto max-w-sm">
+              <Image
+                src="https://lp.stufstorage.com/hubfs/faqs-content-img.png"
+                alt="faqs-content-img"
+                fill
+                unoptimized
+                className="object-contain"
+              />
+            </div>
           </div>
 
           {/* FAQ Content Column */}
