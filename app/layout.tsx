@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-// Header and Footer are intentionally not rendered in RootLayout here
-// to avoid duplicating layout in the app router pages. Imports removed.
 
-// Removed Inter font import and configuration
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className={`${inter.className} antialiased`}>
         {/* <Header /> */}
         {children}
         {/* <Footer /> */}

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import Image from 'next/image';
+import Image from "next/image";
 import { Facebook, Instagram, Twitter } from "lucide-react";
 
 export default function Footer() {
@@ -38,20 +38,20 @@ export default function Footer() {
 
         <div>
           <ul className="space-y-3">
-            <li><a href="#" className="hover:text-gray-300">Locations</a></li>
-            <li><a href="#" className="hover:text-gray-300">Sizing</a></li>
-            <li><a href="#" className="hover:text-gray-300">FAQ</a></li>
-            <li><a href="#" className="hover:text-gray-300">Self-storage near me</a></li>
-            <li><a href="#" className="hover:text-gray-300">News</a></li>
-            <li><a href="#" className="hover:text-gray-300">Refer a Friend</a></li>
+            <li><Link href="/locations" className="hover:text-gray-300">Locations</Link></li>
+            <li><Link href="/sizing" className="hover:text-gray-300">Sizing</Link></li>
+            <li><Link href="/sizing" className="hover:text-gray-300">FAQ</Link></li>
+            <li><Link href="/search" className="hover:text-gray-300">Self-storage near me</Link></li>
+            <li><Link href="/blog" className="hover:text-gray-300">News</Link></li>
+            <li><Link href="/refer" className="hover:text-gray-300">Refer a Friend</Link></li>
           </ul>
         </div>
 
         <div>
           <ul className="space-y-3">
-            <li><a href="#" className="hover:text-gray-300">Landlord</a></li>
-            <li><a href="#" className="hover:text-gray-300">Perks</a></li>
-            <li><a href="#" className="hover:text-gray-300">Products</a></li>
+            <li><Link href="/landlord" className="hover:text-gray-300">Landlord</Link></li>
+            <li><Link href="/products" className="hover:text-gray-300">Perks</Link></li>
+            <li><Link href="/products" className="hover:text-gray-300">Products</Link></li>
             <li><a href="#" className="hover:text-gray-300">Privacy Policy</a></li>
             <li><a href="#" className="hover:text-gray-300">Terms of Service</a></li>
           </ul>
@@ -62,6 +62,12 @@ export default function Footer() {
       <div className="text-center text-sm py-6">
         Copyright © {new Date().getFullYear()} Packmyload Inc. All rights reserved.
       </div>
+      <button className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition">
+        <span className="w-5 h-5 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-xs">
+          ?
+        </span>
+        Support
+      </button>
     </footer>
   );
 }

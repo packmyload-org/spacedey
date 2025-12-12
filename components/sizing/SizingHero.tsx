@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from "next/link";
 
 const StorageHeroSection = () => {
   return (
@@ -24,12 +25,14 @@ const StorageHeroSection = () => {
         </p>
 
         {/* CTA Button */}
-        <button
-          type="button"
-          className="px-10 py-5 bg-[#D96541] hover:bg-orange-600 text-white font-bold text-lg rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 sm:w-auto w-full max-w-sm"
-        >
-          Find storage near me
-        </button>
+        <Link href="/search">
+          <button
+            type="button"
+            className="px-10 py-5 bg-[#D96541] hover:bg-orange-600 text-white font-bold text-lg rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 sm:w-auto w-full max-w-sm"
+          >
+            Find storage near me
+          </button>
+        </Link>
       </div>
     </section>
   );

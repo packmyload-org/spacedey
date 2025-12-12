@@ -95,7 +95,7 @@ export default function ReferralHero() {
                 Refer a friend to Stuf and get rewarded
               </h1>
               <p className="text-lg text-gray-700">
-             Earn $50 when any one you refer moves in — and they&apos;ll save 50% too.
+             Earn ₦50 when any one you refer moves in — and they&apos;ll save 50% too.
               </p>
             </div>
 

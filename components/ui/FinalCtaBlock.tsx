@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { Box } from "lucide-react"; // use Box instead of Cube
 
 export default function UnitSizes() {
@@ -54,18 +55,12 @@ export default function UnitSizes() {
 
       {/* Explore Button */}
       <div className="my-10">
-        <button className="px-14 py-2 border-1 font-semibold border-blue-600 text-blue-600  rounded-full hover:bg-blue-600 hover:text-white transition">
-          Explore All Unit Sizes
-        </button>
+        <Link href="/sizing">
+          <button className="px-14 py-2 border-1 font-semibold border-blue-600 text-blue-600  rounded-full hover:bg-blue-600 hover:text-white transition">
+            Explore All Unit Sizes
+          </button>
+        </Link>
       </div>
-
-      {/* Support Floating Button */}
-      <button className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition">
-        <span className="w-5 h-5 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-xs">
-          ?
-        </span>
-        Support
-      </button>
     </section>
   );
 }

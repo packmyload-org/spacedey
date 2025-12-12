@@ -74,11 +74,6 @@ export default function StorageUnitSizes() {
                 objectFit="cover"
                 className="lg:rounded-l-xl" // Round the left corners only for desktop
               />
-              {/* Support Button (Positioned absolutely in the bottom-left corner of the image) */}
-              <button className="absolute bottom-4 left-4 flex items-center px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 z-10 text-sm">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.54 0 1.054.18 1.458.528A3 3 0 0112 12m0 0l-1.5 1.5M12 12l-1.5-1.5M12 12l1.5-1.5m-3 0l3 3m-3 0l-3-3m3 3l3-3m0 6l-3-3m3 3l-3 3m0-6l-3 3m-3-3l3 3m0 0l3 3m0-6l-3-3m3 0l-3 3"></path></svg>
-                Support
-              </button>
             </div>
           </div>
 

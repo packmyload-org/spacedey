@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import loadGoogleMaps from '../../../lib/loadGoogleMaps';
+import { getAvailableCities } from '@/lib/cities';
 
 interface MapViewProps {
   selectedCity: string;
@@ -47,10 +48,21 @@ export default function MapView({ selectedCity }: MapViewProps) {
   const [mapsLoading, setMapsLoading] = useState(false);
   const [mapsError, setMapsError] = useState<string | null>(null);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyAEHsYzuTiYRmGv79PIdjvP9TgUU5vZlTU';
 
   const mapRef = useRef<MapLike | null>(null);
   const markerRef = useRef<MarkerLike | null>(null);
+
+  // Get list of available city names
+  const availableCityNames = getAvailableCities().map(city => city.name.toLowerCase());
+  
+  // Check if selected city is in the available cities list
+  // If city is selected but not in available list, show "coming soon" screen
+  const isCityAvailable = selectedCity 
+    ? availableCityNames.includes(selectedCity.toLowerCase())
+    : false;
+  
+  const showComingSoon = selectedCity && !isCityAvailable;
 
   const currentLocation = selectedCity && CITY_COORDINATES[selectedCity]
     ? CITY_COORDINATES[selectedCity]
@@ -58,6 +70,12 @@ export default function MapView({ selectedCity }: MapViewProps) {
 
   useEffect(() => {
     if (!mapDomRef.current) return;
+
+    // Don't load map if city is coming soon or not in list
+    if (showComingSoon) {
+      setIsLoading(false);
+      return;
+    }
 
     // If there's no API key, just show the placeholder UI (no script load)
     if (!apiKey) {
@@ -119,7 +137,7 @@ export default function MapView({ selectedCity }: MapViewProps) {
     return () => {
       mounted = false;
     };
-  }, [selectedCity, apiKey, currentLocation.lat, currentLocation.lng]);
+  }, [selectedCity, apiKey, currentLocation.lat, currentLocation.lng, showComingSoon]);
 
 
   // loader is delegated to lib/loadGoogleMaps
@@ -127,11 +145,46 @@ export default function MapView({ selectedCity }: MapViewProps) {
   return (
     <div
       ref={mapContainer}
-      className="hidden lg:block w-1/2 max-h-[calc(100vh-82px)] bg-gray-200 relative"
+      className="w-full lg:w-1/2 h-screen lg:max-h-[calc(100vh-82px)] bg-gray-200 relative"
       id="map-view"
     >
-      {/* If there's no API key, keep the placeholder UI and instruct about .env */}
-      {!apiKey ? (
+      {/* Coming Soon Screen - Show if city is not in list or is coming soon */}
+      {showComingSoon ? (
+        <>
+          {/* Full screen overlay for coming soon */}
+          <div className="absolute inset-0 h-full w-full bg-gradient-to-br from-blue-50 to-indigo-50 z-20" />
+          <div className="absolute inset-0 h-full w-full flex items-center justify-center z-20 p-4">
+          <div className="text-center bg-white p-6 sm:p-8 lg:p-12 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl w-full max-w-sm mx-auto">
+            <div className="text-5xl sm:text-6xl mb-4 sm:mb-6">🚀</div>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 sm:mb-3">
+              Coming Soon!
+            </h2>
+            <p className="text-base sm:text-lg text-gray-700 mb-4 sm:mb-6">
+              <span className="font-semibold text-[#1642F0]">{selectedCity}</span> storage is on the way
+            </p>
+            <p className="text-sm text-gray-600 mb-4 sm:mb-6">
+              We&apos;re expanding our services to serve you better. Stay tuned for updates!
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-500">
+              <span>⏳</span>
+              <span>Available soon</span>
+            </div>
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+              <p className="text-xs text-gray-500 mb-3 sm:mb-4">
+                Want to be notified when we launch in {selectedCity}?
+              </p>
+              <a 
+                href={`mailto:info@spacedey.com?subject=Notify me when ${selectedCity} storage is available&body=Hi, I'd like to be notified when storage becomes available in ${selectedCity}.`}
+                className="inline-block px-4 sm:px-6 py-2 bg-[#1642F0] text-white rounded-full text-xs sm:text-sm font-semibold hover:bg-[#0d1d73] transition-colors"
+              >
+                Notify Me
+              </a>
+            </div>
+          </div>
+          </div>
+        </>
+      ) : !apiKey ? (
+        /* If there's no API key, keep the placeholder UI and instruct about .env */
         <div className="h-full flex items-center justify-center">
           <div className="text-center bg-white p-8 rounded-lg shadow-lg">
             <div className="text-6xl mb-4">🗺️</div>

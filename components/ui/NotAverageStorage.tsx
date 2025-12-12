@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import Link from "next/link";
 import Image from "next/image";
 
 // Replace this with your actual import path
@@ -66,9 +67,11 @@ export default function StorageLanding() {
 
             {/* CTA Button */}
             <div className="pt-6">
-              <button className="px-12 py-4 border-2 border-[#2563ff] text-[#2563ff] rounded-full text-lg font-semibold hover:bg-[#2563ff] hover:text-white transition-all duration-300">
-                Explore Our Storage Facilities
-              </button>
+              <Link href="/locations">
+                <button className="px-12 py-4 border-2 border-[#2563ff] text-[#2563ff] rounded-full text-lg font-semibold hover:bg-[#2563ff] hover:text-white transition-all duration-300">
+                  Explore Our Storage Facilities
+                </button>
+              </Link>
             </div>
           </div>
 

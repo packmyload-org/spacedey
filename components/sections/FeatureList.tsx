@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -18,6 +20,7 @@ const LOCATIONS: Location[] = [
 ];
 
 export default function FeatureList() {
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = React.useState(0);
 
   const nextSlide = () => {
@@ -28,6 +31,10 @@ export default function FeatureList() {
     setCurrentIndex((prev) => (prev - 1 + Math.max(1, LOCATIONS.length - 2)) % Math.max(1, LOCATIONS.length - 2));
   };
 
+  const handleViewFacilities = (city: string) => {
+    router.push(`/search?city=${encodeURIComponent(city)}`);
+  };
+
   return (
     <section className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -35,7 +42,9 @@ export default function FeatureList() {
           <div className="flex-1" />
           <div className="text-center">
             {/* <h2 className="text-4xl lg:text-4xl font-bold text-[#0A1E5E] inline-block">Discover Our Locations</h2> */}
-            <button className="text-center text-xl p-3 font-bold mt-  pt-5 text-[#1642F0] hover:bg-[#f0f1f6]  rounded-3xl">Explore All Locations</button>
+            <Link href="/locations">
+              <button className="text-center text-xl p-3 font-bold mt-  pt-5 text-[#1642F0] hover:bg-[#f0f1f6]  rounded-3xl">Explore All Locations</button>
+            </Link>
             <div className="w-16 h-1 bg-[#D96541] mx-auto mt-3" />
           </div>
           <div className="flex-1 flex justify-end items-start mt-20 gap-3">
@@ -70,7 +79,10 @@ export default function FeatureList() {
                     </div>
                     <div className=" items-center ">
                       <h3 className="text-xl font-bold text-[#0A1E5E] ">Storage in {location.city}</h3>
-                      <button className="w-full my-8 py-2 px-4 border  border-[#1642F0] text-[#2B5CE7] rounded-full font-semibold hover:bg-[#2B5CE7] hover:text-white transition-colors text-base">
+                      <button 
+                        onClick={() => handleViewFacilities(location.city)}
+                        className="w-full my-8 py-2 px-4 border  border-[#1642F0] text-[#2B5CE7] rounded-full font-semibold hover:bg-[#2B5CE7] hover:text-white transition-colors text-base"
+                      >
                         View All Facilities
                       </button>
                     </div>

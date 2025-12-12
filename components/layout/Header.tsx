@@ -11,7 +11,7 @@ export default function Header() {
   return (
     <header className="fixed w-full top-0 z-40">
       <div className="bg-[#1642F0] transition-colors duration-300 font-serif border-b-2 border-[#1642F0]">
-        <div className="flex flex-row px-3 lg:px-8 items-center justify-between h-20">
+        <div className="flex flex-row px-3 lg:px-10 items-center justify-between h-20">
           {/* Mobile Menu Toggle */}
           <div className="lg:hidden">
             <button
@@ -40,7 +40,7 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="space-x-8 hidden lg:flex mx-8">
+          <nav className="space-x-10 hidden lg:flex mx-8">
             <Link 
               href="/search" 
               className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
@@ -83,30 +83,32 @@ export default function Header() {
             >
               Refer a Friend
             </Link>
-          </nav>
-
-          {/* Desktop Right Side Actions */}
-          <div className="hidden lg:flex items-center justify-end lg:gap-2 gap-8 ml-8">
             <a 
-              href="tel:(833)3807883" 
+              href="tel:09166680777" 
               className="flex items-center"
             >
-              <p className="text-white font-bold mr-3 text-sm xl:text-base">
-                {/* (833) 380-7883 */}09166680777
+              <p className="text-white font-bold  text-sm xl:text-base">
+                09166680777
               </p>
             </a>
-            <div className="hidden lg:flex items-start justify-end">
-              <Link 
+            <Link 
                 href="/login" 
-                className="font-bold inline-flex text-center items-center hover:cursor-pointer text-white text-xs lg:text-xs xl:text-base py-1.5 px-3.5"
+                className="font-bold inline-flex text-center items-center hover:cursor-pointer text-white text-xs lg:text-xs xl:text-base py-1.5 "
               >
                 Log in
               </Link>
+          </nav>
+
+          {/* Desktop Right Side Actions */}
+          <div className="hidden lg:flex items-center justify-end lg:gap-">
+           
+            <div className="hidden lg:flex items-start justify-end">
+             
             </div>
             <div className="hidden lg:flex items-start justify-end">
               <Link 
                 href="/search" 
-                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-[#D96541] text-white rounded-full border-2 text-xs lg:text-xs xl:text-base truncate py-3 px-6"
+                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-[#D96541] text-white rounded-full  text-xs lg:text-xs xl:text-base truncate py-3.5 px-6"
               >
                 Reserve Now
               </Link>

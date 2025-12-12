@@ -6,6 +6,7 @@ export interface InputSearchProps
   extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
   placeholder?: string;
   className?: string;
   inputClassName?: string;
@@ -14,6 +15,7 @@ export interface InputSearchProps
 export default function InputSearch({
   value,
   onChange,
+  onKeyDown,
   placeholder = "Search locations...",
   className = "",
   inputClassName = "",
@@ -36,6 +38,7 @@ export default function InputSearch({
       <input
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         type="text"
         className={`w-full rounded-lg border border-neutral-300 bg-white pl-10 pr-4 py-3 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${inputClassName}`}
         placeholder={placeholder}

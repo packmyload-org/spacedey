@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import Link from "next/link";
 import loadGoogleMaps from '../../lib/loadGoogleMaps';
 
 interface MapLocation {
@@ -31,13 +32,16 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
   mapHeight = '600px'
 }) => {
   const defaultLocations: MapLocation[] = [
-    { lat: 40.68, lng: -73.96, name: 'New York' },
-    { lat: 34.1461825, lng: -118.138288, name: 'Los Angeles' },
-    { lat: 38.98, lng: -77.09, name: 'Washington DC' },
-    { lat: 33.79, lng: -84.41, name: 'Georgia' },
-    { lat: 37.79, lng: -122.41, name: 'San Francisco' },
-    { lat: 47.6, lng: -122.33, name: 'Seattle' },
-    { lat: 42.36, lng: -71.06, name: 'Massachusetts' }
+    { lat: 6.5244, lng: 3.3792, name: 'Lagos' },
+    { lat: 9.0765, lng: 7.3986, name: 'Abuja' },
+    { lat: 12.0022, lng: 8.6753, name: 'Kano' },
+    { lat: 7.3775, lng: 3.9470, name: 'Ibadan' },
+    { lat: 4.8156, lng: 7.0498, name: 'Port Harcourt' },
+    { lat: 5.6350, lng: 5.6037, name: 'Benin City' },
+    { lat: 9.9281, lng: 8.8906, name: 'Jos' },
+    { lat: 6.4969, lng: 7.5519, name: 'Enugu' },
+    { lat: 10.4904, lng: 7.6277, name: 'Kaduna' },
+    { lat: 6.5897, lng: 3.3474, name: 'Abeokuta' }
   ];
 
   const displayLocations = locations.length > 0 ? locations : defaultLocations;
@@ -46,7 +50,7 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
   const markersRef = useRef<MarkerLike[]>([]);
   const [mapsLoading, setMapsLoading] = useState(false);
   const [mapsError, setMapsError] = useState<string | null>(null);
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyAEHsYzuTiYRmGv79PIdjvP9TgUU5vZlTU';
 
   const serializedDisplayLocations = JSON.stringify(displayLocations);
 
@@ -213,12 +217,14 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
       </div>
       
       <div className="flex justify-center mt-10">
-        <button
-          type="button"
-          className="px-7 py-3 border-1 border-blue-600 text-blue-600 font-medium rounded-full hover:bg-blue-50 transition-colors"
-        >
-          Search Storage Units Near Me
-        </button>
+        <Link href="/search">
+          <button
+            type="button"
+            className="px-7 py-3 border-1 border-blue-600 text-blue-600 font-medium rounded-full hover:bg-blue-50 transition-colors"
+          >
+            Search Storage Units Near Me
+          </button>
+        </Link>
       </div>
     </div>
   );

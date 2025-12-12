@@ -1,9 +1,19 @@
 'use client'
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getAvailableCities } from "@/lib/cities";
 
 export default function LocationSection() {
+  const router = useRouter();
   const [location, setLocation] = useState("");
+  const availableCities = getAvailableCities();
+
+  const handleSearch = () => {
+    if (location) {
+      router.push(`/search?city=${encodeURIComponent(location)}`);
+    }
+  };
 
   return (
     <section className="relative overflow-hidden pt-16">
@@ -40,10 +50,11 @@ export default function LocationSection() {
               className="w-full border border-gray-300 rounded-lg py-3 px-4 appearance-none text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Select a location</option>
-              <option value="new-york">New York</option>
-              <option value="chicago">Chicago</option>
-              <option value="houston">Houston</option>
-              <option value="los-angeles">Los Angeles</option>
+              {availableCities.map((city) => (
+                <option key={city.name} value={city.name}>
+                  {city.name}
+                </option>
+              ))}
             </select>
 
             {/* Down Arrow Icon */}
@@ -56,6 +67,15 @@ export default function LocationSection() {
               <path d="M7 10l5 5 5-5z" />
             </svg>
           </div>
+
+          {/* Search Button */}
+          <button
+            onClick={handleSearch}
+            disabled={!location}
+            className="mt-6 w-full bg-[#D96541] hover:bg-[#B85737] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            Search Storage
+          </button>
         </div>
 
         {/* Right Image */}

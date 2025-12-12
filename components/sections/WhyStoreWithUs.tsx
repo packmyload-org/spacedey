@@ -2,6 +2,7 @@
 
 // src/components/WhyStoreWithUs.jsx
 import React from 'react';
+import Link from "next/link";
 import PrimaryButton from "../ui/PrimaryButton"; 
 
 // Define the custom colors used in the layout for easy reference
@@ -78,18 +79,20 @@ const WhyStoreWithUs = () => {
 
         {/* CTA Button */}
         <div className="text-center mt-16">
-          <PrimaryButton 
-            variant="custom" // Use the 'custom' variant for full Tailwind control
-            className="px-8 py-3 text-lg font-semibold border-2"
-            // Use inline styles to enforce the custom blue color
-            style={{ 
-                borderColor: COLORS.BUTTON_BLUE, 
-                color: COLORS.BUTTON_BLUE,
-                // Add hover styles if they aren't fully covered by your PrimaryButton component
-            }}
-          >
-            Find A Storage Unit
-          </PrimaryButton>
+          <Link href="/search">
+            <PrimaryButton 
+              variant="custom" // Use the 'custom' variant for full Tailwind control
+              className="px-8 py-3 text-lg font-semibold border-2"
+              // Use inline styles to enforce the custom blue color
+              style={{ 
+                  borderColor: COLORS.BUTTON_BLUE, 
+                  color: COLORS.BUTTON_BLUE,
+                  // Add hover styles if they aren't fully covered by your PrimaryButton component
+              }}
+            >
+              Find A Storage Unit
+            </PrimaryButton>
+          </Link>
         </div>
       </div>
     </section>

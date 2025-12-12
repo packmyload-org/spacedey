@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
+import { getAvailableCities } from '@/lib/cities';
 
 interface CityListProps {
   searchQuery: string;
@@ -8,26 +9,14 @@ interface CityListProps {
   onSelectCity: (city: string) => void;
 }
 
-const CITIES = [
-  'Lagos',
-  'Abuja',
-  'Kano',
-  'Ibadan',
-  'Port Harcourt',
-  'Benin City',
-  'Jos',
-  'Enugu',
-  'Kaduna',
-  'Abeokuta',
-];
-
 export default function CityList({
   searchQuery,
   selectedCity,
   onSelectCity,
 }: CityListProps) {
-  const filteredCities = CITIES.filter((city) =>
-    city.toLowerCase().includes(searchQuery.toLowerCase())
+  const availableCities = getAvailableCities();
+  const filteredAvailableCities = availableCities.filter((city) =>
+    city.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -37,24 +26,31 @@ export default function CityList({
       </h1>
 
       <div className="border border-gray-300 rounded-lg overflow-hidden">
-        {filteredCities.length > 0 ? (
-          filteredCities.map((city) => (
+        {filteredAvailableCities.length > 0 ? (
+          filteredAvailableCities.map((city) => (
             <button
-              key={city}
-              onClick={() => onSelectCity(city)}
-              className={`w-full flex gap-2 px-6 py-4 font-serif cursor-pointer border-b border-gray-300 last:border-b-0 text-left transition-colors ${
-                selectedCity === city
+              key={city.name}
+              onClick={() => onSelectCity(city.name)}
+              className={`w-full flex gap-2 items-center px-6 py-4 font-serif cursor-pointer border-b border-gray-300 last:border-b-0 text-left transition-colors ${
+                selectedCity === city.name
                   ? 'bg-blue-50 text-brand-dark-blue'
                   : 'hover:bg-gray-50 text-gray-700'
               }`}
             >
-              <span className="flex-1">{city}</span>
+              <span className="flex-1">{city.name}</span>
               <ChevronRight className="w-6 h-6 flex-shrink-0" />
             </button>
           ))
+        ) : searchQuery ? (
+          <div className="text-center py-8 text-gray-500 px-6">
+            <p className="mb-2">No available cities found matching &quot;{searchQuery}&quot;</p>
+            <p className="text-sm text-gray-400">
+              Search for any city to see if it&apos;s coming soon!
+            </p>
+          </div>
         ) : (
           <div className="text-center py-8 text-gray-500 px-6">
-            No cities found matching &quot;{searchQuery}&quot;
+            <p>Start typing to search for cities</p>
           </div>
         )}
       </div>

@@ -1,6 +1,7 @@
 'use client'; // This component uses client-side hooks like useState
 
 import React, { useState } from 'react';
+import Link from "next/link";
 
 // Define the structure for the content of an individual storage size (e.g., 3x5)
 interface StorageSizeDetails {
@@ -198,14 +199,16 @@ const SizingDetails = () => {
 
         {/* Explore All Locations Button */}
         <div className="text-center">
-          <button
-            className="
+          <Link href="/locations">
+            <button
+              className="
            w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200
             "
-            type="button"
-          >
-            Explore all locations
-          </button>
+              type="button"
+            >
+              Explore all locations
+            </button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from "next/link";
 
 export default function CitiesStatesNav() {
   const [activeTab, setActiveTab] = useState('cities');
@@ -70,23 +71,26 @@ export default function CitiesStatesNav() {
           <>
             <div className="flex flex-wrap gap-x-8 gap-y-6">
               {cities.map((city) => (
-                <a key={city} href="#" className="text-blue-900 font-semibold text-lg hover:underline">
+                <Link 
+                  key={city} 
+                  href={`/search?city=${encodeURIComponent(city)}`}
+                  className="text-blue-900 font-semibold text-lg hover:underline"
+                >
                   {city}
-                </a>
+                </Link>
               ))}
             </div>
-            {/* <div className="mt-6">
-              <a href="#" className="text-blue-900 font-semibold text-lg hover:underline">
-                Washington, DC
-              </a>
-            </div> */}
           </>
         ) : (
           <div className="flex flex-wrap gap-x-8 gap-y-6">
             {states.map((state) => (
-              <a key={state} href="#" className="text-blue-900 font-semibold text-lg hover:underline">
+              <Link 
+                key={state} 
+                href={`/search?state=${encodeURIComponent(state)}`}
+                className="text-blue-900 font-semibold text-lg hover:underline"
+              >
                 {state}
-              </a>
+              </Link>
             ))}
           </div>
         )}

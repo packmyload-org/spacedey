@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 
 interface MemberBenefitsProps {
@@ -13,7 +14,7 @@ export default function MemberBenefits({
   title = (<><span>Member</span><br/>benefits</>),
   subtitle = "Enhance your self storage experience with our exclusive member benefits and add-ons.",
   buttonText = "Book now",
-  buttonLink = "https://www.stufstorage.com/search-available-units",
+  buttonLink = "/search",
   image = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&h=700&fit=crop",
 }: MemberBenefitsProps) {
   return (
@@ -43,12 +44,12 @@ export default function MemberBenefits({
 
             {/* CTA Button */}
             <div className="flex items-center gap-4 ">
-              <a
+              <Link
                 href={buttonLink}
                 className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-base sm:text-lg transition-colors duration-200"
               >
                 {buttonText}
-              </a>
+              </Link>
             </div>
 
           </div>
@@ -70,15 +71,6 @@ export default function MemberBenefits({
 
         </div>
       </div>
-
-        {/* Support Button - Bottom Left */}
-        {/* <div className="absolute bottom-8 left-6 lg:left-12 z-20">
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-semibold transition-colors duration-200 border-2 border-white">
-            <HelpCircle size={20} />
-            Support
-          </button>
-        </div>
-      </div> */}
 
   </div>
 

@@ -1,3 +1,7 @@
+"use client";
+
+import Link from "next/link";
+
 const LocationsSection = () => {
   const locations = [
   'Lagos',
@@ -18,9 +22,9 @@ const LocationsSection = () => {
       
       <div className="flex gap-6 lg:flex-wrap lg:justify-center overflow-scroll lg:overflow-hidden">
         {locations.map((location) => (
-          <a
+          <Link
             key={location}
-            href="/search-available-units"
+            href={`/search?city=${encodeURIComponent(location)}`}
             className="flex items-center justify-between gap-6 p-10 border border-blue-600 bg-gray-50 text-2xl font-semibold cursor-pointer rounded-2xl w-full lg:w-[31%] min-w-[280px] hover:bg-gray-100 transition-colors"
           >
             <span>{location}</span>
@@ -35,17 +39,19 @@ const LocationsSection = () => {
                 <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path>
               </svg>
             </div>
-          </a>
+          </Link>
         ))}
       </div>
       
       <div className="flex justify-center mt-10">
-        <button
-          type="button"
-          className="px-6 py-3 border-1 border-blue-600 text-blue-600 font-medium rounded-full hover:bg-blue-50 transition-colors"
-        >
-          Find storage near me
-        </button>
+        <Link href="/search">
+          <button
+            type="button"
+            className="px-6 py-3 border-1 border-blue-600 text-blue-600 font-medium rounded-full hover:bg-blue-50 transition-colors"
+          >
+            Find storage near me
+          </button>
+        </Link>
       </div>
     </div>
   );
