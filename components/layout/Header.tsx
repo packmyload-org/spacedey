@@ -10,7 +10,7 @@ export default function Header() {
 
   return (
     <header className="fixed w-full top-0 z-40">
-      <div className="bg-[#1642F0] transition-colors duration-300 font-serif border-b-2 border-[#1642F0]">
+      <div className="bg-[#1642F0] transition-colors duration-300 border-b-2 border-[#1642F0]">
         <div className="flex flex-row px-3 lg:px-10 items-center justify-between h-20">
           {/* Mobile Menu Toggle */}
           <div className="lg:hidden">
@@ -43,19 +43,19 @@ export default function Header() {
           <nav className="space-x-10 hidden lg:flex mx-8">
             <Link 
               href="/search" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Search
             </Link>
             <Link 
               href="/locations" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Locations
             </Link>
             <Link 
               href="/sizing" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Sizing
             </Link>
@@ -67,19 +67,19 @@ export default function Header() {
             </Link>
             <Link 
               href="/products" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Products
             </Link>
             <Link 
               href="/blog" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Blog
             </Link>
             <Link 
               href="/refer" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Refer a Friend
             </Link>

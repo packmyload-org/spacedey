@@ -31,7 +31,7 @@ export default function CityList({
             <button
               key={city.name}
               onClick={() => onSelectCity(city.name)}
-              className={`w-full flex gap-2 items-center px-6 py-4 font-serif cursor-pointer border-b border-gray-300 last:border-b-0 text-left transition-colors ${
+              className={`w-full flex gap-2 items-center px-6 py-4 cursor-pointer border-b border-gray-300 last:border-b-0 text-left transition-colors ${
                 selectedCity === city.name
                   ? 'bg-blue-50 text-brand-dark-blue'
                   : 'hover:bg-gray-50 text-gray-700'
