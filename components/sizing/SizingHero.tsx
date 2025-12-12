@@ -15,7 +15,7 @@ const StorageHeroSection = () => {
       {/* Hero Content */}
       <div className="relative z-10 text-center max-w-6xl mx-auto px-6 lg:px-20 py-20 mt-20">
         {/* Heading */}
-        <h1 className="font-serif lg:text-6xl text-5xl font-bold text-white leading-tight mb-8">
+        <h1 className="lg:text-6xl text-5xl font-bold text-white leading-tight mb-8">
           Find the Right Storage Unit Size
         </h1>
 

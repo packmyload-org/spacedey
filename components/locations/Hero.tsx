@@ -40,7 +40,7 @@ export default function LocationSection() {
         <div className="hidden lg:block p-12 rounded-3xl bg-white h-full w-[500px] -mr-12 z-30 border border-gray-200 shadow-md relative pb-10">
           <h1 className="font-semibold text-5xl">Spacedey Locations</h1>
 
-          <p className="font-serif mt-6 text-gray-700">Location</p>
+          <p className="mt-6 text-gray-700">Location</p>
 
           {/* Custom Dropdown */}
           <div className="mt-4 relative">

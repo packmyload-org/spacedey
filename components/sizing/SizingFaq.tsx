@@ -98,7 +98,7 @@ const FaqAccordionItem = ({ item, index }: { item: FaqItem; index: number }) => 
         id={`faq-header-${index}`}
       >
         {/* Question text styling preserved */}
-        <span className="font-serif lg:text-2xl text-lg font-medium text-brand-secondary-blue flex-grow">
+        <span className="lg:text-2xl text-lg font-medium text-brand-secondary-blue flex-grow">
           {item.question}
         </span>
         <ChevronIcon isOpen={isOpen} />
@@ -116,7 +116,7 @@ const FaqAccordionItem = ({ item, index }: { item: FaqItem; index: number }) => 
         <div className="overflow-hidden">
           {/* Padding and paragraph styling preserved */}
           <div className="lg:pt-4 pt-3">
-            <p className="font-serif lg:text-xl text-base font-normal text-brand-charcoal-2">
+            <p className="lg:text-xl text-base font-normal text-brand-charcoal-2">
               {item.answer}
             </p>
           </div>

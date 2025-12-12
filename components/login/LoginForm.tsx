@@ -14,7 +14,7 @@ export default function LoginForm() {
       <div className="flex bg-white justify-end  lg:bg-[#1642F0] lg:pt-16 items-center flex-col flex-1 lg:min-h-screen ">
         <div className="flex bg-white rounded-3xl justify-center items-center pt-24 p-8 lg:p-16 lg:w-5/12">
           <div className="flex flex-col w-full">
-            <div className="font-serif font-normal w-full">
+            <div className="font-normal w-full">
               <h1 className="text-gray-900 font-sans font-bold text-3xl text-center lg:text-5xl pb-5">
                 Login or sign up
               </h1>

@@ -103,12 +103,12 @@ const StorageSize = ({ details }: { details: StorageSizeDetails }) => {
 
   return (
     <div>
-      <h4 className="font-serif lg:text-3xl text-2xl font-medium text-[#0C1E7D] lg:mb-4 mb-3">
+      <h4 className="lg:text-3xl text-2xl font-medium text-[#0C1E7D] lg:mb-4 mb-3">
         {details.size}
       </h4>
       {/* 6x10 and 10x10 units don't have the 'How Big' title in the original HTML */}
       {(isMedium || isLarge) ? (
-        <h5 className="font-serif text-xl font-medium text-[#0C1E7D] mb-3">
+        <h5 className="text-xl font-medium text-[#0C1E7D] mb-3">
           How Big is a {details.size}?
         </h5>
       ) : null}
@@ -116,7 +116,7 @@ const StorageSize = ({ details }: { details: StorageSizeDetails }) => {
         {details.howBig}
       </p>
 
-      <h5 className="font-serif text-xl font-medium text-brand-secondary-blue mb-3">
+      <h5 className="text-xl font-medium text-brand-secondary-blue mb-3">
         What Fits in a {details.size}?
       </h5>
       <p className="font-serif lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
@@ -187,7 +187,7 @@ const SizingDetails = () => {
           <h3 className="lg:text-3xl text-2xl font-semibold text-[#0C1E7D] lg:mb-4 mb-3">
             {activeContent.title}
           </h3>
-          <p className="font-serif lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-10 mb-8">
+          <p className="lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-10 mb-8">
             {activeContent.description}
           </p>
           <div className="grid lg:grid-cols-2 gap-x-8 lg:gap-y-10">
