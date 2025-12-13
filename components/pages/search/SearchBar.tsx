@@ -14,7 +14,7 @@ export default function SearchBar({ value, onChange, onSearch }: SearchBarProps)
   };
 
   return (
-    <div className="py-4 px-6 fixed flex gap-1 lg:sticky w-full top-[80px] lg:top-0 z-50 bg-opacity-100 bg-white">
+    <div className="py-4 px-6 fixed flex gap-1 lg:sticky w-full top-[80px] lg:top-0 z-30 bg-opacity-100 bg-white">
       <div className="flex-1 relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         <input
