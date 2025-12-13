@@ -4,9 +4,11 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
+  const [isLocationsModalOpen, setIsLocationsModalOpen] = React.useState(false);
 
   return (
     <header className="fixed w-full top-0 z-40">
@@ -47,12 +49,12 @@ export default function Header() {
             >
               Search
             </Link>
-            <Link 
-              href="/locations" 
+            <button 
+              onClick={() => setIsLocationsModalOpen(true)}
               className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Locations
-            </Link>
+            </button>
             <Link 
               href="/sizing" 
               className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
@@ -154,7 +156,7 @@ export default function Header() {
 
           <nav className="mt-8 flex flex-col gap-5 text-lg text-neutral-800">
             <Link href="/search" onClick={() => setOpen(false)} className="hover:text-neutral-900">Search</Link>
-            <Link href="/locations" onClick={() => setOpen(false)} className="hover:text-neutral-900">Locations</Link>
+            <button onClick={() => { setIsLocationsModalOpen(true); setOpen(false); }} className="text-left hover:text-neutral-900">Locations</button>
             <Link href="/sizing" onClick={() => setOpen(false)} className="hover:text-neutral-900">Sizing</Link>
             <Link href="/landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link>
             <Link href="/products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
@@ -170,6 +172,12 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* Locations Modal */}
+      <ExploreLocationsModal
+        isOpen={isLocationsModalOpen}
+        onClose={() => setIsLocationsModalOpen(false)}
+      />
     </header>
   );
 }

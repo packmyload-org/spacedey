@@ -48,7 +48,7 @@ export default function UnitSizes() {
             6 x 7 and larger
           </div>
           <p className="text-gray-500 text-sm leading-relaxed">
-            Fit 1-2 bedrooms&apos; worth of stuff, business inventory, and furniture
+            Fit 1-2 bedrooms&apos; worth of belongings, business inventory, and furniture
           </p>
         </div>
       </div>

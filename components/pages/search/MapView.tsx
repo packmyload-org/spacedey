@@ -198,7 +198,7 @@ export default function MapView({ selectedCity }: MapViewProps) {
                     <p>📍 Latitude: {currentLocation.lat.toFixed(4)}</p>
                     <p>📍 Longitude: {currentLocation.lng.toFixed(4)}</p>
                     <p className="text-brand-dark-blue font-bold">
-                      Starting at ${currentLocation.price}/month
+                      Starting at ₦{currentLocation.price}/month
                     </p>
                   </>
                 ) : (

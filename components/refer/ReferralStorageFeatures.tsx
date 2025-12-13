@@ -16,7 +16,7 @@ export default function StorageFeatures() {
     },
     {
       title: 'Invite Friends',
-      description: 'Refer friends to Stuf by simply submitting the form above.',
+      description: 'Refer friends to Spacedey by simply submitting the form above.',
       image: 'https://lp.stufstorage.com/hubfs/invite-friends.svg',
       alt: 'invite-friends',
     },
