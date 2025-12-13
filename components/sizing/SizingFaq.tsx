@@ -33,7 +33,8 @@ const faqData: FaqItem[] = [
   {
     question: 'Can I store a vehicle in a unit?',
     answer:
-      'Some locations offer vehicle storage, including car, boat, and RV parking. Check the specific location pages for available options and restrictions.',
+      // 'Some locations offer vehicle storage, including car, boat, and RV parking. Check the specific location pages for available options and restrictions.',
+      'Coming soom!'
   },
   {
     question: 'What size do I need for a studio apartment?',
