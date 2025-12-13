@@ -1,14 +1,21 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
   const [isLocationsModalOpen, setIsLocationsModalOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // Close modal when pathname changes (user navigates)
+  useEffect(() => {
+    setIsLocationsModalOpen(false);
+  }, [pathname]);
 
   return (
     <header className="fixed w-full top-0 z-40">
