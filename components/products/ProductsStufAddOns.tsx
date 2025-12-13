@@ -16,22 +16,22 @@ interface AddOn {
   linkHref?: string;
 }
 
-interface StufAddOnsProps {
+interface SpacedeyAddOnsProps {
   title?: string;
   addOns?: AddOn[];
 }
 
 const defaultAddOns: AddOn[] = [
   {
-    id: "stuf-blue",
-    name: "Stuf Blue",
+    id: "spacedey-blue",
+    name: "Spacedey Blue",
     description:
-      "With Stuf Blue, you're in control. Say goodbye to price increases and hello to hassle-free storage — cancel anytime with no strings.",
+      "With Spacedey Blue, you're in control. Say goodbye to price increases and hello to hassle-free storage — cancel anytime with no strings.",
     image:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/930a6f1acb33012e44ec75f131fe284e89eb661e6882f48ca472eec205e7a88d?format=webp&placeholderIfAbsent=true&width=2000",
     features: [
       { icon: "✓", text: "12 month price lock" },
-      { icon: "✓", text: "Prices start at $10/month" },
+      { icon: "✓", text: "Prices start at ₦10/month" },
       { icon: "✓", text: "Cancel anytime, no hidden fees" },
     ],
   },
@@ -42,11 +42,11 @@ const defaultAddOns: AddOn[] = [
     image:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/4b9dfee66be3d92388290aa6aee5f4e9b2e98250952a6a743caff00366b2711d?format=webp&placeholderIfAbsent=true&width=2000",
     features: [
-      { icon: "✓", text: "Protects up to $5,000" },
-      { icon: "✓", text: "$0 deductible" },
+      { icon: "✓", text: "Protects up to ₦5,000" },
+      { icon: "✓", text: "₦0 deductible" },
       {
         icon: "✓",
-        text: "Competitively priced with plans starting at $9/month",
+        text: "Competitively priced with plans starting at ₦9/month",
       },
     ],
     linkText: "View sample policy",
@@ -54,10 +54,10 @@ const defaultAddOns: AddOn[] = [
   },
 ];
 
-export default function ProductsStufAddOns({
-  title = "Check out Stuf add-ons",
+export default function ProductsSpacedeyAddOns({
+  title = "Check out Spacedey add-ons",
   addOns = defaultAddOns,
-}: StufAddOnsProps) {
+}: SpacedeyAddOnsProps) {
   return (
     <div>
       <div className="w-full bg-white py-16 px-6 lg:px-36">

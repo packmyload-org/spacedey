@@ -57,7 +57,7 @@ export default function TestimonialSection() {
             {/* Title */}
             <div className="mb-12 ">
               <h2 className="text-3xl text-center lg:text-4xl font-bold mb-3">
-                What Stuf members are saying
+                What Spacedey members are saying
               </h2>
               <div className="w-12 ml-26 h-1 bg-[#D96541]"></div>
             </div>

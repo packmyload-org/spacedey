@@ -43,7 +43,7 @@ export default function ReferralReviewsCarousel() {
       avatar: "https://lh3.googleusercontent.com/a-/ALV-UjUMVxwe__N7p8Okb7s4jk903ccz1euHLnG2EBDisYDLWO-yCzuQag=s120-c-rp-mo-br100",
       rating: 5,
       date: "2 years ago",
-      text: "The place is peaceful and accessible without a lot of people around, but its kinda hard, for me at least, to get help from customer support. That's the tradeoff for such a peaceful storage location, I'd say, since its all remotely staffed. But yea, that's kinda why I love the place. I can go whenever i need my stuff and I dont have to have a human interaction haha",
+      text: "The place is peaceful and accessible without a lot of people around, but its kinda hard, for me at least, to get help from customer support. That's the tradeoff for such a peaceful storage location, I'd say, since its all remotely staffed. But yea, that's kinda why I love the place. I can go whenever i need my belongings and I dont have to have a human interaction haha",
       verified: true
     },
     {

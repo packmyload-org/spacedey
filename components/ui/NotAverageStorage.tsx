@@ -51,7 +51,7 @@ export default function StorageLanding() {
                 Digital key entry
               </h2>
               <p className="text-lg text-gray-700 leading-relaxed">
-                Safe, simple, and at your fingertips — the Stuf Digital Key is the modern way to access your storage unit.
+                Safe, simple, and at your fingertips — the Spacedey Digital Key is the modern way to access your storage unit.
               </p>
             </div>
 

@@ -103,7 +103,7 @@ export default function LocationsPageContent(): JSX.Element {
                 </div>
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div>
-                    <span className="text-2xl font-bold text-gray-900">${facility.price}</span>
+                    <span className="text-2xl font-bold text-gray-900">₦{facility.price}</span>
                     <span className="text-gray-600">/mo</span>
                   </div>
                   <button className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">Reserve</button>

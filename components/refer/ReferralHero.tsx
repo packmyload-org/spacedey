@@ -92,7 +92,7 @@ export default function ReferralHero() {
           <div>
             <div className="bg-[#D9DDF0] p-6 rounded-t-3xl">
               <h1 className="text-3xl lg:text-4xl font-bold bg-[#D9DDF0] text-blue-900 my-6">
-                Refer a friend to Stuf and get rewarded
+                Refer a friend to Spacedey and get rewarded
               </h1>
               <p className="text-lg text-gray-700">
              Earn ₦50 when any one you refer moves in — and they&apos;ll save 50% too.

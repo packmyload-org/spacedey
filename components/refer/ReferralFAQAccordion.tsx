@@ -17,22 +17,22 @@ export default function ReferralFAQAccordion() {
     },
     {
       question: "What do I get for referring someone?",
-      answer: "As a thank you, you'll get a $50 credit towards your next months rent."
+      answer: "As a thank you, you'll get a ₦50 credit towards your next months rent."
     },
     {
       question: "How many people can I refer?",
-      answer: "Referrals are unlimited! Refer as many friends as you want and get $50 each time one moves in!"
+      answer: "Referrals are unlimited! Refer as many friends as you want and get ₦50 each time one moves in!"
     },
     {
-      question: "When will I receive my $50 credit?",
-      answer: "Once they move in, you'll get rewarded with a $50 credit towards your next month with Stuf!"
+      question: "When will I receive my ₦50 credit?",
+      answer: "Once they move in, you'll get rewarded with a ₦50 credit towards your next month with Spacedey!"
     },
     {
-      question: "Can I refer someone if I'm not a current Stuf customer?",
-      answer: "Yes! Fill out the form above and give us a call to let us know who you've referred. We'll keep track on our end and if they move in we'll send you a $50 gift card as a thank you for your support!"
+      question: "Can I refer someone if I'm not a current Spacedey customer?",
+      answer: "Yes! Fill out the form above and give us a call to let us know who you've referred. We'll keep track on our end and if they move in we'll send you a ₦50 gift card as a thank you for your support!"
     },
     {
-      question: "Where is my $50 credit?",
+      question: "Where is my ₦50 credit?",
       answer: "You're credit will automatically be applied to your next billing cycle - if you don't see it, give us a call and we'll make sure its handled!"
     }
   ];
