@@ -41,7 +41,7 @@ function SearchContent() {
           <div className="lg:flex lg:flex-1">
             {/* Left Sidebar */}
             <div className="lg:w-1/2 max-h-[calc(100vh-82px)] overflow-y-scroll">
-              <div className="mt20">
+              <div className="">
                 <SearchBar 
                   value={searchQuery} 
                   onChange={setSearchQuery}

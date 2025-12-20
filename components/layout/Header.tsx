@@ -35,20 +35,26 @@ export default function Header() {
           </div>
 
           {/* Logo */}
-          <div className="flex items-center justify-start h-20 z-10 pt-">
+          <div className="flex items-center justify-start h-20 z-10">
             <Link href="/">
-              {/* <Image 
-                src="/images/SpacedeyLogo.png" 
+              <Image 
+                src="/images/Logos.png" 
                 alt="Spacedey Logo" 
                 width={107} 
                 height={28} 
                 className="rounded-xl" 
                 priority 
-              /> */}
-               <div className="flex items-center gap- mb-">
-            <div className="w-11 h-9 bg-white rounded-md"><img src="\images\spacelogo.png" className="w-full h-full" alt="" /></div>
-            <span className="text-2xl text-white font-bold">pacedey</span>
-          </div>
+              />
+              {/* <div className="flex items-center gap-1">
+                <Image 
+                  src="/images/logo.png" 
+                  alt="S" 
+                  width={24} 
+                  height={24}
+                  className="w-6 h-6"
+                />
+                <span className="text-2xl text-white font-bold">pacedey</span>
+              </div> */}
             </Link>
           </div>
 

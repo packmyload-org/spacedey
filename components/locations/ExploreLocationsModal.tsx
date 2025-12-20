@@ -72,7 +72,7 @@ export default function ExploreLocationsModal({
         {/* Right Side - Image */}
         <div className="hidden md:block md:w-1/2 relative">
           <Image
-            src="/images/LocationHero.jpg"
+            src="/images/Nigeria.jpg"
             alt="Storage facility"
             fill
             className="object-cover"
