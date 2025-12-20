@@ -78,8 +78,8 @@ export default function StorageLanding() {
           {/* Right Column - Image */}
           <div className="flex justify-center items-center">
             <div className="relative w-full max-w-md lg:max-w-lg">
-              <Image 
-                src={DigitalKey} 
+              <img
+                src="/images/space_dey_mockup[1].jpg"
                 alt="Digital Key App Interface" 
                 width={600}
                 height={400}
