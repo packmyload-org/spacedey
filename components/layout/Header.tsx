@@ -35,21 +35,25 @@ export default function Header() {
           </div>
 
           {/* Logo */}
-          <div className="flex items-start justify-start h-20 z-10 pt-">
+          <div className="flex items-center justify-start h-20 z-10 pt-">
             <Link href="/">
-              <Image 
+              {/* <Image 
                 src="/images/SpacedeyLogo.png" 
                 alt="Spacedey Logo" 
                 width={107} 
                 height={28} 
                 className="rounded-xl" 
                 priority 
-              />
+              /> */}
+               <div className="flex items-center gap- mb-">
+            <div className="w-11 h-9 bg-white rounded-md"><img src="\images\spacelogo.png" className="w-full h-full" alt="" /></div>
+            <span className="text-2xl text-white font-bold">pacedey</span>
+          </div>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="space-x-10 hidden lg:flex mx-8">
+          <nav className="space-x-10 hidden lg:flex mx-6">
             <Link 
               href="/search" 
               className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
@@ -109,7 +113,7 @@ export default function Header() {
           </nav>
 
           {/* Desktop Right Side Actions */}
-          <div className="hidden lg:flex items-center justify-end lg:gap-">
+          <div className="hidden lg:flex items-center justify-end lg:gap-6">
            
             <div className="hidden lg:flex items-start justify-end">
              
