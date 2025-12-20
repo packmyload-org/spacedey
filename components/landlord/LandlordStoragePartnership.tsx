@@ -10,7 +10,7 @@ const LandlordStoragePartnership = () => {
           <div className="w-full">
             <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden ">
               <Image
-                src="https://cdn.builder.io/api/v1/image/assets/TEMP/4a7c81509db531b8d944bc2f4f955af6306268673f9cb2d926d5c44042ef770f?placeholderIfAbsent=true&width=900"
+                src="/images/before.png"
                 alt="Stuf Partnership before and after"
                 fill
                 className="object-cover"
