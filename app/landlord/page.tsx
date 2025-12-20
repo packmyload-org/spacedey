@@ -18,9 +18,9 @@ const page = () => {
          <LandlordStoragePartnership />
          <LandlordMarkets />
          <LandlordHeavyLifting />
-         <LandlordPress />
+         {/* <LandlordPress /> */}
          <LandlordWhatWeLookFor />
-         <LandlordFeaturedLocation />
+         {/* <LandlordFeaturedLocation /> */}
          <LandlordGetInTouch />
          <Footer />
       </>

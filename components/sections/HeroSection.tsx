@@ -41,10 +41,10 @@ function HeroSection() {
       <div className="w-full flex justify-center pb-10 pt-24">
         <div className="bg-white rounded-xl shadow-lg flex items-center px-3 py-1 sm:px-6 sm:py-2 gap-3">
           <div className="flex -ml-1 items-center">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-200 border-2 border-white -ml-2 sm:-ml-3"></div>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rose-200 border-2 border-white -ml-2 sm:-ml-3"></div>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-200 border-2 border-white -ml-2 sm:-ml-3"></div>
-            <div className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-200 border-2 border-white -ml-2 sm:-ml-3"></div>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-200 border-2 border-white -ml-2 sm:-ml-3"><img src="/images/Ellipse1.png" alt="" /></div>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rose-200 border-2 border-white -ml-2 sm:-ml-3"><img src="/images/Ellipse2.png" alt="" /></div>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-200 border-2 border-white -ml-2 sm:-ml-3"><img src="/images/Ellipse3.png" alt="" /></div>
+            <div className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-200 border-2 border-white -ml-2 sm:-ml-3"><img src="/images/Ellipse4.png" alt="" /></div>
           </div>
           <p className="text-xs sm:text-sm text-neutral-700">
             Trusted by thousands of renters across <span className="text-neutral-400">7 cities</span>
