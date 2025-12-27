@@ -9,3 +9,12 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[context.production.environment]
+  NEXT_PUBLIC_ZENDESK_KEY = "b905adef-e3ba-42b5-a772-e7b9dd412d55"
+
+[context.deploy-preview.environment]
+  NEXT_PUBLIC_ZENDESK_KEY = "b905adef-e3ba-42b5-a772-e7b9dd412d55"
+
+[context.branch-deploy.environment]
+  NEXT_PUBLIC_ZENDESK_KEY = "b905adef-e3ba-42b5-a772-e7b9dd412d55"
