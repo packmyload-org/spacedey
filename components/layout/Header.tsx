@@ -38,7 +38,7 @@ export default function Header() {
           <div className="flex items-center justify-start h-20 z-10">
             <Link href="/">
               <Image 
-                src="/images/Logo.png" 
+                src="/images/logo.png" 
                 alt="Spacedey Logo" 
                 width={107} 
                 height={28} 

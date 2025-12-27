@@ -39,7 +39,7 @@ export default function CitiesStatesNav() {
 
   return (
     <div className="bg-gray-50 min-h-full px-10 p-8">
-      <hr />
+    
       <div className="max-w-7xl">
     
         {/* Navigation tabs */}
