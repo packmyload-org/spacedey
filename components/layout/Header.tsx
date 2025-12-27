@@ -59,7 +59,7 @@ export default function Header() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="space-x-10 hidden lg:flex mx-6">
+          <nav className="space-x-10 hidden lg:flex mx-6 font-bold">
             <Link 
               href="/search" 
               className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
@@ -80,7 +80,7 @@ export default function Header() {
             </Link>
             <Link 
               href="/landlord" 
-              className="text-white font-serif flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Landlord
             </Link>
