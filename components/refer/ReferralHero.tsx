@@ -222,18 +222,30 @@ export default function ReferralHero() {
           {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
             <div className="relative w-full max-w-md">
-              <Image
-                src="https://lp.stufstorage.com/hs-fs/hubfs/raw_assets/public/stuf_storage/images/sections/referral-hero-img.png?width=482&height=443&name=referral-hero-img.png"
-                alt="Referral hero image"
-                width={482}
-                height={443}
-                className="w-full h-auto"
-                priority
-              />
+              <ReferralHeroImage />
             </div>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function ReferralHeroImage() {
+  const external =
+    'https://lp.stufstorage.com/hs-fs/hubfs/raw_assets/public/stuf_storage/images/sections/referral-hero-img.png?width=482&height=443&name=referral-hero-img.png';
+  const [src, setSrc] = useState(external);
+
+  return (
+    <Image
+      src={src}
+      alt="Referral hero image"
+      width={482}
+      height={443}
+      className="w-full h-auto"
+      priority
+      unoptimized
+      onError={() => setSrc('/images/hero1.jpg')}
+    />
   );
 }
