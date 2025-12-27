@@ -13,8 +13,8 @@ export default function Footer() {
   const handleSupportClick = () => {
     try {
       // Try to open Zendesk if available
-      if ((window as any).__zendeskAvailable || (window as any).zE) {
-        (window as any).openZendesk?.();
+      if (window.__zendeskAvailable || typeof window.zE === "function") {
+        window.openZendesk?.();
       } else {
         // Fallback to modal if Zendesk is not available
         setIsSupportModalOpen(true);

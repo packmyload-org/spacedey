@@ -5,9 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 
 
-const DigitalKey = "/images/DigitalKey.jpg";
-
-
 export default function StorageLanding() {
   return (
     <div className="min-h-screen bg-white">
@@ -77,9 +74,9 @@ export default function StorageLanding() {
           {/* Right Column - Image */}
           <div className="flex justify-center items-center">
             <div className="relative w-full max-w-xl lg:max-w-3xl">
-              <img
+              <Image
                 src="/images/DigitalKey.png"
-                alt="Digital Key App Interface" 
+                alt="Digital Key App Interface"
                 width={600}
                 height={400}
                 className="w-full h-auto rounded-[3rem] object-cover"

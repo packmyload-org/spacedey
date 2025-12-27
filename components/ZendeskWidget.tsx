@@ -6,13 +6,23 @@ type Props = {
   widgetKey?: string;
 };
 
+declare global {
+  interface Window {
+    __zendeskAvailable?: boolean;
+    openZendesk?: () => void;
+    __openZendeskPending?: boolean;
+    // zE is the Zendesk global function; its signature is dynamic so use unknown
+    zE?: unknown;
+  }
+}
+
 export default function ZendeskWidget({ widgetKey }: Props) {
   const key = widgetKey || process.env.NEXT_PUBLIC_ZENDESK_KEY;
 
   useEffect(() => {
     if (!key) {
       // No key provided; mark widget as unavailable
-      (window as any).__zendeskAvailable = false;
+      window.__zendeskAvailable = false;
       return;
     }
 
@@ -20,16 +30,19 @@ export default function ZendeskWidget({ widgetKey }: Props) {
     if (document.getElementById("ze-snippet")) return;
     // Ensure an open function exists immediately so button clicks before
     // the snippet loads are queued/opened once ready.
-    if (!(window as any).openZendesk) {
-      (window as any).openZendesk = () => {
+    type ZendeskFn = (method: string, action: string, ...args: unknown[]) => unknown;
+
+    if (!window.openZendesk) {
+      window.openZendesk = () => {
         try {
-          if ((window as any).zE) {
-            (window as any).zE("webWidget", "open");
+          if (typeof window.zE === "function") {
+            // zE exists — call it with an explicit signature
+            (window.zE as ZendeskFn)("webWidget", "open");
           } else {
             // mark pending open; when the script loads we'll open if pending
-            (window as any).__openZendeskPending = true;
+            window.__openZendeskPending = true;
           }
-        } catch (e) {
+        } catch {
           // ignore
         }
       };
@@ -42,32 +55,32 @@ export default function ZendeskWidget({ widgetKey }: Props) {
     s.onload = () => {
       try {
         // Widget loaded successfully
-        (window as any).__zendeskAvailable = true;
+        window.__zendeskAvailable = true;
         // If the snippet defines zE, and an open was requested earlier, open now
-        if ((window as any).__openZendeskPending && (window as any).zE) {
+        if (window.__openZendeskPending && typeof window.zE === "function") {
           try {
-            (window as any).zE("webWidget", "open");
-            (window as any).__openZendeskPending = false;
-          } catch (e) {
+            (window.zE as ZendeskFn)("webWidget", "open");
+            window.__openZendeskPending = false;
+          } catch {
             // ignore
           }
         }
 
         // Ensure openZendesk uses the real zE if available
-        (window as any).openZendesk = () => {
+        window.openZendesk = () => {
           try {
-            (window as any).zE?.("webWidget", "open");
-          } catch (e) {
+            if (typeof window.zE === "function") (window.zE as ZendeskFn)("webWidget", "open");
+          } catch {
             // ignore
           }
         };
-      } catch (e) {
+      } catch {
         // ignore
       }
     };
     s.onerror = () => {
       // Script failed to load or returned 400/error; use fallback
-      (window as any).__zendeskAvailable = false;
+      window.__zendeskAvailable = false;
     };
     document.head.appendChild(s);
 
