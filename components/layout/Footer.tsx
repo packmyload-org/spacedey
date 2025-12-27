@@ -38,7 +38,14 @@ export default function Footer() {
           </div> */}
           <div>
                 <Link href="/" aria-label="Logo"> 
-              <Image src="/images/Logo.png" alt="Spacedey Logo" width={90} height={20} style={{ width: 'auto' }} className="border-1 rounded-xl" priority />
+              <Image 
+                              src="/images/logo.png" 
+                              alt="Spacedey Logo" 
+                              width={107} 
+                              height={28} 
+                              className="rounded-xl" 
+                              priority 
+                            />
             </Link>
 
           </div>
