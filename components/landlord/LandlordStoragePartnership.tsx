@@ -3,14 +3,14 @@ import Link from 'next/link';
 
 const LandlordStoragePartnership = () => {
   return (
-    <section className="w-full bg-[#FAFBFF] px-4 py-12 md:py-16 lg:py-20">
+    <section className="w-full bg-[#FAFBFF] px-12 pt-12 pb-8 md:pt-16 md:pb-6 lg:pt-20 ">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Image Column */}
           <div className="w-full">
             <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden ">
               <Image
-                src="/images/before.png"
+                src="/images/BEFORE%26AFTER.jpg"
                 alt="Stuf Partnership before and after"
                 fill
                 className="object-cover"
