@@ -59,7 +59,7 @@ body {
     transparent 100%
   );
   filter: blur(15px);
-  animation: torchSweep 4s ease-in-out infinite;
+  animation: torchSweep 6s ease-in-out infinite;
   pointer-events: none;
   border-radius: inherit;
 }

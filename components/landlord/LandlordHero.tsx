@@ -4,8 +4,9 @@ import Link from "next/link";
 export default function HeroSection() {
   return (
     <section>
-    <div className="relative w-full h-full bg-[#1642F0] pt-12 overflow-hidden">
-      <div className="max-w-full mx-auto px-6 md:px-12 lg:px-20 pt-12 md:pt-20 lg:pt-28 pb-8 md:pb-10 lg:pb-12">
+    <div className="relative w-full h-full bg-[#1642F0] pt-8 overflow-hidden">
+      <div className="max-w-full mx-auto px-6 md:px-12 lg:px-20 pt-8
+       md:pt-20 lg:pt-28 pb-8 md:pb-10 lg:pb-12">
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center">
           {/* Left Column - Content */}
           <div className="space-y-8 z-10 max-w-xl">
