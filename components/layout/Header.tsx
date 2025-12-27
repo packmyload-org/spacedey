@@ -38,7 +38,7 @@ export default function Header() {
           <div className="flex items-center justify-start h-20 z-10">
             <Link href="/">
               <Image 
-                src="/images/Logos.png" 
+                src="/images/Logo.png" 
                 alt="Spacedey Logo" 
                 width={107} 
                 height={28} 
@@ -156,7 +156,15 @@ export default function Header() {
         <div className="h-full flex flex-col py-6 px-3">
           <div className="flex items-center justify-between">
             <div className="w-32 h-8  rounded-md" aria-label="Logo">
-              <Image src="/images/SpacedeyLogo.png" alt="Spacedey Logo" width={128} height={32} className="object-contain w-full h-full" priority />
+              <Image
+                src="/images/SpacedeyLogo.png"
+                alt="Spacedey Logo"
+                width={128}
+                height={32}
+                style={{ width: 'auto' }}
+                className="object-contain h-full"
+                priority
+              />
             </div>
             <button
               className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-300"

@@ -1,6 +1,4 @@
-import LandlordFeaturedLocation from "@/components/landlord/LandlordFeaturedLocation";
 import LandlordGetInTouch from "@/components/landlord/LandlordGetInTouch";
-import LandlordHeavyLifting from "@/components/landlord/LandlordHeavyLifting";
 import LandlordHero from "@/components/landlord/LandlordHero";
 import LandlordMarkets from "@/components/landlord/LandlordMarkets";
 import LandlordPress from "@/components/landlord/LandlordPress";

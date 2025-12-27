@@ -7,7 +7,7 @@ import PrimaryButton from "../ui/PrimaryButton";
 
 // Define the custom colors used in the layout for easy reference
 const COLORS = {
-    TITLE_NAVY: '#172a58',
+    TITLE_NAVY: '#003087',
     UNDERLINE_ORANGE: '#e59976',
     BUTTON_BLUE: '#4a7eff',
 };
@@ -54,7 +54,7 @@ const WhyStoreWithUs = () => {
         
         {/* Title */}
         <h2 
-          className="text-4xl font-bold text-center mb-1" 
+          className="text-3xl lg:text-4xl font-bold text-center mb-1" 
           style={{ color: COLORS.TITLE_NAVY }}
         >
           Why Store With Us?
