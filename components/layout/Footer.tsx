@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
-import ZendeskWidget from "@/components/ZendeskWidget";
 import SupportModal from "@/components/ui/SupportModal";
 
 export default function Footer() {
@@ -28,7 +27,6 @@ export default function Footer() {
 
   return (
     <>
-      <ZendeskWidget />
       <SupportModal isOpen={isSupportModalOpen} onClose={() => setIsSupportModalOpen(false)} />
       <footer className="bg-[#0d1d73] text-white ">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 flex flex-col md:flex-row items-start sm:justify-center lg:justify-center gap-12">
