@@ -5,19 +5,19 @@ export default function StorageFeatures() {
     {
       title: 'They reserve a storage unit',
       description: "We'll reach out to your friend and give them an additional 50% off their first 3 months when they reserve and move into a storage unit.",
-      image: 'https://lp.stufstorage.com/hubfs/they-reserve.svg',
+      image: '/images/location.png',
       alt: 'they-reserve',
     },
     {
       title: 'You earn a reward',
       description: 'Just like that, once they move in, you\'ll get rewarded for every friend you refer who moves in.',
-      image: 'https://lp.stufstorage.com/hubfs/earn-a-reward.svg',
+      image: '/images/reward.png',
       alt: 'earn-a-reward',
     },
     {
       title: 'Invite Friends',
       description: 'Refer friends to Spacedey by simply submitting the form above.',
-      image: 'https://lp.stufstorage.com/hubfs/invite-friends.svg',
+      image: '/images/invite.png',
       alt: 'invite-friends',
     },
   ];

@@ -20,7 +20,7 @@ const StorageHeroSection = () => {
         </h1>
 
         {/* Subheading */}
-        <p className="lg:text-2xl text-lg font-normal text-white mb-12 leading-relaxed">
+        <p className="lg:text-lg text-base font-normal text-white mb-12 leading-relaxed">
           Get a clear picture of what fits inside a 5x10 or 10x10 unit.
         </p>
 

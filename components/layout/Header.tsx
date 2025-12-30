@@ -97,7 +97,7 @@ export default function Header() {
               Blog
             </Link>
             <Link 
-              href="/refer" 
+              href="/referral" 
               className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
             >
               Refer a Friend

@@ -15,7 +15,7 @@ export default function MemberBenefits({
   subtitle = "Enhance your self storage experience with our exclusive member benefits and add-ons.",
   buttonText = "Book now",
   buttonLink = "/search",
-  image = "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&h=700&fit=crop",
+  image = "/images/hero2.jpg",
 }: MemberBenefitsProps) {
   return (
     <div className="w-full pt-16">
@@ -57,7 +57,7 @@ export default function MemberBenefits({
           {/* Right Column - Image */}
           <div className="flex justify-center lg:justify-end">
             <div className="relative w-full max-w-xs sm:max-w-sm">
-              <div className="relative w-64 sm:w-72 md:w-80 h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative w-64 sm:w-72 md:w-96 h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src={image}
                   alt="Member Benefits"

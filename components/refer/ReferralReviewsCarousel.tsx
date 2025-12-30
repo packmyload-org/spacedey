@@ -21,8 +21,8 @@ export default function ReferralReviewsCarousel() {
   const reviews: Review[] = [
     {
       id: 1,
-      author: "Max Asante",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXExXfjQ6YP43tdOe-64QQ-rCrohG-eViwgf_bFLQbODG5HRWBd=s120-c-rp-mo-br100",
+      author: "Samson M",
+      avatar: "/images/Ellipse32.png",
       rating: 5,
       date: "2 months ago",
       text: "I was assisted with making a reservation last minute by Meagan Weld at the call center. She was very helpful detailed and patient with all my questions. I was able to make it the facility almost by 5pm and was assisted by Magdalene Brown the property manager. She walked me through the facility and gave me the rundown. I was impressed and signed the contract to start the same day instead of the next day which would be Sat. Rates were amazing and I was assured they wouldn't have any major increases ever 6 months like extra space storage.",
@@ -30,8 +30,8 @@ export default function ReferralReviewsCarousel() {
     },
     {
       id: 2,
-      author: "Katie H",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjWzHp57-T26LygbjzFJ3wUb34UJcpT7Orc498s6TULuJ7V3ZEA=s120-c-rp-mo-ba4-br100",
+      author: "Timnan S",
+      avatar: "/images/Ellipse33.png",
       rating: 5,
       date: "1 year ago",
       text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
@@ -39,8 +39,8 @@ export default function ReferralReviewsCarousel() {
     },
     {
       id: 3,
-      author: "Don Palm",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjUMVxwe__N7p8Okb7s4jk903ccz1euHLnG2EBDisYDLWO-yCzuQag=s120-c-rp-mo-br100",
+      author: "Sunday O",
+      avatar: "/images/Ellipse31.png",
       rating: 5,
       date: "2 years ago",
       text: "The place is peaceful and accessible without a lot of people around, but its kinda hard, for me at least, to get help from customer support. That's the tradeoff for such a peaceful storage location, I'd say, since its all remotely staffed. But yea, that's kinda why I love the place. I can go whenever i need my belongings and I dont have to have a human interaction haha",
@@ -49,7 +49,7 @@ export default function ReferralReviewsCarousel() {
     {
       id: 4,
       author: "Neeraj Lal",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXgR8_EhlaLags1Pi2czdf9k4zJqRq5jmLPA2mmr0rD3viHepwR=s120-c-rp-mo-ba3-br100",
+      avatar: "/images/Ellipse35.png",
       rating: 5,
       date: "2 years ago",
       text: "Easy to access. Clean and quiet storage. With 24hour safe access.",

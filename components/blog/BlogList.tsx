@@ -317,7 +317,7 @@ function BlogCard({ post }: { post: BlogPost }) {
       className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow h-full"
     >
       {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-gray-200">
+      <div className="relative h-72 overflow-hidden bg-gray-200">
         <Image
           src={post.image}
           alt={post.title}

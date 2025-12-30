@@ -31,7 +31,7 @@ const defaultAddOns: AddOn[] = [
       "https://cdn.builder.io/api/v1/image/assets/TEMP/930a6f1acb33012e44ec75f131fe284e89eb661e6882f48ca472eec205e7a88d?format=webp&placeholderIfAbsent=true&width=2000",
     features: [
       { icon: "✓", text: "12 month price lock" },
-      { icon: "✓", text: "Prices start at ₦10/month" },
+      { icon: "✓", text: "Price starts at ₦4,500. per square feet/month" },
       { icon: "✓", text: "Cancel anytime, no hidden fees" },
     ],
   },
@@ -42,11 +42,11 @@ const defaultAddOns: AddOn[] = [
     image:
       "https://cdn.builder.io/api/v1/image/assets/TEMP/4b9dfee66be3d92388290aa6aee5f4e9b2e98250952a6a743caff00366b2711d?format=webp&placeholderIfAbsent=true&width=2000",
     features: [
-      { icon: "✓", text: "Protects up to ₦5,000" },
+      { icon: "✓", text: "Protects up to ₦500,00." },
       { icon: "✓", text: "₦0 deductible" },
       {
         icon: "✓",
-        text: "Competitively priced with plans starting at ₦9/month",
+        text: "Competitively priced with plans starting at ₦10,000/month",
       },
     ],
     linkText: "View sample policy",
@@ -148,7 +148,7 @@ export default function ProductsSpacedeyAddOns({
         </div>
       </div>
       <div className="mt-12">
-        <div className="relative w-full h-[240px] md:h-[320px]">
+        <div className="relative bottom-0 w-full h-[240px] md:h-[320px]">
           <Image src="/images/Products3.svg" alt="" fill className="object-contain" />
         </div>
       </div>

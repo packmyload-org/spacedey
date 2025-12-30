@@ -124,9 +124,9 @@ export default function StorageUnitSizes() {
             </div>
 
             {/* Description */}
-            <div className="text-left text-gray-700 leading-relaxed">
+            <div className="text-left  leading-relaxed">
               {/* You might want a bolded first line or title here if you were trying to match the description exactly */}
-              <p>{category.description}</p>
+              <p className="lg:text-lg text-base font-normal">{category.description}</p>
             </div>
           </div>
         </div>
