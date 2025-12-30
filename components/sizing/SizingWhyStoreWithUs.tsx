@@ -39,8 +39,8 @@ const FeatureItem = ({ iconUrl, text }: FeatureItemProps) => {
                 {/* The actual image or SVG goes here */}
             </div>
             
-            <p className="text-gray-800 text-lg font-medium leading-relaxed px-2">
-                {text}
+            <p className="text-gray-800 lg:text-lg text-base font-normal leading-relaxed px-2">
+              {text}
             </p>
         </div>
     );

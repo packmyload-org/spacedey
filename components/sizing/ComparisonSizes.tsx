@@ -122,10 +122,10 @@ const ComparisonSizes = () => {
             <tbody>
               {storageUnits.map((unit, index) => (
                 <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-4 px-4 text-gray-700">{unit.size}</td>
-                  <td className="py-4 px-4 text-gray-700">{unit.dimensions}</td>
-                  <td className="py-4 px-4 text-gray-700">{unit.squareFeet}</td>
-                  <td className="py-4 px-4 text-gray-700">{unit.bestFor}</td>
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.dimensions}</td>
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.squareFeet}</td>
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td>
                 </tr>
               ))}
             </tbody>
@@ -151,11 +151,11 @@ const ComparisonSizes = () => {
             <tbody>
               {storageUnits.map((unit, index) => (
                 <tr key={index} className="border-b border-gray-200">
-                  <td className="py-4 px-4 text-gray-700 text-sm">{unit.size}</td>
-                  <td className="py-4 px-4 text-gray-700 text-sm">
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
                     {unit.dimensionsShort} • {unit.squareFeetShort}
                   </td>
-                  <td className="py-4 px-4 text-gray-700 text-sm">{unit.bestFor}</td>
+                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td>
                 </tr>
               ))}
             </tbody>

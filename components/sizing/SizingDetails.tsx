@@ -112,14 +112,14 @@ const StorageSize = ({ details }: { details: StorageSizeDetails }) => {
           How Big is a {details.size}?
         </h5>
       ) : null}
-      <p className="font-serif lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
+      <p className="lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
         {details.howBig}
       </p>
 
       <h5 className="text-xl font-medium text-brand-secondary-blue mb-3">
         What Fits in a {details.size}?
       </h5>
-      <p className="font-serif lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
+      <p className="lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
         {details.whatFits}
       </p>
     </div>
@@ -154,9 +154,9 @@ const SizingDetails = () => {
               const isActive = tabKey === activeTab;
               // Replicating the button styling from the original HTML as closely as possible
               const tabClasses = `
-                w-1/3 py-3 px-1 text-sm font-medium transition-colors duration-200
-                ${isActive ? 'text-brand-primary' : 'text-gray-500 hover:text-brand-primary'}
-                relative focus:outline-none
+                w-1/3 py-3 px-1 font-sm font-medium text-blue-900 transition-all duration-200 ease-out
+                ${isActive ? 'text-brand-primary scale-105' : 'text-gray-500 hover:text-brand-primary hover:scale-102'}
+                relative focus:outline-none active:scale-95
               `;
 
               return (

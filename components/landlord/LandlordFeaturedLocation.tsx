@@ -107,13 +107,13 @@ export default function LandlordFeaturedLocation({
                   Before
                 </p>
                 <div className="relative w-full h-56 rounded-xl overflow-hidden shadow-lg">
-                  <Image
+                  {/* <Image
                     src={beforeImage}
                     alt="Before"
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
-                  />
+                  /> */}
                 </div>
               </div>
             </div>

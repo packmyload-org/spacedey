@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { useEffect } from 'react';
 
 interface FormData {
   firstName: string;
@@ -15,13 +16,16 @@ interface FormData {
 }
 
 const LOCATIONS = [
-  'Atlanta',
-  'Boston',
-  'DC',
-  'San Francisco',
-  'New York',
-  'Seattle',
-  'Los Angeles',
+  'Lagos',
+  'Abuja',
+  'Kano',
+  'Ibadan',
+  'Port Harcourt',
+  'Benin City',
+  'Jos',
+  'Enugu',
+  'Kaduna',
+  'Abeokuta',
 ];
 
 export default function ReferralHero() {
@@ -38,6 +42,7 @@ export default function ReferralHero() {
 
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [imageSrc, setImageSrc] = useState('/images/referHero.png');
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -222,7 +227,16 @@ export default function ReferralHero() {
           {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
             <div className="relative w-full max-w-md">
-              <ReferralHeroImage />
+              <Image
+                src={imageSrc}
+                alt="Referral hero image"
+                width={964}
+                height={886}
+                className="w-full h-auto"
+                priority
+                unoptimized
+                onError={() => setImageSrc('/images/hero1.jpg')}
+              />
             </div>
           </div>
         </div>
@@ -231,21 +245,21 @@ export default function ReferralHero() {
   );
 }
 
-function ReferralHeroImage() {
-  const external =
-    'https://lp.stufstorage.com/hs-fs/hubfs/raw_assets/public/stuf_storage/images/sections/referral-hero-img.png?width=482&height=443&name=referral-hero-img.png';
-  const [src, setSrc] = useState(external);
+// function ReferralHeroImage() {
+  // const external =
+  //   'https://lp.stufstorage.com/hs-fs/hubfs/raw_assets/public/stuf_storage/images/sections/referral-hero-img.png?width=482&height=443&name=referral-hero-img.png';
+  // const [src, setSrc] = useState(external);
 
-  return (
-    <Image
-      src={src}
-      alt="Referral hero image"
-      width={482}
-      height={443}
-      className="w-full h-auto"
-      priority
-      unoptimized
-      onError={() => setSrc('/images/hero1.jpg')}
-    />
-  );
-}
+//   return (
+//     <Image
+//       src={src}
+//       alt="Referral hero image"
+//       width={482}
+//       height={443}
+//       className="w-full h-auto"
+//       priority
+//       unoptimized
+//       onError={() => setSrc('/images/hero1.jpg')}
+//     />
+//   );
+// }
