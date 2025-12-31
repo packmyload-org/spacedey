@@ -132,9 +132,9 @@ export default function Footer() {
           <div className="w-full md:w-1/5 text-left">
             <ul className="space-y-3">
               <li>
-                <Link href="/landlord" className="hover:text-gray-300">
+                {/* <Link href="/landlord" className="hover:text-gray-300">
                   Landlord
-                </Link>
+                </Link> */}
               </li>
               <li>
                 <Link href="/products" className="hover:text-gray-300">
