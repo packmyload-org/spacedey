@@ -23,7 +23,7 @@ const allBlogPosts = [
     date: "July 24, 2025",
     excerpt:
       "Learn tips to organise and manage your storage inventory with ease. Discover strategies for tracking, categorizing, and maintaining items long-term.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20133.png",
+    image: "https://images.unsplash.com/photo-1453460891917-8ff8ee9165d4?w=600&h=400&fit=crop",
     author: "Samara Gofran",
     href: "#",
   },
@@ -33,7 +33,7 @@ const allBlogPosts = [
     date: "July 15, 2025",
     excerpt:
       "Learn the essential do's and don'ts of furniture storage to keep your pieces safe, clean, and damage-free in long-term storage.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20129.png",
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop",
     author: "Liezel",
     href: "#",
   },
@@ -43,7 +43,7 @@ const allBlogPosts = [
     date: "July 10, 2025",
     excerpt:
       "Get expert tips on bicycle storage solutions in self storage units. Learn how to prep, protect, and store your bike safely for the long term.",
-    image: "https://blog.stufstorage.com/hubfs/postwoman-working-office-4.png",
+    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&h=400&fit=crop",
     author: "Samara Gofran",
     href: "#",
   },
@@ -54,7 +54,7 @@ const allBlogPosts = [
     date: "July 2, 2025",
     excerpt:
       "Living with a roommate and running out of space? Discover smart offsite storage tips to stay organized and reduce clutter.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20121%20(1)%20(1).png",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop",
     author: "Samara Gofran",
     href: "#",
   },
@@ -66,7 +66,7 @@ const allBlogPosts = [
     excerpt:
       "Learn the key differences, pros and cons, and what to consider before choosing between warehouses or business storage units.",
     image:
-      "https://blog.stufstorage.com/hubfs/postwoman-working-office%201.png",
+      "/images/hero4.jpg",
     author: "David Thompson",
     href: "#",
   },
@@ -77,7 +77,7 @@ const allBlogPosts = [
     date: "June 19, 2025",
     excerpt:
       "Heading off on a summer getaway? Discover what to safely keep in self storage units before you travel.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20113%20(3)%20(1).png",
+    image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&h=400&fit=crop",
     author: "Spacedey",
     href: "#",
   },
@@ -87,7 +87,7 @@ const allBlogPosts = [
     date: "June 11, 2025",
     excerpt:
       "Planning a summer getaway? Discover how summer storage helps protect your belongings and streamline your travel plans.",
-    image: "https://blog.stufstorage.com/hubfs/pexels-kampus-8623325%201.png",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
     author: "Spacedey",
     href: "#",
   },
@@ -98,7 +98,7 @@ const allBlogPosts = [
     date: "June 5, 2025",
     excerpt:
       "Master the art of packing for storage with our comprehensive guide on maximizing space and protecting your items.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20133.png",
+    image: "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600&h=400&fit=crop",
     author: "John Smith",
     href: "#",
   },
@@ -108,7 +108,7 @@ const allBlogPosts = [
     date: "May 28, 2025",
     excerpt:
       "Understand how temperature and humidity control can protect your most precious possessions from damage.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20129.png",
+    image: "/images/hero5.jpg",
     author: "Sarah Johnson",
     href: "#",
   },
@@ -118,7 +118,7 @@ const allBlogPosts = [
     date: "May 20, 2025",
     excerpt:
       "Maximize your apartment space with creative storage solutions and organizational techniques.",
-    image: "https://blog.stufstorage.com/hubfs/postwoman-working-office-4.png",
+    image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&h=400&fit=crop",
     author: "Mike Chen",
     href: "#",
   },
@@ -128,7 +128,7 @@ const allBlogPosts = [
     date: "May 12, 2025",
     excerpt:
       "Learn the best practices for storing items during your move to ensure nothing gets damaged.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20121%20(1)%20(1).png",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=400&fit=crop",
     author: "Emma Wilson",
     href: "#",
   },
@@ -139,7 +139,7 @@ const allBlogPosts = [
     excerpt:
       "Discover how to properly store seasonal items to keep them in perfect condition year after year.",
     image:
-      "https://blog.stufstorage.com/hubfs/postwoman-working-office%201.png",
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&h=400&fit=crop",
     author: "Robert Lee",
     href: "#",
   },
@@ -149,7 +149,7 @@ const allBlogPosts = [
     date: "April 28, 2025",
     excerpt:
       "Explore affordable and efficient storage options for your growing business inventory.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20113%20(3)%20(1).png",
+    image: "https://images.unsplash.com/photo-1553531889-e6cf89870f18?w=600&h=400&fit=crop",
     author: "Lisa Anderson",
     href: "#",
   },
@@ -159,7 +159,7 @@ const allBlogPosts = [
     date: "April 21, 2025",
     excerpt:
       "Get practical advice on how to store your items affordably without compromising on quality and safety.",
-    image: "https://blog.stufstorage.com/hubfs/pexels-kampus-8623325%201.png",
+    image: "https://images.unsplash.com/photo-1518571669914-479d2b496eef?w=600&h=400&fit=crop",
     author: "Tom Brown",
     href: "#",
   },
@@ -170,7 +170,7 @@ const allBlogPosts = [
     date: "April 14, 2025",
     excerpt:
       "Professional tips for storing valuable items like wine, art, and collectibles safely.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20133.png",
+    image: "https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=600&h=400&fit=crop",
     author: "Victoria Green",
     href: "#",
   },
@@ -180,7 +180,7 @@ const allBlogPosts = [
     date: "April 7, 2025",
     excerpt:
       "Learn best practices for storing important documents and maintaining organized records.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20129.png",
+    image: "https://images.unsplash.com/photo-1450101499163-c8917c7b0c1b?w=600&h=400&fit=crop",
     author: "David Martinez",
     href: "#",
   },
@@ -191,7 +191,7 @@ const allBlogPosts = [
     date: "March 31, 2025",
     excerpt:
       "Understand storage insurance options and how to ensure your items are fully protected.",
-    image: "https://blog.stufstorage.com/hubfs/postwoman-working-office-4.png",
+    image: "/images/insurance.png",
     author: "Jennifer White",
     href: "#",
   },
@@ -201,7 +201,7 @@ const allBlogPosts = [
     date: "March 24, 2025",
     excerpt:
       "Complete guide to preparing and storing your vehicle for winter or extended periods.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20121%20(1)%20(1).png",
+    image: "public/images/image2.png",
     author: "Carlos Rodriguez",
     href: "#",
   },
@@ -212,7 +212,7 @@ const allBlogPosts = [
     excerpt:
       "Expert advice on storing recreational vehicles and boats to maintain their condition.",
     image:
-      "https://blog.stufstorage.com/hubfs/postwoman-working-office%201.png",
+      "https://images.unsplash.com/photo-1527618120215-5935a3246b09?w=600&h=400&fit=crop",
     author: "Nicole Thompson",
     href: "#",
   },
@@ -222,7 +222,7 @@ const allBlogPosts = [
     date: "March 10, 2025",
     excerpt:
       "Learn how to properly store family treasures and heirlooms for future generations.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20113%20(3)%20(1).png",
+    image: "images/image1.png",
     author: "George Peterson",
     href: "#",
   },
@@ -231,8 +231,8 @@ const allBlogPosts = [
     title: "Storage for Students: Semester Break Solutions",
     date: "March 3, 2025",
     excerpt:
-      "Affordable storage solutions for college students during breaks and transitions.",
-    image: "https://blog.stufstorage.com/hubfs/pexels-kampus-8623325%201.png",
+      "/images/hero4.jpg",
+    image: "31224c94?w=600&h=400&fit=crop",
     author: "Rachel Adams",
     href: "#",
   },
@@ -243,7 +243,7 @@ const allBlogPosts = [
     date: "February 24, 2025",
     excerpt:
       "Maximize your storage unit efficiency with smart organization and layout strategies.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20133.png",
+    image: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=600&h=400&fit=crop",
     author: "Marcus Johnson",
     href: "#",
   },
@@ -253,7 +253,7 @@ const allBlogPosts = [
     date: "February 17, 2025",
     excerpt:
       "Essential security features every storage facility should have to protect your belongings.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20129.png",
+    image: "/images/insurance.png",
     author: "Sophia Williams",
     href: "#",
   },
@@ -263,7 +263,7 @@ const allBlogPosts = [
     date: "February 10, 2025",
     excerpt:
       "Separate fact from fiction with the truth about common storage facility concerns.",
-    image: "https://blog.stufstorage.com/hubfs/postwoman-working-office-4.png",
+    image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&h=400&fit=crop",
     author: "Nathan Brooks",
     href: "#",
   },
@@ -273,7 +273,7 @@ const allBlogPosts = [
     date: "February 3, 2025",
     excerpt:
       "How storage units can play a crucial role in emergency preparedness and disaster recovery.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20121%20(1)%20(1).png",
+    image: "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=400&fit=crop",
     author: "Patricia Clarke",
     href: "#",
   },
@@ -284,7 +284,7 @@ const allBlogPosts = [
     excerpt:
       "Smart tips for efficiently using smaller storage units and maximizing every square foot.",
     image:
-      "https://blog.stufstorage.com/hubfs/postwoman-working-office%201.png",
+      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&h=400&fit=crop",
     author: "Kevin Foster",
     href: "#",
   },
@@ -294,7 +294,7 @@ const allBlogPosts = [
     date: "January 20, 2025",
     excerpt:
       "Learn about sustainable and environmentally friendly storage options and practices.",
-    image: "https://blog.stufstorage.com/hubfs/Frame%20113%20(3)%20(1).png",
+    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=400&fit=crop",
     author: "Amanda Green",
     href: "#",
   },
@@ -304,13 +304,14 @@ const allBlogPosts = [
     date: "January 13, 2025",
     excerpt:
       "Regular maintenance tips to keep your storage unit in optimal condition year-round.",
-    image: "https://blog.stufstorage.com/hubfs/pexels-kampus-8623325%201.png",
+    image: "/images/StorageUnitSizes.jpg",
     author: "Daniel Harris",
     href: "#",
   },
 ];
 
 function BlogCard({ post }: { post: BlogPost }) {
+  const [imgFailed, setImgFailed] = useState(false);
   return (
     <a
       href={post.href}
@@ -318,13 +319,45 @@ function BlogCard({ post }: { post: BlogPost }) {
     >
       {/* Image */}
       <div className="relative h-72 overflow-hidden bg-gray-200">
-        <Image
-          src={post.image}
-          alt={post.title}
-          fill
-          unoptimized
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-        />
+        {post.image && post.image.startsWith("http") ? (
+          // Use a plain <img> for external blog images as a quick fallback
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imgFailed ? "/images/blogpost1.png" : post.image}
+            alt={post.title}
+            onError={(e) => {
+              const el = e.currentTarget as HTMLImageElement;
+              if (el.src !== "/images/blogpost1.png") {
+                console.warn("External image failed to load:", post.image);
+                el.src = "/images/blogpost1.png";
+                setImgFailed(true);
+              }
+            }}
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          imgFailed ? (
+            // fallback for local images if Next Image fails
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src="/images/blogpost1.png"
+              alt={post.title}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <Image
+              src={post.image}
+              alt={post.title}
+              fill
+              unoptimized
+              onError={() => {
+                console.warn("Next/Image failed to load:", post.image);
+                setImgFailed(true);
+              }}
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          )
+        )}
       </div>
 
       {/* Content */}

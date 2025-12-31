@@ -21,7 +21,7 @@ export default function ReferralReviewsCarousel() {
   const reviews: Review[] = [
     {
       id: 1,
-      author: "Samson M",
+      author: "Manji A",
       avatar: "/images/Ellipse32.png",
       rating: 5,
       date: "2 months ago",
@@ -48,7 +48,7 @@ export default function ReferralReviewsCarousel() {
     },
     {
       id: 4,
-      author: "Neeraj Lal",
+      author: "joe w",
       avatar: "/images/Ellipse35.png",
       rating: 5,
       date: "2 years ago",
@@ -57,8 +57,8 @@ export default function ReferralReviewsCarousel() {
     },
      {
       id: 5,
-      author: "Max Asante",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXExXfjQ6YP43tdOe-64QQ-rCrohG-eViwgf_bFLQbODG5HRWBd=s120-c-rp-mo-br100",
+      author: "Samson M",
+      avatar: "/images/Ellipse33.png",
       rating: 5,
       date: "2 months ago",
       text: "I was assisted with making a reservation last minute by Meagan Weld at the call center. She was very helpful detailed and patient with all my questions. I was able to make it the facility almost by 5pm and was assisted by Magdalene Brown the property manager. She walked me through the facility and gave me the rundown. I was impressed and signed the contract to start the same day instead of the next day which would be Sat. Rates were amazing and I was assured they wouldn't have any major increases ever 6 months like extra space storage.",
@@ -66,8 +66,8 @@ export default function ReferralReviewsCarousel() {
     },
     {
       id: 6,
-      author: "Katie H",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjWzHp57-T26LygbjzFJ3wUb34UJcpT7Orc498s6TULuJ7V3ZEA=s120-c-rp-mo-ba4-br100",
+      author: "Sani Musa",
+      avatar: "/images/Ellipse1.png",
       rating: 5,
       date: "1 year ago",
       text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
@@ -76,8 +76,8 @@ export default function ReferralReviewsCarousel() {
 
     {
       id: 7,
-      author: "Max Asante",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjXExXfjQ6YP43tdOe-64QQ-rCrohG-eViwgf_bFLQbODG5HRWBd=s120-c-rp-mo-br100",
+      author: "Samson M",
+      avatar: "/images/Ellipse2.jpg",
       rating: 4,
       date: "2 months ago",
       text: "I was assisted with making a reservation last minute by Meagan Weld at the call center. She was very helpful detailed and patient with all my questions. I was able to make it the facility almost by 5pm and was assisted by Magdalene Brown the property manager. She walked me through the facility and gave me the rundown. I was impressed and signed the contract to start the same day instead of the next day which would be Sat. Rates were amazing and I was assured they wouldn't have any major increases ever 6 months like extra space storage.",
@@ -85,8 +85,8 @@ export default function ReferralReviewsCarousel() {
     },
     {
       id: 8,
-      author: "Katie H",
-      avatar: "https://lh3.googleusercontent.com/a-/ALV-UjWzHp57-T26LygbjzFJ3wUb34UJcpT7Orc498s6TULuJ7V3ZEA=s120-c-rp-mo-ba4-br100",
+      author: "Ayuba paul",
+      avatar: "/images/Ellipse3.png",
       rating: 5,
       date: "1 year ago",
       text: "We've had a great experience so far when the Spacedey in downtown Oakland. The remote customer service is responsive good at problem solving. Alerted us right away when we had accidentally left our unit unsecured. Sent maintenance out right away when someone had locked the new unit we were moving into. Other customers we've met their are all very nice . Not all units are equally well lit, so I'm going to reach out to customer service to see if there's anything we can do to get more light in our space.",
@@ -185,6 +185,12 @@ export default function ReferralReviewsCarousel() {
                             alt={review.author}
                             fill
                             unoptimized
+                            onError={(e) => {
+                              const el = e.currentTarget as HTMLImageElement | undefined;
+                              try {
+                                if (el && el.src.indexOf('/images/Contact.png') === -1) el.src = '/images/Contact.png';
+                              } catch {}
+                            }}
                             className="object-cover"
                           />
                         </div>
