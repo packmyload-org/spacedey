@@ -10,8 +10,8 @@ interface BlogHeroProps {
 export default function BlogHero({
   title = 'Things to Know',
   subtitle = 'Tips, tricks, and storage hacks from the people who know space best.',
-  leftImage = 'https://blog.stufstorage.com/hubfs/blog-list-hero-left.png',
-  rightImage = 'https://blog.stufstorage.com/hubfs/blog-list-hero-right.png',
+  leftImage = '/images/bloghero1.webp',
+  rightImage = '/images/bloghero2.webp',
 }: BlogHeroProps) {
   return (
     <div className="w-full bg-[#1642F0]">

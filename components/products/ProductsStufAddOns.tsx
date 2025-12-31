@@ -147,11 +147,14 @@ export default function ProductsSpacedeyAddOns({
           ))}
         </div>
       </div>
-      <div className="mt-12">
-        <div className="relative bottom-0 w-full h-[240px] md:h-[320px]">
+      
+       
+    
+      <div className="mt-8 relative h-[0px] md:h-[100px]">
+       <div className="absolute bottom-0 left-0 w-full h-full">
           <Image src="/images/Products3.svg" alt="" fill className="object-contain" />
         </div>
-      </div>
+        </div>
     </div>
   );
 }
