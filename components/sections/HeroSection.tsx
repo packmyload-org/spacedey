@@ -64,14 +64,14 @@ function HeroSection() {
       <div className="flex-1 flex flex-col items-center w-full justify-center mb-2 px-4">
         <div className="max-w-6xl mx-auto text-center items-center w-full">
           {/* Hero Heading */}
-          <h1 className="text-2xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8">
             Self-Storage In Your
             
             Neighborhood
           </h1>
 
           {/* Subheading */}
-          <p className="text-base sm:text-xl lg:text-2xl text-white/95 pb-2 mb-6">
+          <p className="text-base sm:text-xl lg:text-2xl text-white/95 pb-2 mx- mb-6">
             No hidden fees. Fast booking. A smarter way to store.
           </p>
 

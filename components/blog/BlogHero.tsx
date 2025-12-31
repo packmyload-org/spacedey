@@ -31,10 +31,10 @@ export default function BlogHero({
 
         {/* Center Content */}
         <div className="relative z-10 text-center max-w-2xl px-6">
-          <h1 className="text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h1 className="text-3xl lg:text-6xl font-bold text-white mb-4">
             {title}
           </h1>
-          <h2 className="text-xl lg:text-2xl text-white font-normal">
+          <h2 className="text-lg lg:text-2xl text-white font-normal">
             {subtitle}
           </h2>
         </div>
