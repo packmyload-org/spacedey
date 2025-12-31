@@ -18,8 +18,8 @@ export default function MemberBenefits({
   image = "/images/hero2.jpg",
 }: MemberBenefitsProps) {
   return (
-    <div className="w-full pt-16">
-  <div className="w-full bg-[#1642F0] pt-16 lg:pt-24 pb-6 px-6 sm:px-8 lg:px-12 relative">
+    <div className="w-full">
+  <div className="w-full bg-[#1642F0] pt-12 sm:pt-16 lg:pt-24 pb-12 sm:pb-16 lg:pb-20 px-4 sm:px-6 lg:px-12 relative">
       {/* Wave Background at Bottom
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-white" style={{
         clipPath: 'polygon(0 40%, 100% 0, 100% 100%, 0 100%)',
@@ -27,23 +27,23 @@ export default function MemberBenefits({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto relative z-10">
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 px-4 sm:px-8 lg:px-20 items-center">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 px-0 sm:px-4 lg:px-0 items-center">
           
           {/* Left Column - Text Content */}
-          <div className="flex flex-col justify-center">
+          <div className="flex flex-col justify-center items-center lg:items-start text-center lg:text-left">
             
             {/* Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-6 sm:mb-8 leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 lg:mb-8 leading-tight mx-auto lg:mx-0">
               {title}
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg lg:text-xl text-white mb-8 sm:mb-12 leading-relaxed max-w-lg">
+            <p className="text-sm sm:text-base lg:text-lg text-white mb-8 sm:mb-10 lg:mb-12 leading-relaxed max-w-md sm:max-w-lg mx-auto lg:mx-0">
               {subtitle}
             </p>
 
             {/* CTA Button */}
-            <div className="flex items-center gap-4 ">
+            <div className="flex items-center gap-4 justify-center lg:justify-start mt-2 sm:mt-4">
               <Link
                 href={buttonLink}
                 className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-base sm:text-lg transition-colors duration-200"
@@ -55,15 +55,15 @@ export default function MemberBenefits({
           </div>
 
           {/* Right Column - Image */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-xs sm:max-w-sm">
-              <div className="relative w-64 sm:w-72 md:w-96 h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
+          <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
+            <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xl">
+              <div className="relative w-60 sm:w-72 md:w-80 lg:w-[480px] aspect-square rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src={image}
                   alt="Member Benefits"
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 640px) 90vw, (max-width: 1024px) 60vw, 45vw"
                 />
               </div>
             </div>
