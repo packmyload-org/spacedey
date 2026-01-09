@@ -3,6 +3,7 @@
 import { ChevronRight } from 'lucide-react';
 import { getAvailableCities } from '@/lib/cities';
 import LocationCard from '@/components/Home/LocationCard';
+import SAMPLE_LOCATIONS from '@/lib/sampleLocations';
 
 interface CityListProps {
   searchQuery: string;
@@ -20,17 +21,26 @@ export default function CityList({
     city.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Generate mock data for each city
-  const getCityData = (cityName: string) => ({
-    name: `Spacedey - ${cityName}`,
-    address: `123 Storage Lane, ${cityName}, NG`,
-    hours: '6am - 10pm',
-    pricing: [
-      { size: "S (6' x 8')", originalPrice: "72", currentPrice: "50.40" },
-      { size: "M (5' x 9')", originalPrice: "68", currentPrice: "47.60" },
-      { size: "L (18' x 9')", originalPrice: "243", currentPrice: "170.10" }
-    ]
-  });
+  // Resolve city sample data from centralized source or fall back to a basic shape
+  const getCityData = (cityName: string) => {
+    const found = SAMPLE_LOCATIONS.find((s) => s.city === cityName);
+    if (found) {
+      return {
+        name: `Spacedey - ${found.city}`,
+        address: found.address,
+        hours: found.hours,
+        pricing: found.pricing,
+        imageUrl: found.imageUrl,
+      };
+    }
+
+    return {
+      name: `Spacedey - ${cityName}`,
+      address: `123 Storage Lane, ${cityName}, NG`,
+      hours: '6am - 10pm',
+      pricing: SAMPLE_LOCATIONS[0].pricing,
+    };
+  };
 
   return (
     <div className="z-10 bg-brand-page-bg p-6 pt-20">
