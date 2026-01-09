@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import loadGoogleMaps from '../../../lib/loadGoogleMaps';
+import loadGoogleMaps from '../../lib/loadGoogleMaps';
 import { getAvailableCities } from '@/lib/cities';
 
 interface MapViewProps {

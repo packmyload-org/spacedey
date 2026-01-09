@@ -6,7 +6,6 @@ import ZendeskWidget from "@/components/ZendeskWidget";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -20,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+    <html lang="en" className={inter.variable}>
+      <body className="antialiased">
         <ZendeskWidget />
         {/* <Header /> */}
         {children}
