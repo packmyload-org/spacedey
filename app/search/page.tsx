@@ -1,8 +1,8 @@
 "use client";
 import Header from "@/components/layout/Header";
-import SearchBar from "@/components/pages/search/SearchBar";
-import CityList from "@/components/pages/search/CityList";
-import MapView from "@/components/pages/search/MapView";
+import SearchBar from "@/components/search/SearchBar";
+import CityList from "@/components/search/CityList";
+import MapView from "@/components/search/MapView";
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";

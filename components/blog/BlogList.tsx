@@ -43,7 +43,7 @@ const allBlogPosts = [
     date: "July 10, 2025",
     excerpt:
       "Get expert tips on bicycle storage solutions in self storage units. Learn how to prep, protect, and store your bike safely for the long term.",
-    image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&h=400&fit=crop",
+    image: "https://www.storagecafe.com/blog/wp-content/uploads/sites/44/2022/03/storage-facility.jpg",
     author: "Samara Gofran",
     href: "#",
   },

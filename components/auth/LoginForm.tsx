@@ -1,7 +1,9 @@
-'use client';
+"use client";
 //login form component
 import { Eye } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
+
 export default function CityList() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -16,9 +18,9 @@ export default function CityList() {
           </h1>
           <p className="text-gray-600">
             Don&apos;t have an Account? 
-            <a href="#" className="text-[#1642F0] font-semibold hover:underline">
+            <Link href="/signup" className="text-[#1642F0] font-semibold hover:underline">
               Create Account
-            </a>
+            </Link>
           </p>
         </div>
 

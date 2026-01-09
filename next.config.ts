@@ -15,7 +15,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // experimental: {},
+  webpack: (config, { isServer }) => {
+    return config;
+  },
 };
 
 export default nextConfig;

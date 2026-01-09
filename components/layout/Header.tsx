@@ -111,7 +111,7 @@ export default function Header() {
               </p>
             </a>
             <Link 
-                href="/login" 
+                href="/auth/signin" 
                 className="font-bold inline-flex text-center items-center hover:cursor-pointer text-white text-xs lg:text-xs xl:text-base py-1.5 "
               >
                 Log in
