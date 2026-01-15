@@ -183,35 +183,7 @@ export default function MapView({ selectedCity }: MapViewProps) {
           </div>
           </div>
         </>
-      ) : !apiKey ? (
-        /* If there's no API key, keep the placeholder UI and instruct about .env */
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center bg-white p-8 rounded-lg shadow-lg">
-            <div className="text-6xl mb-4">🗺️</div>
-            <p className="text-gray-700 font-semibold mb-2">
-              {selectedCity ? `${selectedCity} Storage` : 'Select a city to view'}
-            </p>
-            {selectedCity && (
-              <div className="space-y-2 text-sm text-gray-600">
-                {currentLocation ? (
-                  <>
-                    <p>📍 Latitude: {currentLocation.lat.toFixed(4)}</p>
-                    <p>📍 Longitude: {currentLocation.lng.toFixed(4)}</p>
-                    <p className="text-brand-dark-blue font-bold">
-                      Starting at ₦{currentLocation.price}/month
-                    </p>
-                  </>
-                ) : (
-                  <p>Location data not available.</p>
-                )}
-              </div>
-            )}
-            <p className="text-xs text-gray-500 mt-4">
-              ⚠️ Google Maps API key not set. Create a <code>.env.local</code> with <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to enable the map.
-            </p>
-          </div>
-        </div>
-      ) : (
+      ) : apiKey ? (
         // Show the actual map
         <div className="h-full w-full">
           {/* map DOM */}
@@ -238,6 +210,34 @@ export default function MapView({ selectedCity }: MapViewProps) {
               </div>
             </div>
           )}
+        </div>
+      ) : (
+        /* If there's no API key, keep the placeholder UI and instruct about .env */
+        <div className="h-full flex items-center justify-center">
+          <div className="text-center bg-white p-8 rounded-lg shadow-lg">
+            <div className="text-6xl mb-4">🗺️</div>
+            <p className="text-gray-700 font-semibold mb-2">
+              {selectedCity ? `${selectedCity} Storage` : 'Select a city to view'}
+            </p>
+            {selectedCity && (
+              <div className="space-y-2 text-sm text-gray-600">
+                {currentLocation ? (
+                  <>
+                    <p>📍 Latitude: {currentLocation.lat.toFixed(4)}</p>
+                    <p>📍 Longitude: {currentLocation.lng.toFixed(4)}</p>
+                    <p className="text-brand-dark-blue font-bold">
+                      Starting at ₦{currentLocation.price}/month
+                    </p>
+                  </>
+                ) : (
+                  <p>Location data not available.</p>
+                )}
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-4">
+              ⚠️ Google Maps API key not set. Create a <code>.env.local</code> with <code>NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to enable the map.
+            </p>
+          </div>
         </div>
       )}
     </div>

@@ -27,9 +27,9 @@ function SearchContent() {
   const handleSearch = (cityName: string) => {
     setSelectedCity(cityName);
     // Update URL without page reload
-    const url = new URL(window.location.href);
+    const url = new URL(globalThis.location.href);
     url.searchParams.set('city', cityName);
-    window.history.pushState({}, '', url);
+    globalThis.history.pushState({}, '', url);
   };
 
   return (
