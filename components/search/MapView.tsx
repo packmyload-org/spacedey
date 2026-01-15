@@ -48,7 +48,7 @@ export default function MapView({ selectedCity }: MapViewProps) {
   const [mapsLoading, setMapsLoading] = useState(false);
   const [mapsError, setMapsError] = useState<string | null>(null);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyAEHsYzuTiYRmGv79PIdjvP9TgUU5vZlTU';
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ;
 
   const mapRef = useRef<MapLike | null>(null);
   const markerRef = useRef<MarkerLike | null>(null);
