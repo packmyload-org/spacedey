@@ -1,36 +1,76 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
-import { getAvailableCities } from '@/lib/cities';
 import LocationCard from '@/components/Home/LocationCard';
+import { ApiSite } from '@/lib/interfaces/ApiSite';
+import { useMemo } from 'react';
 
 interface CityListProps {
   searchQuery: string;
   selectedCity: string;
   onSelectCity: (city: string) => void;
+  sites: ApiSite[];
 }
 
 export default function CityList({
   searchQuery,
   selectedCity,
   onSelectCity,
+  sites,
 }: CityListProps) {
-  const availableCities = getAvailableCities();
-  const filteredAvailableCities = availableCities.filter((city) =>
-    city.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  
+  // Group sites by city
+  const citiesData = useMemo(() => {
+    const map = new Map<string, ApiSite[]>();
+    
+    sites.forEach(site => {
+      // Assuming address is comma separated string: "Street, City, State"
+      // We'll try to extract city from the address string if possible, or use a default
+      const addressParts = site.address.split(',').map(p => p.trim());
+      const city = addressParts.length > 1 ? addressParts[1] : (addressParts[0] || 'Unknown City');
+      
+      const normalizedCity = city.trim();
+      if (!map.has(normalizedCity)) {
+        map.set(normalizedCity, []);
+      }
+      map.get(normalizedCity)?.push(site);
+    });
+    
+    return Array.from(map.entries()).map(([name, citySites]) => ({
+      name,
+      sites: citySites
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [sites]);
 
-  // Generate mock data for each city
-  const getCityData = (cityName: string) => ({
-    name: `Spacedey - ${cityName}`,
-    address: `123 Storage Lane, ${cityName}, NG`,
-    hours: '6am - 10pm',
-    pricing: [
-      { size: "S (6' x 8')", originalPrice: "72", currentPrice: "50.40" },
-      { size: "M (5' x 9')", originalPrice: "68", currentPrice: "47.60" },
-      { size: "L (18' x 9')", originalPrice: "243", currentPrice: "170.10" }
-    ]
-  });
+  // Filter cities based on search query
+  const filteredCities = useMemo(() => {
+    if (!searchQuery) return citiesData;
+    return citiesData.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.sites.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [citiesData, searchQuery]);
+
+  // Helper to map site to LocationCard props
+  const getSiteProps = (site: ApiSite) => {
+    // Map unit types to pricing format
+    const pricing = (site.unitTypes || [])
+      .slice(0, 3) 
+      .map(ut => ({
+        size: ut.name, // e.g. "10x10 ft"
+        originalPrice: (ut.price.originalAmount || ut.price.amount * 1.2).toFixed(0),
+        currentPrice: ut.price.amount.toFixed(0)
+      }));
+
+    return {
+      name: site.name,
+      address: site.address,
+      hours: '8am - 6pm', 
+      imageUrl: site.image,
+      pricing,
+      detailsLink: `/locations/${site.id}`,
+    };
+  };
 
   return (
     <div className="z-10 bg-brand-page-bg p-6 pt-20">
@@ -38,11 +78,25 @@ export default function CityList({
         Explore self storage facilities
       </h1>
 
-      {/* If a city is selected, show only that city's card with a back control */}
+      {/* If a city is selected, show sites in that city */}
       {selectedCity ? (
         (() => {
-          const city = availableCities.find((c) => c.name === selectedCity);
-          const data = city ? getCityData(city.name) : getCityData(selectedCity);
+          const cityGroup = citiesData.find(c => c.name === selectedCity);
+          
+          if (!cityGroup) {
+            return (
+              <div className="space-y-4">
+                 <button
+                  onClick={() => onSelectCity('')}
+                  className="text-sm text-gray-600 hover:text-gray-800"
+                >
+                  ← Back to list
+                </button>
+                <p>City not found.</p>
+              </div>
+            );
+          }
+
           return (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -52,63 +106,40 @@ export default function CityList({
                 >
                   ← Back to list
                 </button>
-                <h2 className="text-lg font-semibold">{selectedCity}</h2>
+                <h2 className="text-lg font-semibold">{selectedCity} ({cityGroup.sites.length})</h2>
               </div>
 
-              <div>
-                <LocationCard
-                  name={data.name}
-                  address={data.address}
-                  hours={data.hours}
-                  pricing={data.pricing}
-                  onBook={() => console.log(`Booking at ${selectedCity}`)}
-                />
+              <div className="space-y-6">
+                {cityGroup.sites.map(site => (
+                  <LocationCard
+                    key={site.id}
+                    {...getSiteProps(site)}
+                    onBook={() => console.log(`Booking at ${site.code}`)}
+                  />
+                ))}
               </div>
             </div>
           );
         })()
       ) : (
-        /* No city selected: show list. Only render cards under each city when there's a search query. */
+        /* No city selected: show list of cities */
         <div className="space-y-4">
-          {filteredAvailableCities.length > 0 ? (
-            filteredAvailableCities.map((city) => (
+          {filteredCities.length > 0 ? (
+            filteredCities.map((city) => (
               <div key={city.name} className="space-y-2">
                 <button
                   onClick={() => onSelectCity(city.name)}
-                  className={`w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left transition-colors ${
-                    selectedCity === city.name
-                      ? 'bg-blue-50 text-brand-dark-blue border-blue-300'
-                      : 'hover:bg-gray-50 text-gray-700 border-gray-300'
-                  }`}
+                  className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
                 >
                   <span className="flex-1 font-medium">{city.name}</span>
+                  <span className="text-sm text-gray-500 mr-2">{city.sites.length} locations</span>
                   <ChevronRight className="w-6 h-6 flex-shrink-0" />
                 </button>
-
-                {/* Show small reservation card only when searching */}
-                {searchQuery ? (
-                  <div className="px-2">
-                    <LocationCard
-                      name={getCityData(city.name).name}
-                      address={getCityData(city.name).address}
-                      hours={getCityData(city.name).hours}
-                      pricing={getCityData(city.name).pricing}
-                      onBook={() => console.log(`Booking at ${city.name}`)}
-                    />
-                  </div>
-                ) : null}
               </div>
             ))
-          ) : searchQuery ? (
-            <div className="text-center py-8 text-gray-500 px-6 border border-gray-300 rounded-lg">
-              <p className="mb-2">No available cities found matching &quot;{searchQuery}&quot;</p>
-              <p className="text-sm text-gray-400">
-                Search for any city to see if it&apos;s coming soon!
-              </p>
-            </div>
           ) : (
             <div className="text-center py-8 text-gray-500 px-6 border border-gray-300 rounded-lg">
-              <p>Start typing to search for cities</p>
+              <p className="mb-2">No available cities found.</p>
             </div>
           )}
         </div>
