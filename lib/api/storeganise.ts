@@ -1,8 +1,10 @@
 import { StoreganiseSite } from '@/lib/interfaces/StoreganiseSite';
 import { StoreganiseUnit } from '@/lib/interfaces/StoreganiseUnit';
 import { StoreganiseUnitType } from '@/lib/interfaces/StoreganiseUnitType';
-const API_BASE_URL = process.env.STOREGANISE_API_URL;
+import { StoreganiseAuthResponse } from '@/lib/interfaces/StoreganiseAuthResponse';
+import { StoreganiseUser } from '@/lib/interfaces/StoreganiseUser';
 
+const API_BASE_URL = process.env.STOREGANISE_API_URL;
 const API_KEY = process.env.STOREGANISE_API_KEY;
 
 class StoreganiseError extends Error {
@@ -20,8 +22,8 @@ async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}):
     ...(options.headers as Record<string, string>),
   };
 
-  
-  if (API_KEY) {
+  // Only add API_KEY if Authorization is not already provided
+  if (API_KEY && !headers['Authorization']) {
     headers['Authorization'] = `Api ${API_KEY}`;
   }
 
@@ -37,7 +39,6 @@ async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}):
         }
       } catch (e) {
         console.debug(e)
-        // Failed to parse error body, use default message
       }
       
       console.error(`Storeganise Request Failed: ${url} -> ${response.status}`);
@@ -50,6 +51,32 @@ async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}):
     console.error(`Storeganise API call failed for ${endpoint}:`, error);
     throw error;
   }
+}
+
+/**
+ * Authenticates a user and returns an access token.
+ * Docs: POST /v1/auth/token
+ */
+export async function authenticateUser(email: string, password: string): Promise<StoreganiseAuthResponse> {
+  const credentials = Buffer.from(`${email}:${password}`).toString('base64');
+  return storeganiseFetch<StoreganiseAuthResponse>('/auth/token', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${credentials}`
+    }
+  });
+}
+
+/**
+ * Fetches the authenticated user's profile.
+ * Docs: GET /v1/auth/userinfo
+ */
+export async function getUserProfile(accessToken: string): Promise<StoreganiseUser> {
+  return storeganiseFetch<StoreganiseUser>('/auth/userinfo', {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  });
 }
 
 /**

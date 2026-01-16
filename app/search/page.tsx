@@ -4,14 +4,25 @@ import SearchBar from "@/components/search/SearchBar";
 import CityList from "@/components/search/CityList";
 import MapView from "@/components/search/MapView";
 
-import { useState, useEffect, Suspense } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-// Footer and SearchPageContent were intentionally not used here
+import { useSearchStore } from "@/lib/store/useSearchStore";
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const { 
+    searchQuery, 
+    setSearchQuery, 
+    selectedCity, 
+    setSelectedCity, 
+    sites, 
+    fetchSites 
+  } = useSearchStore();
+
+  // Fetch sites on mount using the internal API
+  useEffect(() => {
+    fetchSites();
+  }, [fetchSites]);
 
   // Read city from URL query parameter on mount
   useEffect(() => {
@@ -21,12 +32,11 @@ function SearchContent() {
       setSelectedCity(decodedCity);
       setSearchQuery(decodedCity);
     }
-  }, [searchParams]);
+  }, [searchParams, setSelectedCity, setSearchQuery]);
 
-  // Handle search from SearchBar - allow searching any city
+  // Handle search from SearchBar
   const handleSearch = (cityName: string) => {
     setSelectedCity(cityName);
-    // Update URL without page reload
     const url = new URL(globalThis.location.href);
     url.searchParams.set('city', cityName);
     globalThis.history.pushState({}, '', url);
@@ -35,7 +45,6 @@ function SearchContent() {
   return (
     <>
       <Header />
-      {/* <SearchPageContent /> */}
       <main className="flex-1 lg:flex lg:flex-col mt-20">
         <div className="lg:flex lg:flex-col lg:flex-1 lg:bg-brand-page-bg">
           <div className="lg:flex lg:flex-1">
@@ -51,16 +60,19 @@ function SearchContent() {
                   searchQuery={searchQuery}
                   selectedCity={selectedCity}
                   onSelectCity={setSelectedCity}
+                  sites={sites}
                 />
               </div>
             </div>
 
             {/* Right Map View */}
-            <MapView selectedCity={selectedCity} />
+            <MapView 
+              selectedCity={selectedCity} 
+              sites={sites}
+            />
           </div>
         </div>
       </main>
-      {/* <Footer /> */}
     </>
   );
 }
@@ -72,7 +84,7 @@ export default function SearchPage() {
         <Header />
         <main className="flex-1 lg:flex lg:flex-col mt-20">
           <div className="flex items-center justify-center h-[calc(100vh-80px)]">
-            <p className="text-gray-600">Loading search...</p>
+            <p className="text-gray-600">Loading storage locations...</p>
           </div>
         </main>
       </>
