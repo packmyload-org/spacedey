@@ -141,7 +141,8 @@ const SizingDetails = () => {
 
   return (
     <section>
-      <div className="sizing-details-sec py-12 lg:px-20 px-6">
+      <div className="sizing-details-sec py-12 lg:px-30 px-6 flex justify-center">
+        <div className="w-full max-w-6xl">
         <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Sizing details
         </h2>
@@ -209,6 +210,7 @@ const SizingDetails = () => {
               Explore all locations
             </button>
           </Link>
+        </div>
         </div>
       </div>
     </section>

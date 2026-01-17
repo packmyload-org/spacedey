@@ -38,9 +38,9 @@ export default function CitiesStatesNav() {
   ];
 
   return (
-    <div className="bg-gray-50 min-h-full px-10 p-8">
+    <div className="bg-gray-50 min-h-full px-4 py-8">
     
-      <div className="max-w-7xl">
+      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-16 border border-gray-200">
     
         {/* Navigation tabs */}
         <div className="flex gap-8 mb-8">
@@ -69,12 +69,12 @@ export default function CitiesStatesNav() {
         {/* Content */}
         {activeTab === 'cities' ? (
           <>
-            <div className="flex flex-wrap gap-x-8 gap-y-6">
+            <div className="flex flex-wrap gap-x-12 gap-y-6 max-h-96 overflow-y-auto">
               {cities.map((city) => (
                 <Link 
                   key={city} 
                   href={`/search?city=${encodeURIComponent(city)}`}
-                  className="text-blue-900 font-semibold text-lg hover:underline"
+                  className="text-blue-900 font-semibold text-lg hover:underline min-w-fit"
                 >
                   {city}
                 </Link>
@@ -82,12 +82,12 @@ export default function CitiesStatesNav() {
             </div>
           </>
         ) : (
-          <div className="flex flex-wrap gap-x-8 gap-y-6">
+          <div className="flex flex-wrap gap-x-12 gap-y-6 max-h-96 overflow-y-auto">
             {states.map((state) => (
               <Link 
                 key={state} 
                 href={`/search?state=${encodeURIComponent(state)}`}
-                className="text-blue-900 font-semibold text-lg hover:underline"
+                className="text-blue-900 font-semibold text-lg hover:underline min-w-fit"
               >
                 {state}
               </Link>

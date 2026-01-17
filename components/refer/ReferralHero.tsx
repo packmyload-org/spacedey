@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { useEffect } from 'react';
 
 interface FormData {
   firstName: string;
@@ -226,13 +225,13 @@ export default function ReferralHero() {
 
           {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-md">
+            <div className="relative w-full">
               <Image
                 src={imageSrc}
                 alt="Referral hero image"
                 width={964}
                 height={886}
-                className="w-full h-auto"
+                style={{ width: '100%', height: 'auto', minHeight: '600px', minWidth: '500px' }}
                 priority
                 unoptimized
                 onError={() => setImageSrc('/images/hero1.jpg')}

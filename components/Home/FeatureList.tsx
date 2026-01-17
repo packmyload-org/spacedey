@@ -38,30 +38,13 @@ export default function FeatureList() {
   return (
     <section className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-12">
-          <div className="flex-1" />
+        <div className="flex items-center justify-center mb-12">
           <div className="text-center">
             {/* <h2 className="text-4xl lg:text-4xl font-bold text-[#0A1E5E] inline-block">Discover Our Locations</h2> */}
             <Link href="/locations">
               <button className="text-center text-xl p-3 font-bold mt-  pt-5 text-[#1642F0] hover:bg-[#f0f1f6]  rounded-3xl">Explore All Locations</button>
             </Link>
             <div className="w-16 h-1 bg-[#D96541] mx-auto mt-3" />
-          </div>
-          <div className="flex-1 flex justify-end items-start mt-20 gap-3">
-            <button
-              onClick={prevSlide}
-              className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
-              aria-label="Previous locations"
-            >
-              <ChevronLeft className="w-6 h-6 text-gray-600" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
-              aria-label="Next locations"
-            >
-              <ChevronRight className="w-6 h-6 text-gray-600" />
-            </button>
           </div>
         </div>
 
@@ -73,18 +56,18 @@ export default function FeatureList() {
             >
               {LOCATIONS.map((location, idx) => (
                 <div key={idx} className="w-full sm:w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
-                  <div className="bg-white p-5 rounded-3xl shadow-lg overflow-hidden h-full border border-gray-50">
-                      <div className="relative overflow-hidden mb-3">
+                  <div className="bg-white p-0 rounded-3xl shadow-lg overflow-hidden h-full border border-gray-50">
+                      <div className="relative overflow-hidden mb-0">
                       <Image
                         src={location.image}
                         alt={`${location.city} skyline`}
                         width={600}
-                        height={192}
-                        style={{ height: '12rem', width: 'auto' }}
-                        className="object-cover rounded-xl"
+                        height={256}
+                        style={{ height: '16rem', width: '100%' }}
+                        className="object-cover rounded-t-3xl w-full"
                       />
                     </div>
-                    <div className=" items-center ">
+                    <div className="items-center p-5">
                       <h3 className="text-xl font-bold text-[#0A1E5E] ">Storage in {location.city}</h3>
                       <button 
                         onClick={() => handleViewFacilities(location.city)}
@@ -98,6 +81,23 @@ export default function FeatureList() {
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="flex justify-center items-center gap-3 mt-8">
+          <button
+            onClick={prevSlide}
+            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
+            aria-label="Previous locations"
+          >
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
+            aria-label="Next locations"
+          >
+            <ChevronRight className="w-6 h-6 text-gray-600" />
+          </button>
         </div>
       </div>
       {/* <div className="text-center text-xl font-bold mt-5  pt-5 text-[#1642F0] bg-[#FF00FF]">Explore All Locations</div> */}

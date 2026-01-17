@@ -101,65 +101,69 @@ const ComparisonSizes = () => {
         </div>
 
         {/* Desktop Table */}
-        <div className="overflow-x-auto lg:mb-12 mb-6 hidden sm:block">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b-2 border-gray-300">
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Unit size
-                </th>
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Dimensions
-                </th>
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Square feet
-                </th>
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Best for
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {storageUnits.map((unit, index) => (
-                <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.dimensions}</td>
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.squareFeet}</td>
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td>
+        <div className="flex justify-center mb-6 lg:mb-12 sm:block">
+          <div className="w-full max-w-6xl px-6 py-8">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b-2 border-gray-300">
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Unit size
+                  </th>
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Dimensions
+                  </th>
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Square feet
+                  </th>
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Best for
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {storageUnits.map((unit, index) => (
+                  <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.dimensions}</td>
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.squareFeet}</td>
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Mobile Table */}
-        <div className="overflow-x-auto lg:mb-12 mb-6 sm:hidden">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b-2 border-gray-300">
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Size
-                </th>
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Dims • SF
-                </th>
-                <th className="text-left py-4 px-4 font-bold text-gray-800">
-                  Best for
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {storageUnits.map((unit, index) => (
-                <tr key={index} className="border-b border-gray-200">
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
-                    {unit.dimensionsShort} • {unit.squareFeetShort}
-                  </td>
-                  <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td>
+        <div className="flex justify-center mb-6 lg:mb-12 sm:hidden">
+          <div className="w-full max-w-6xl px-6 py-8">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b-2 border-gray-300">
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Size
+                  </th>
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Dims • SF
+                  </th>
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Best for
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {storageUnits.map((unit, index) => (
+                  <tr key={index} className="border-b border-gray-200">
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
+                      {unit.dimensionsShort} • {unit.squareFeetShort}
+                    </td>
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* CTA Button */}

@@ -60,7 +60,7 @@ export default function ProductsSpacedeyAddOns({
 }: SpacedeyAddOnsProps) {
   return (
     <div>
-      <div className="w-full bg-white py-16 px-6 lg:px-36">
+      <div className="w-full bg-white py-16 px-6 lg:px-16">
         {/* Header */}
 
         <div className="text-center mb-16">
@@ -77,12 +77,12 @@ export default function ProductsSpacedeyAddOns({
           {addOns.map((addOn) => (
             <div
               key={addOn.id}
-              className="border border-gray-200 rounded-2xl p-8 lg:p-12 hover:shadow-lg transition-shadow duration-300"
+              className="border border-gray-200 rounded-2xl p-8 lg:p-20 hover:shadow-lg transition-shadow duration-300"
             >
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                 {/* Left - Image */}
-                <div className="flex justify-center lg:justify-start">
-                  <div className="relative w-48 h-48 rounded-xl overflow-hidden">
+                <div className="flex justify-center lg:justify-center">
+                  <div className="relative w-72 h-72 rounded-xl overflow-hidden">
                     <Image
                       src={addOn.image}
                       alt={addOn.name}

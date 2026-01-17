@@ -3,9 +3,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import Card from "../ui/Card";
-import PrimaryButton from "../ui/PrimaryButton";
-
-import type { ButtonVariant } from "../ui/PrimaryButton";
+import { useStorageCart } from "../../contexts/StorageCartContext";
 
 type LocationImage = {
   city: string;
@@ -21,21 +19,23 @@ const LOCATIONS: LocationImage[] = [
 ];
 
 const getLocationImage = (city: string): string => {
-  if (!city) return "";
+  if (!city) return "/images/LocationHero.jpg"; // sensible default
 
   // Extract city name from "Spacedey - CityName" format or use as-is
-  const cityName = city.includes(" - ") ? city.split(" - ")[1] : city;
+  const cityName = city.includes(" - ") ? city.split(" - ")[1].trim() : city.trim();
 
-  // Try exact match first
-  const exact = LOCATIONS.find((loc) => loc.city.toLowerCase() === cityName.trim().toLowerCase());
+  // Try exact match against the extracted name
+  const exact = LOCATIONS.find((loc) => loc.city.toLowerCase() === cityName.toLowerCase());
   if (exact) return exact.image;
 
-  // If no exact match, try a looser match: check if any known city appears inside the provided name
-  const loose = LOCATIONS.find((loc) => city.toLowerCase().includes(loc.city.toLowerCase()));
+  // Try loose match against both the extracted name and the full input
+  const loose = LOCATIONS.find((loc) =>
+    cityName.toLowerCase().includes(loc.city.toLowerCase()) || city.toLowerCase().includes(loc.city.toLowerCase())
+  );
   if (loose) return loose.image;
 
-  // No match — return empty so the placeholder UI is shown
-  return "";
+  // Fallback to a default image so cards always show something
+  return "/images/LocationHero.jpg";
 };
 
 interface LocationCardProps {
@@ -48,7 +48,7 @@ interface LocationCardProps {
   onBook?: (unit?: { size: string; originalPrice: string; currentPrice: string }) => void;
   onViewDetails?: () => void;
   detailsLink?: string;
-  variant?: ButtonVariant;
+  
 }
 
 function LocationCard({
@@ -61,9 +61,9 @@ function LocationCard({
   onBook = () => {},
   onViewDetails = () => {},
   detailsLink = "#",
-  variant = "outline",
 }: LocationCardProps) {
   const [showUnitSelector, setShowUnitSelector] = useState(false);
+  const { openCart } = useStorageCart();
   
   // Use location image if not provided, fall back to imageUrl
   const displayImage = imageUrl || getLocationImage(name);
@@ -108,7 +108,7 @@ function LocationCard({
           el.style.overflow = 'hidden';
           el.style.touchAction = 'none';
         }
-      } catch (e) {
+      } catch {
         // ignore cross-origin or other access errors
       }
     }
@@ -140,9 +140,9 @@ function LocationCard({
       return pricing.map((p, idx) => ({ id: idx + 1, size: p.size, originalPrice: p.originalPrice, currentPrice: p.currentPrice }));
     }
     return [
-      { id: 1, size: "Small (6×8)", originalPrice: "720", currentPrice: "500.40" },
-      { id: 2, size: "Medium (5×9)", originalPrice: "680", currentPrice: "470.60" },
-      { id: 3, size: "Large (18×9)", originalPrice: "2430", currentPrice: "1700.10" },
+        { id: 1, size: "Small (6×8)", originalPrice: "7200", currentPrice: "5004.00" },
+        { id: 2, size: "Medium (5×9)", originalPrice: "6800", currentPrice: "4706.00" },
+        { id: 3, size: "Large (18×9)", originalPrice: "24300", currentPrice: "17001.00" },
     ];
   }, [pricing]);
 
@@ -156,13 +156,12 @@ function LocationCard({
           onClick={onViewDetails}
         >
           {displayImage ? (
-            <div className="w-full h-full relative rounded-t-xl lg:rounded-xl flex-1 flex-grow-0 overflow-hidden">
+              <div className="w-full h-[170px] lg:h-[220px] relative rounded-t-xl lg:rounded-xl overflow-hidden">
               <Image
                 alt={name}
                 src={displayImage}
-                width={600}
-                height={170}
-                style={{ height: '170px', width: '100%' }}
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover rounded-t-xl lg:rounded-xl"
               />
             </div>
@@ -236,7 +235,7 @@ function LocationCard({
                       <div className="text-sm">
                         {unit.size} - <span className="text-neutral-500 line-through"> ₦{unit.originalPrice}</span> <strong className="text-blue-600"> ₦{unit.currentPrice}</strong>
                       </div>
-                      <button onClick={() => onBook(unit)} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
+                      <button onClick={() => { openCart(unit, name, address); onBook(unit); }} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
                     </div>
                   </div>
                 ))}
@@ -275,6 +274,7 @@ function LocationCard({
                     <li key={unit.id} className="p-3">
                       <button
                         onClick={() => {
+                          openCart(unit, name, address);
                           onBook(unit);
                           setShowUnitSelector(false);
                         }}

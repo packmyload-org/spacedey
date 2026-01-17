@@ -3,7 +3,7 @@
 import { ChevronRight } from 'lucide-react';
 import { getAvailableCities } from '@/lib/cities';
 import LocationCard from '@/components/Home/LocationCard';
-import SAMPLE_LOCATIONS from '@/lib/sampleLocations';
+import { makeLocationData } from '@/lib/sampleLocations';
 
 interface CityListProps {
   searchQuery: string;
@@ -21,26 +21,7 @@ export default function CityList({
     city.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Resolve city sample data from centralized source or fall back to a basic shape
-  const getCityData = (cityName: string) => {
-    const found = SAMPLE_LOCATIONS.find((s) => s.city === cityName);
-    if (found) {
-      return {
-        name: `Spacedey - ${found.city}`,
-        address: found.address,
-        hours: found.hours,
-        pricing: found.pricing,
-        imageUrl: found.imageUrl,
-      };
-    }
-
-    return {
-      name: `Spacedey - ${cityName}`,
-      address: `123 Storage Lane, ${cityName}, NG`,
-      hours: '6am - 10pm',
-      pricing: SAMPLE_LOCATIONS[0].pricing,
-    };
-  };
+  // Use centralized sample data for generated city mock
 
   return (
     <div className="z-10 bg-brand-page-bg p-6 pt-20">
@@ -52,7 +33,7 @@ export default function CityList({
       {selectedCity ? (
         (() => {
           const city = availableCities.find((c) => c.name === selectedCity);
-          const data = city ? getCityData(city.name) : getCityData(selectedCity);
+          const data = city ? makeLocationData(city.name) : makeLocationData(selectedCity);
           return (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -98,13 +79,19 @@ export default function CityList({
                 {/* Show small reservation card only when searching */}
                 {searchQuery ? (
                   <div className="px-2">
-                    <LocationCard
-                      name={getCityData(city.name).name}
-                      address={getCityData(city.name).address}
-                      hours={getCityData(city.name).hours}
-                      pricing={getCityData(city.name).pricing}
-                      onBook={() => console.log(`Booking at ${city.name}`)}
-                    />
+                    {(() => {
+                      const d = makeLocationData(city.name);
+                      return (
+                        <LocationCard
+                          name={d.name}
+                          address={d.address}
+                          hours={d.hours}
+                          pricing={d.pricing}
+                          imageUrl={d.imageUrl}
+                          onBook={() => console.log(`Booking at ${city.name}`)}
+                        />
+                      );
+                    })()}
                   </div>
                 ) : null}
               </div>
