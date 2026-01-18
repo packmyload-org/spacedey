@@ -139,14 +139,15 @@ const SizingFaq = () => {
   return (
     <section>
       {/* Container styling and custom background color preserved */}
-      <div className={`lg:py-28 py-12 lg:px-30 px-6 ${sectionBgColor} flex justify-center`}>
-        <div className="w-full max-w-6xl">
+      <div className={`lg:py-28 py-12 lg:px-30 px-6 ${sectionBgColor}`}>
+        <div className="w-full max-w-6xl mx-auto">
         <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Frequently asked questions
         </h2>
         {/* Separator HR styling preserved */}
         <hr className="h-[3px] w-[50px] mt-6 lg:mb-12 mb-10 mx-auto bg-brand-orange border-0" />
 
+        <div className="w-full bg-gray-50 rounded-xl px-6 lg:px-8 py-8 shadow-sm">
         <div className="lg:mb-12 mb-10">
           {/* Map through the FAQ data to render Accordion items */}
           {faqData.map((item, index) => (
@@ -164,6 +165,7 @@ const SizingFaq = () => {
           >
             Reserve now
           </button>
+        </div>
         </div>
         </div>
       </div>

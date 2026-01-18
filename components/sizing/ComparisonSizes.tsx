@@ -101,9 +101,10 @@ const ComparisonSizes = () => {
         </div>
 
         {/* Desktop Table */}
-        <div className="flex justify-center mb-6 lg:mb-12 sm:block">
-          <div className="w-full max-w-6xl px-6 py-8">
-            <table className="w-full border-collapse">
+        <div className="mb-6 lg:mb-12">
+          <div className="w-full max-w-5xl mx-auto">
+            <div className="w-full bg-white rounded-xl px-6 lg:px-8 py-8 border-0">
+              <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2 border-gray-300">
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
@@ -131,13 +132,15 @@ const ComparisonSizes = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
         {/* Mobile Table */}
-        <div className="flex justify-center mb-6 lg:mb-12 sm:hidden">
-          <div className="w-full max-w-6xl px-6 py-8">
-            <table className="w-full border-collapse">
+        <div className="mb-6 lg:mb-12 sm:hidden">
+          <div className="w-full max-w-6xl mx-auto">
+            <div className="w-full bg-white rounded-xl px-6 py-8 border-0">
+              <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b-2 border-gray-300">
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
@@ -163,20 +166,21 @@ const ComparisonSizes = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* CTA Button */}
-        <div className="text-center">
-          <Link href="/locations">
-            <button
-              type="button"
-              className="w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200"
-            >
-              Explore all locations
-            </button>
-          </Link>
-        </div>
+      {/* CTA Button */}
+      <div className="text-center">
+        <Link href="/locations">
+          <button
+            type="button"
+            className="w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200"
+          >
+            Explore all locations
+          </button>
+        </Link>
       </div>
     </section>
   );
