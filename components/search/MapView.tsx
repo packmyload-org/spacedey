@@ -20,6 +20,18 @@ interface MarkerLike {
   setMap(map: MapLike | null): void;
 }
 
+interface WindowWithGoogle extends Window {
+  google: {
+    maps: {
+      Map: new (element: HTMLElement | null, options: Record<string, unknown>) => MapLike;
+      Marker: new (options: Record<string, unknown>) => { setMap(map: MapLike | null): void };
+      Animation: {
+        DROP: unknown;
+      };
+    };
+  };
+}
+
 export default function MapView({ selectedCity, sites }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapDomRef = useRef<HTMLDivElement | null>(null);
@@ -68,7 +80,7 @@ export default function MapView({ selectedCity, sites }: MapViewProps) {
 
         if (!mounted || !mapDomRef.current) return;
 
-        const gw = window as any; 
+        const gw = window as unknown as WindowWithGoogle; 
 
         // Initialize Map if not exists
         if (!mapRef.current) {

@@ -16,7 +16,7 @@ export interface StoreganiseSite {
   lng?: number;
   unitTypes?: StoreganiseUnitType[];
   unitTypeGroups?: StoreganiseUnitTypeGroup[];
-  products?: any[];
+  products?: unknown[];
   measure?: string;
-  availability?: any;
+  availability?: unknown;
 }

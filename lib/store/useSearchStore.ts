@@ -39,8 +39,9 @@ export const useSearchStore = create<SearchState>((set) => ({
       }
       const data: ApiSitesResponse = await response.json();
       set({ sites: data.sites, isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message || 'An error occurred', isLoading: false });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      set({ error: errorMessage, isLoading: false });
     }
   },
 }));

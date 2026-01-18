@@ -51,3 +51,4 @@ pnpm-workspace.yaml
 
 GEMINI.md
 tasks
+agent.ts

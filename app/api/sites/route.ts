@@ -57,10 +57,11 @@ export async function GET() {
 
     const response: ApiSitesResponse = { sites };
     return NextResponse.json(response);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('API Route /api/sites Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
     const errorResponse: ApiErrorResponse = {
-      error: error.message || 'Internal Server Error',
+      error: errorMessage,
     };
     return NextResponse.json(errorResponse, { status: 500 });
   }
