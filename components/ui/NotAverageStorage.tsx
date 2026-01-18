@@ -18,9 +18,9 @@ export default function StorageLanding() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-2 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-2 items-center">
           {/* Left Column - Text Content */}
-          <div className="space-y-5 pr-4 sm:pr-6 lg:pr-8">
+          <div className="space-y-5">
             {/* Feature 1 */}
             <div>
               <h2 className="text-2xl md:text-3xl lg:text-3xl font-bold text-[#003087] mb-3 leading-snug">
@@ -72,17 +72,26 @@ export default function StorageLanding() {
           </div>
 
           {/* Right Column - Image */}
-          <div className="flex justify-center items-center">
-            <div className="relative w-full max-w-xl lg:max-w-3xl">
+          <div className="flex self-end items-start">
+            <div className="relative w-full">
               <Image
                 src="/images/DigitalKey.png"
                 alt="Digital Key App Interface"
-                width={600}
-                height={400}
-                className="w-full h-auto rounded-[3rem] object-cover"
+                width={1200}
+                height={800}
+                loading="lazy"
+                className="w-full h-[420px] sm:h-[520px] lg:h-[640px] object-cover rounded-[3rem] "
               />
             </div>
           </div>
+          {/* <div className="w-full max-w-[1200px] aspect-[3/2]">
+  <img
+    src="/images/DigitalKey.png"
+    alt="Digital Key App Interface"
+    className="w-full h-full object-cover rounded-md"
+  />
+</div> */}
+
         </div>
       </div>
     </div>

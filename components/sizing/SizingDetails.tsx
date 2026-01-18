@@ -141,13 +141,14 @@ const SizingDetails = () => {
 
   return (
     <section>
-      <div className="sizing-details-sec py-12 lg:px-30 px-6 flex justify-center">
-        <div className="w-full max-w-6xl">
+      <div className="sizing-details-sec py-12 lg:px-30 px-6">
+        <div className="w-full max-w-6xl mx-auto">
         <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
           Sizing details
         </h2>
         <hr className="h-[3px] w-[50px] mt-6 lg:mb-12 mb-10 mx-auto bg-brand-orange border-0" />
 
+        <div className="w-full bg-gray-50 rounded-xl px-6 lg:px-8 py-8 shadow-sm">
         {/* Custom Tabs Implementation */}
         <div className="border-b-[1px] text-2xl border-gray-200 lg:mb-12 mb-10 relative">
           <div className="flex " role="tablist">
@@ -210,6 +211,7 @@ const SizingDetails = () => {
               Explore all locations
             </button>
           </Link>
+        </div>
         </div>
         </div>
       </div>

@@ -231,7 +231,7 @@ export default function ReferralHero() {
                 alt="Referral hero image"
                 width={964}
                 height={886}
-                style={{ width: '100%', height: 'auto', minHeight: '600px', minWidth: '500px' }}
+                style={{ width: '100%', height: 'auto', minHeight: '600px', minWidth: '650px' }}
                 priority
                 unoptimized
                 onError={() => setImageSrc('/images/hero1.jpg')}
