@@ -24,7 +24,10 @@ interface WindowWithGoogle extends Window {
   google: {
     maps: {
       Map: new (element: HTMLElement | null, options: Record<string, unknown>) => MapLike;
-      Marker: new (options: Record<string, unknown>) => { setMap(map: MapLike | null): void };
+      Marker: new (options: Record<string, unknown>) => { 
+        setMap(map: MapLike | null): void;
+        setPosition(position: { lat: number; lng: number } | unknown): void;
+      };
       Animation: {
         DROP: unknown;
       };

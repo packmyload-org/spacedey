@@ -1,0 +1,76 @@
+name: PR Auditing and Label Sync
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Every 15 minutes
+
+jobs:
+  audit-prs:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Audit PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const openPrs = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open'
+            });
+
+            for (const pr of openPrs.data) {
+              const body = pr.body || "";
+              // Regex to find linked issues (e.g., Fixes #123, Resolves #456)
+              const linkedIssueRegex = /(fixes|closes|resolves)\s+#(\d+)/i;
+              const match = body.match(linkedIssueRegex);
+
+              if (!match) {
+                console.log(`PR #${pr.number} has no linked issue.`);
+                // Add status/need-issue label
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: pr.number,
+                  labels: ['status/need-issue']
+                });
+              } else {
+                console.log(`PR #${pr.number} is linked to issue #${match[2]}.`);
+                // Remove status/need-issue label if it exists
+                try {
+                    await github.rest.issues.removeLabel({
+                        owner,
+                        repo,
+                        issue_number: pr.number,
+                        name: 'status/need-issue'
+                    });
+                } catch (e) {
+                    // Ignore if label doesn't exist
+                }
+                
+                // Sync labels from the issue to the PR
+                try {
+                  const issue = await github.rest.issues.get({
+                    owner,
+                    repo,
+                    issue_number: match[2]
+                  });
+
+                  const issueLabels = issue.data.labels.map(label => label.name);
+                  if (issueLabels.length > 0) {
+                    await github.rest.issues.addLabels({
+                      owner,
+                      repo,
+                      issue_number: pr.number,
+                      labels: issueLabels
+                    });
+                    console.log(`Synced labels from issue #${match[2]} to PR #${pr.number}: ${issueLabels.join(', ')}`);
+                  }
+                } catch (error) {
+                  console.error(`Error syncing labels for PR #${pr.number}: ${error.message}`);
+                }
+              }
+            }

@@ -1,0 +1,62 @@
+name: Release Automation
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight (Nightly)
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type (patch, minor, major)'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Bump Version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          npm version ${{ inputs.version_type }} -m "chore(release): %s"
+
+      - name: Publish to NPM
+        # run: npm publish
+        run: echo "npm publish would run here"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push Changes
+        if: github.event_name == 'workflow_dispatch'
+        run: git push && git push --tags
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          generate_release_notes: true

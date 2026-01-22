@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+**/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -19,6 +19,7 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -29,9 +30,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+firebase-debug.log
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+*.env.*
 
 # vercel
 .vercel
@@ -40,15 +48,21 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# secrets
 secrets.txt
+gha-creds-*.json
 
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-pnpm-workspace.yaml
-
-.env.**
-
+# gemini-cli
+.gemini/
 GEMINI.md
-tasks
-agent.ts
+
+# pnpm
+.pnpm-store
+
+# agent specific
+/agent/node_modules
+/agent/dist
+
+# IDEs
+.vscode/
+.idea/

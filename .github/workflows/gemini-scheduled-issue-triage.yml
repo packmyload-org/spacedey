@@ -1,0 +1,33 @@
+name: Scheduled Issue Triage
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Every hour
+
+jobs:
+  scheduled-triage:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Scheduled Triage
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            // Find issues with 'status/need-triage' or no labels
+            // This is a simplified fetch; typically you'd iterate or search
+            const issues = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'status/need-triage' 
+            });
+
+            console.log(`Found ${issues.data.length} issues needing triage.`);
+
+            for (const issue of issues.data) {
+                // Call the triage logic (placeholder)
+                console.log(`Triaging issue #${issue.number}...`);
+                // Implementation would match the automated triage workflow
+            }
