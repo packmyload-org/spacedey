@@ -187,3 +187,6 @@ const ComparisonSizes = () => {
 };
 
 export default ComparisonSizes;
+
+
+

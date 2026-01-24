@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import loadGoogleMaps from '../../lib/loadGoogleMaps';
 import { getAvailableCities } from '@/lib/cities';
+import { LOCATION_DETAILS } from '@/lib/sampleLocations';
 
 interface MapViewProps {
   selectedCity: string;
@@ -52,6 +53,7 @@ export default function MapView({ selectedCity }: MapViewProps) {
 
   const mapRef = useRef<MapLike | null>(null);
   const markerRef = useRef<MarkerLike | null>(null);
+  const markersRef = useRef<Array<{ marker: MarkerLike; city: string }>>([]);
 
   // Get list of available city names
   const availableCityNames = getAvailableCities().map(city => city.name.toLowerCase());
@@ -110,13 +112,30 @@ export default function MapView({ selectedCity }: MapViewProps) {
             }
           ) as MapLike;
 
-          // create marker
+          // create main marker for selected city
           markerRef.current = new (gw.google.maps.Marker as unknown as { new (opts: unknown): unknown })(
             {
               position: center,
               map: mapRef.current as unknown as object,
+              title: selectedCity,
             }
           ) as MarkerLike;
+
+          // Add markers for all available locations
+          Object.entries(LOCATION_DETAILS).forEach(([cityName, details]) => {
+            if (CITY_COORDINATES[cityName]) {
+              const markerPosition = CITY_COORDINATES[cityName];
+              const newMarker = new (gw.google.maps.Marker as unknown as { new (opts: unknown): unknown })(
+                {
+                  position: { lat: markerPosition.lat, lng: markerPosition.lng },
+                  map: mapRef.current as unknown as object,
+                  title: `${details.name} - ${details.address}`,
+                }
+              ) as MarkerLike;
+              
+              markersRef.current.push({ marker: newMarker, city: cityName });
+            }
+          });
         } else {
           // pan to new location
           mapRef.current.panTo(center);
