@@ -10,7 +10,7 @@ const API_BASE_URL = process.env.STOREGANISE_API_URL;
 const API_KEY = process.env.STOREGANISE_API_KEY;
 
 export class StoreganiseError extends Error {
-  constructor(public status: number, message: string, public data?: any) {
+  constructor(public status: number, message: string, public data?: unknown) {
     super(message);
     this.name = 'StoreganiseError';
   }
@@ -22,11 +22,14 @@ export class StoreganiseError extends Error {
  */
 async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   if (!API_BASE_URL) {
+    console.error('Storeganise Error: STOREGANISE_API_URL is not defined');
     throw new Error('STOREGANISE_API_URL is not defined in environment variables.');
   }
 
   const url = API_BASE_URL.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
   
+  console.log(`[Storeganise] Fetching: ${url}`);
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
@@ -41,23 +44,27 @@ async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}):
     const response = await fetch(url, { ...options, headers });
 
     if (!response.ok) {
+      console.error(`[Storeganise] API Error Response: ${response.status} ${response.statusText}`);
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
       let errorData = null;
       
       try {
         errorData = await response.json();
+        console.error('[Storeganise] Error Data:', JSON.stringify(errorData, null, 2));
         if (errorData.message) {
           errorMessage = errorData.message;
         }
       } catch {
-        // Fallback if response is not JSON
+        console.error('[Storeganise] Could not parse error JSON');
       }
-      
+     
       console.error(`Storeganise Request Failed: ${url} -> ${response.status}`, errorData);
       throw new StoreganiseError(response.status, errorMessage, errorData);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log(`[Storeganise] Success: ${url}`, Array.isArray(data) ? `Items: ${data.length}` : 'Object received');
+    return data;
   } catch (error) {
     if (error instanceof StoreganiseError) throw error;
     console.error(`Storeganise API call failed for ${endpoint}:`, error);

@@ -33,10 +33,17 @@ export const useSearchStore = create<SearchState>((set) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await fetch('/api/sites');
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch storage locations');
+        throw new Error(`Failed to fetch storage locations: ${response.statusText}`);
       }
+
       const data: ApiSitesResponse = await response.json();
+      
+      if (!data.sites) {
+         throw new Error('Invalid response format');
+      }
+
       set({ sites: data.sites, isLoading: false });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';

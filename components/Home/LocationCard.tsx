@@ -12,37 +12,11 @@ type LocationImage = {
   image: string;
 };
 
-const LOCATIONS: LocationImage[] = [
-  { city: "Lagos", image: "/images/Lagos.jpg" },
-  { city: "Abuja", image: "/images/Abuja.jpeg" },
-  { city: "Kano", image: "/images/Kano.png" },
-  { city: "Ibadan", image: "/images/Ibadan.jpg" },
-  { city: "Port Harcourt", image: "/images/ph.jpg" }, 
-];
-
-const getLocationImage = (city: string): string => {
-  if (!city) return "";
-
-  // Extract city name from "Spacedey - CityName" format or use as-is
-  const cityName = city.includes(" - ") ? city.split(" - ")[1] : city;
-
-  // Try exact match first
-  const exact = LOCATIONS.find((loc) => loc.city.toLowerCase() === cityName.trim().toLowerCase());
-  if (exact) return exact.image;
-
-  // If no exact match, try a looser match: check if any known city appears inside the provided name
-  const loose = LOCATIONS.find((loc) => city.toLowerCase().includes(loc.city.toLowerCase()));
-  if (loose) return loose.image;
-
-  // No match — return empty so the placeholder UI is shown
-  return "";
-};
-
 interface LocationCardProps {
   name?: string;
   address?: string;
   hours?: string;
-  imageUrl?: string;
+  image?: string;
   promo?: string;
   pricing?: Array<{ size: string; originalPrice: string; currentPrice: string }>;
   onBook?: (unit?: { size: string; originalPrice: string; currentPrice: string }) => void;
@@ -55,7 +29,7 @@ function LocationCard({
   name = "Spacedey Location",
   address = "123 Main St, City, ST",
   hours = "6am - 10pm",
-  imageUrl,
+  image,
   promo,
   pricing,
   onBook = () => {},
@@ -66,7 +40,7 @@ function LocationCard({
   const [showUnitSelector, setShowUnitSelector] = useState(false);
   
   // Use location image if not provided, fall back to imageUrl
-  const displayImage = imageUrl || getLocationImage(name);
+  const displayImage = image;
 
   // Prevent background scrolling when the mobile unit selector is open
   useEffect(() => {

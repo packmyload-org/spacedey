@@ -20,8 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="antialiased">
-        <ZendeskWidget />
+      <body className="antialiased" suppressHydrationWarning>
+        {/* <ZendeskWidget /> */}
         {/* <Header /> */}
         {children}
         {/* <Footer /> */}

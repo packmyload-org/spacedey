@@ -29,12 +29,14 @@ Spacedey is a modern web application for finding and booking storage solutions i
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd spacedey
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    # or
@@ -45,6 +47,7 @@ Spacedey is a modern web application for finding and booking storage solutions i
    Copy `.env.local.example` to `.env.local` (if available) or ensure you have the necessary API keys (Google Maps, Zendesk, etc.).
 
 4. Run the development server:
+
    ```bash
    npm run dev
    ```

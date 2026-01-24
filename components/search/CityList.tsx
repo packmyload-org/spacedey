@@ -17,33 +17,26 @@ export default function CityList({
   selectedCity,
   onSelectCity,
   sites,
-}: CityListProps) {
+}: Readonly<CityListProps>) {
   
-  // Group sites by city
+  // Group sites by code
   const citiesData = useMemo(() => {
     const map = new Map<string, ApiSite[]>();
-    
-    sites.forEach(site => {
-      // Assuming address is comma separated string: "Street, City, State"
-      // We'll try to extract city from the address string if possible, or use a default
-      const addressParts = site.address.split(',').map(p => p.trim());
-      const city = addressParts.length > 1 ? addressParts[1] : (addressParts[0] || 'Unknown City');
-      
-      const normalizedCity = city.trim();
-      if (!map.has(normalizedCity)) {
-        map.set(normalizedCity, []);
-      }
-      map.get(normalizedCity)?.push(site);
-    });
-    
-    return Array.from(map.entries()).map(([name, citySites]) => ({
-      name,
-      sites: citySites
-    })).sort((a, b) => a.name.localeCompare(b.name));
+      sites.forEach(site => {
+        const code = site.code;
+        if (!map.has(code)) {
+          map.set(code, []);
+        }
+        map.get(code)?.push(site);
+      });
+    return Array.from(map.entries()).map(([code, sites]) => ({
+      name: code,
+      sites
+    }));
   }, [sites]);
 
   // Filter cities based on search query
-  const filteredCities = useMemo(() => {
+  const filteredCities: { name: string, sites: ApiSite[] }[]= useMemo(() => {
     if (!searchQuery) return citiesData;
     return citiesData.filter(c => 
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -72,6 +65,7 @@ export default function CityList({
     };
   };
 
+  // console.log(filteredCities, searchQuery, selectedCity)
   return (
     <div className="z-10 bg-brand-page-bg p-6 pt-20">
       <h1 className="font-semibold text-2xl mb-3 capitalize">
@@ -80,24 +74,6 @@ export default function CityList({
 
       {/* If a city is selected, show sites in that city */}
       {selectedCity ? (
-        (() => {
-          const cityGroup = citiesData.find(c => c.name === selectedCity);
-          
-          if (!cityGroup) {
-            return (
-              <div className="space-y-4">
-                 <button
-                  onClick={() => onSelectCity('')}
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  ← Back to list
-                </button>
-                <p>City not found.</p>
-              </div>
-            );
-          }
-
-          return (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <button
@@ -106,11 +82,11 @@ export default function CityList({
                 >
                   ← Back to list
                 </button>
-                <h2 className="text-lg font-semibold">{selectedCity} ({cityGroup.sites.length})</h2>
+                <h2 className="text-lg font-semibold">{selectedCity} (${citiesData.sites.length})</h2>
               </div>
 
               <div className="space-y-6">
-                {cityGroup.sites.map(site => (
+                {citiesData.sites.map(site => (
                   <LocationCard
                     key={site.id}
                     {...getSiteProps(site)}
@@ -119,8 +95,7 @@ export default function CityList({
                 ))}
               </div>
             </div>
-          );
-        })()
+      
       ) : (
         /* No city selected: show list of cities */
         <div className="space-y-4">

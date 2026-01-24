@@ -1,6 +1,6 @@
 // app/api/sites/route.ts
 import { NextResponse } from 'next/server';
-import { getSites } from '@/lib/api/storeganise';
+import { getSites } from '@/lib/integration/storeganise';
 import { ApiSite, ApiSitesResponse, ApiErrorResponse } from '@/lib/types/storeganise';
 import { getLocalizedValue } from '@/lib/utils/storeganise';
 
