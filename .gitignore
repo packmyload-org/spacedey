@@ -33,7 +33,7 @@ yarn-error.log*
 firebase-debug.log
 
 # env files
-.env
+.env.local
 .env.local
 .env.development.local
 .env.test.local
@@ -58,10 +58,6 @@ GEMINI.md
 
 # pnpm
 .pnpm-store
-
-# agent specific
-/agent/node_modules
-/agent/dist
 
 # IDEs
 .vscode/

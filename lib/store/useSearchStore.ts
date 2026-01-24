@@ -1,7 +1,6 @@
 // lib/store/useSearchStore.ts
 import { create } from 'zustand';
-import { ApiSite } from '@/lib/interfaces/ApiSite';
-import { ApiSitesResponse } from '@/lib/interfaces/ApiSitesResponse';
+import { ApiSite, ApiSitesResponse } from '@/lib/types/storeganise';
 
 interface SearchState {
   searchQuery: string;

@@ -1,51 +1,19 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
-import loadGoogleMaps from '../../lib/loadGoogleMaps';
-import { ApiSite } from '@/lib/interfaces/ApiSite';
+import { useEffect, useRef, useMemo } from 'react';
+import { ApiSite } from '@/lib/types/storeganise';
+import { useGoogleMaps, MarkerLike } from '@/lib/hooks/useGoogleMaps';
+import { MapComingSoon } from './MapComingSoon';
 
 interface MapViewProps {
   selectedCity: string;
   sites: ApiSite[];
 }
 
-interface MapLike {
-  panTo(center: { lat: number; lng: number }): void;
-  setCenter(center: { lat: number; lng: number }): void;
-  setZoom(zoom: number): void;
-}
-
-interface MarkerLike {
-  setPosition(position: { lat: number; lng: number } | unknown): void;
-  setMap(map: MapLike | null): void;
-}
-
-interface WindowWithGoogle extends Window {
-  google: {
-    maps: {
-      Map: new (element: HTMLElement | null, options: Record<string, unknown>) => MapLike;
-      Marker: new (options: Record<string, unknown>) => { 
-        setMap(map: MapLike | null): void;
-        setPosition(position: { lat: number; lng: number } | unknown): void;
-      };
-      Animation: {
-        DROP: unknown;
-      };
-    };
-  };
-}
-
 export default function MapView({ selectedCity, sites }: MapViewProps) {
-  const mapContainer = useRef<HTMLDivElement>(null);
   const mapDomRef = useRef<HTMLDivElement | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [mapsLoading, setMapsLoading] = useState(false);
-  const [mapsError, setMapsError] = useState<string | null>(null);
-
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-  const mapRef = useRef<MapLike | null>(null);
   const markersRef = useRef<MarkerLike[]>([]);
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   // Filter sites based on selected city
   const activeSites = useMemo(() => {
@@ -57,108 +25,54 @@ export default function MapView({ selectedCity, sites }: MapViewProps) {
     });
   }, [selectedCity, sites]);
 
-  // Determine if we have valid location data to show
   const hasLocation = activeSites.length > 0;
   
-  // Center on the first site of the group, or default to Lagos (fallback)
-  const centerLocation = hasLocation && activeSites[0].coordinates.lat && activeSites[0].coordinates.lng
-    ? { lat: activeSites[0].coordinates.lat, lng: activeSites[0].coordinates.lng }
-    : { lat: 6.5244, lng: 3.3792 }; // Default Lagos
+  const centerLocation = useMemo(() => {
+    return hasLocation && activeSites[0].coordinates.lat && activeSites[0].coordinates.lng
+      ? { lat: activeSites[0].coordinates.lat, lng: activeSites[0].coordinates.lng }
+      : { lat: 6.5244, lng: 3.3792 }; // Default Lagos
+  }, [hasLocation, activeSites]);
 
-  // Show "Coming Soon" if a city is selected but no sites are found there
   const showComingSoon = selectedCity && !hasLocation && sites.length > 0;
 
+  const { map, mapsLoading, mapsError } = useGoogleMaps(mapDomRef, {
+    apiKey: apiKey || '',
+    center: centerLocation,
+    zoom: 12
+  });
+
+  // Update markers when activeSites or map changes
   useEffect(() => {
-    if (!mapDomRef.current) return;
-    if (showComingSoon) return;
-    if (!apiKey) return;
+    if (!map) return;
 
-    let mounted = true;
+    const google = (window as any).google;
 
-    async function loadAndInit() {
-      if (!mapRef.current) setMapsLoading(true); 
-      
-      try {
-        await loadGoogleMaps(apiKey!);
+    // Clear existing markers
+    markersRef.current.forEach(m => m.setMap(null));
+    markersRef.current = [];
 
-        if (!mounted || !mapDomRef.current) return;
-
-        const gw = window as unknown as WindowWithGoogle; 
-
-        // Initialize Map if not exists
-        if (!mapRef.current) {
-          mapRef.current = new gw.google.maps.Map(mapDomRef.current, {
-            center: centerLocation,
-            zoom: 12,
-            disableDefaultUI: true,
-            styles: [
-               {
-                 featureType: "poi",
-                 elementType: "labels",
-                 stylers: [{ visibility: "off" }]
-               }
-            ]
-          });
-        } else {
-          mapRef.current.panTo(centerLocation);
-        }
-
-        // Clear existing markers
-        markersRef.current.forEach(m => m.setMap(null));
-        markersRef.current = [];
-
-        // Add markers for active sites
-        activeSites.forEach(site => {
-          if (site.coordinates.lat && site.coordinates.lng) {
-            const marker = new gw.google.maps.Marker({
-              position: { lat: site.coordinates.lat, lng: site.coordinates.lng },
-              map: mapRef.current,
-              title: site.name,
-              animation: gw.google.maps.Animation.DROP,
-            });
-            markersRef.current.push(marker);
-          }
+    // Add markers for active sites
+    activeSites.forEach(site => {
+      if (site.coordinates.lat && site.coordinates.lng) {
+        const marker = new google.maps.Marker({
+          position: { lat: site.coordinates.lat, lng: site.coordinates.lng },
+          map: map,
+          title: site.name,
+          animation: google.maps.Animation.DROP,
         });
-
-      } catch (e) {
-        setMapsError(String(e ?? 'Failed to load Google Maps'));
-      } finally {
-        setMapsLoading(false);
+        markersRef.current.push(marker);
       }
+    });
+
+    if (hasLocation) {
+      map.panTo(centerLocation);
     }
-
-    loadAndInit();
-
-    return () => {
-      mounted = false;
-    };
-  }, [apiKey, activeSites, centerLocation, showComingSoon]);
-
+  }, [map, activeSites, centerLocation, hasLocation]);
 
   return (
-    <div
-      ref={mapContainer}
-      className="w-full lg:w-1/2 h-screen lg:max-h-[calc(100vh-82px)] bg-gray-200 relative"
-    >
+    <div className="w-full lg:w-1/2 h-screen lg:max-h-[calc(100vh-82px)] bg-gray-200 relative">
       {showComingSoon ? (
-        <>
-          <div className="absolute inset-0 h-full w-full bg-gradient-to-br from-blue-50 to-indigo-50 z-20" />
-          <div className="absolute inset-0 h-full w-full flex items-center justify-center z-20 p-4">
-            <div className="text-center bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm mx-auto">
-              <div className="text-6xl mb-6">🚀</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Coming Soon!</h2>
-              <p className="text-gray-700 mb-6">
-                <span className="font-semibold text-[#1642F0]">{selectedCity}</span> storage is on the way.
-              </p>
-              <a 
-                href={`mailto:info@spacedey.com?subject=Notify me when ${selectedCity} is available`}
-                className="inline-block px-6 py-2 bg-[#1642F0] text-white rounded-full text-sm font-semibold hover:bg-[#0d1d73] transition-colors"
-              >
-                Notify Me
-              </a>
-            </div>
-          </div>
-        </>
+        <MapComingSoon city={selectedCity} />
       ) : apiKey ? (
         <div className="h-full w-full relative">
           <div ref={mapDomRef} className="h-full w-full" />

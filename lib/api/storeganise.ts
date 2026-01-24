@@ -1,28 +1,38 @@
-import { StoreganiseSite } from '@/lib/interfaces/StoreganiseSite';
-import { StoreganiseUnit } from '@/lib/interfaces/StoreganiseUnit';
-import { StoreganiseUnitType } from '@/lib/interfaces/StoreganiseUnitType';
-import { StoreganiseAuthResponse } from '@/lib/interfaces/StoreganiseAuthResponse';
-import { StoreganiseUser } from '@/lib/interfaces/StoreganiseUser';
+import { 
+  StoreganiseSite, 
+  StoreganiseUnit, 
+  StoreganiseUnitType, 
+  StoreganiseAuthResponse, 
+  StoreganiseUser 
+} from '@/lib/types/storeganise';
 
 const API_BASE_URL = process.env.STOREGANISE_API_URL;
 const API_KEY = process.env.STOREGANISE_API_KEY;
 
-class StoreganiseError extends Error {
-  constructor(public status: number, message: string) {
+export class StoreganiseError extends Error {
+  constructor(public status: number, message: string, public data?: any) {
     super(message);
     this.name = 'StoreganiseError';
   }
 }
 
+/**
+ * Generic fetch wrapper for Storeganise API.
+ * Handles authentication, error parsing, and base URL.
+ */
 async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = API_BASE_URL + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
+  if (!API_BASE_URL) {
+    throw new Error('STOREGANISE_API_URL is not defined in environment variables.');
+  }
+
+  const url = API_BASE_URL.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
   
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
 
-  // Only add API_KEY if Authorization is not already provided
+  // Only add API_KEY if Authorization is not already provided (e.g. Basic or Bearer)
   if (API_KEY && !headers['Authorization']) {
     headers['Authorization'] = `Api ${API_KEY}`;
   }
@@ -32,17 +42,19 @@ async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}):
 
     if (!response.ok) {
       let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+      let errorData = null;
+      
       try {
-        const errorBody = await response.json();
-        if (errorBody.message) {
-          errorMessage = errorBody.message;
+        errorData = await response.json();
+        if (errorData.message) {
+          errorMessage = errorData.message;
         }
-      } catch (e) {
-        console.debug(e)
+      } catch {
+        // Fallback if response is not JSON
       }
       
-      console.error(`Storeganise Request Failed: ${url} -> ${response.status}`);
-      throw new StoreganiseError(response.status, `${errorMessage} (URL: ${url})`);
+      console.error(`Storeganise Request Failed: ${url} -> ${response.status}`, errorData);
+      throw new StoreganiseError(response.status, errorMessage, errorData);
     }
 
     return await response.json();

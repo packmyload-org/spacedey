@@ -4,7 +4,7 @@ import { Eye } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 
-export default function CityList() {
+export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 

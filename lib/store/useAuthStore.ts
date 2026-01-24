@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { StoreganiseUser } from '@/lib/interfaces/StoreganiseUser';
+import { StoreganiseUser } from '@/lib/types/storeganise';
 
 interface AuthState {
   user: StoreganiseUser | null;

@@ -240,7 +240,7 @@ export default StorageMapSection;
  * 
  * 2. Get a Google Maps API key from Google Cloud Console
  * 
- * 3. Add to your .env.local:
+ * 3. Add to your .env.local.local:
  *    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
  * 
  * 4. Replace the placeholder div with:

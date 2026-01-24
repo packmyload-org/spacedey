@@ -1,9 +1,7 @@
 // app/api/sites/route.ts
 import { NextResponse } from 'next/server';
 import { getSites } from '@/lib/api/storeganise';
-import { ApiSite } from '@/lib/interfaces/ApiSite';
-import { ApiSitesResponse } from '@/lib/interfaces/ApiSitesResponse';
-import { ApiErrorResponse } from '@/lib/interfaces/ApiErrorResponse';
+import { ApiSite, ApiSitesResponse, ApiErrorResponse } from '@/lib/types/storeganise';
 import { getLocalizedValue } from '@/lib/utils/storeganise';
 
 export async function GET() {

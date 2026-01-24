@@ -1,5 +1,5 @@
 // lib/utils/storeganise.ts
-import { LocalizedString } from '@/lib/interfaces/LocalizedString';
+import { LocalizedString } from '@/lib/types/storeganise';
 
 /**
  * Extracts the string value from a LocalizedString object or returns the string itself if it's already a string.
