@@ -82,7 +82,7 @@ const WhyStoreWithUs = () => {
           <Link href="/search">
             <PrimaryButton 
               variant="custom" // Use the 'custom' variant for full Tailwind control
-              className="px-8 py-3 text-lg font-semibold border-2"
+              className="px-8 py-3 text-lg font-semibold border-1"
               // Use inline styles to enforce the custom blue color
               style={{ 
                   borderColor: COLORS.BUTTON_BLUE, 

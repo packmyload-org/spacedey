@@ -4,39 +4,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import Card from "../ui/Card";
 import { useStorageCart } from "../../contexts/StorageCartContext";
-
-type LocationImage = {
-  city: string;
-  image: string;
-};
-
-const LOCATIONS: LocationImage[] = [
-  { city: "Lagos", image: "/images/Lagos.jpg" },
-  { city: "Abuja", image: "/images/Abuja.jpeg" },
-  { city: "Kano", image: "/images/Kano.png" },
-  { city: "Ibadan", image: "/images/Ibadan.jpg" },
-  { city: "Port Harcourt", image: "/images/ph.jpg" }, 
-];
-
-const getLocationImage = (city: string): string => {
-  if (!city) return "/images/LocationHero.jpg"; // sensible default
-
-  // Extract city name from "Spacedey - CityName" format or use as-is
-  const cityName = city.includes(" - ") ? city.split(" - ")[1].trim() : city.trim();
-
-  // Try exact match against the extracted name
-  const exact = LOCATIONS.find((loc) => loc.city.toLowerCase() === cityName.toLowerCase());
-  if (exact) return exact.image;
-
-  // Try loose match against both the extracted name and the full input
-  const loose = LOCATIONS.find((loc) =>
-    cityName.toLowerCase().includes(loc.city.toLowerCase()) || city.toLowerCase().includes(loc.city.toLowerCase())
-  );
-  if (loose) return loose.image;
-
-  // Fallback to a default image so cards always show something
-  return "/images/LocationHero.jpg";
-};
+import { getLocationDetails } from "../../lib/sampleLocations";
 
 interface LocationCardProps {
   name?: string;
@@ -65,8 +33,14 @@ function LocationCard({
   const [showUnitSelector, setShowUnitSelector] = useState(false);
   const { openCart } = useStorageCart();
   
-  // Use location image if not provided, fall back to imageUrl
-  const displayImage = imageUrl || getLocationImage(name);
+  // Get complete location details from centralized data
+  const locationDetails = useMemo(() => getLocationDetails(name), [name]);
+  
+  // Use provided values or fall back to centralized location details
+  const finalName = name || locationDetails.name;
+  const finalAddress = address !== "123 Main St, City, ST" ? address : locationDetails.address;
+  const finalHours = hours !== "6am - 10pm" ? hours : locationDetails.hours;
+  const displayImage = imageUrl || locationDetails.image;
 
   // Prevent background scrolling when the mobile unit selector is open
   useEffect(() => {
@@ -158,7 +132,7 @@ function LocationCard({
           {displayImage ? (
               <div className="w-full h-[170px] lg:h-[220px] relative rounded-t-xl lg:rounded-xl overflow-hidden">
               <Image
-                alt={name}
+                alt={finalName}
                 src={displayImage}
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
@@ -170,15 +144,15 @@ function LocationCard({
           )}
 
           <div className="p-4 lg:px-0">
-            <h3 className="text-xl font-semibold text-neutral-900 mb-1">{name}</h3>
-            <div className="font-serif text-brand-graphite mb-2 text-sm">{address}</div>
+            <h3 className="text-xl font-semibold text-neutral-900 mb-1">{finalName}</h3>
+            <div className="font-serif text-brand-graphite mb-2 text-sm">{finalAddress}</div>
 
             {/* Hours Info */}
             <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#1642F0" viewBox="0 0 256 256">
                 <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
               </svg>
-              <span>{hours}</span>
+              <span>{finalHours}</span>
             </div>
 
             {/* Promo Tag */}
@@ -215,7 +189,7 @@ function LocationCard({
         <div className="flex-col justify-between px-4 py-6 w-3/5 hidden lg:flex">
           <div>
             <div className="text-xs text-neutral-600 uppercase tracking-wide mb-2">Location Details</div>
-            <p className="text-sm text-neutral-700 mb-4 leading-relaxed">{address}</p>
+            <p className="text-sm text-neutral-700 mb-4 leading-relaxed">{finalAddress}</p>
 
             {promo && (
               <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 rounded">
@@ -235,7 +209,7 @@ function LocationCard({
                       <div className="text-sm">
                         {unit.size} - <span className="text-neutral-500 line-through"> ₦{unit.originalPrice}</span> <strong className="text-blue-600"> ₦{unit.currentPrice}</strong>
                       </div>
-                      <button onClick={() => { openCart(unit, name, address); onBook(unit); }} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
+                      <button onClick={() => { openCart(unit, finalName, finalAddress); onBook(unit); }} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
                     </div>
                   </div>
                 ))}
@@ -274,7 +248,7 @@ function LocationCard({
                     <li key={unit.id} className="p-3">
                       <button
                         onClick={() => {
-                          openCart(unit, name, address);
+                          openCart(unit, finalName, finalAddress);
                           onBook(unit);
                           setShowUnitSelector(false);
                         }}
