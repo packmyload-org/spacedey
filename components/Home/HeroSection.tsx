@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import PrimaryButton from "../../components/ui/PrimaryButton";
 import InputSearch from "../../components/ui/InputSearch";
 // Using public/ images served by Next.js
@@ -36,9 +37,14 @@ function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col bg-[#1642F0]">
+    <section className="relative min-h-screen flex flex-col bg-[#1642F0] overflow-hidden">
       {/* Social Proof Badge */}
-      <div className="w-full flex justify-center pb-10 pt-24">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full flex justify-center pb-10 pt-24"
+      >
         <div className="bg-white rounded-xl shadow-lg flex items-center px-3 py-1 sm:px-6 sm:py-2 gap-3 torch-sweep">
           <div className="flex -ml-1 items-center">
             <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-200 border-2 border-white -ml-2 sm:-ml-3">
@@ -58,25 +64,40 @@ function HeroSection() {
             Trusted by thousands of renters across <span className="text-neutral-400">7 cities</span>
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center w-full justify-center mb-2 px-4">
         <div className="max-w-6xl mx-auto text-center items-center w-full">
           {/* Hero Heading */}
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8"
+          >
             Self-Storage In Your
             
             Neighborhood
-          </h1>
+          </motion.h1>
 
           {/* Subheading */}
-          <p className="text-base sm:text-xl lg:text-2xl text-white/95 pb-2 mx- mb-6">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+            className="text-base sm:text-xl lg:text-2xl text-white/95 pb-2 mx- mb-6"
+          >
             No hidden fees. Fast booking. A smarter way to store.
-          </p>
+          </motion.p>
 
           {/* Search Card */}
-          <div className="bg-white rounded-2xl shadow-2xl max-w-none sm:max-w-6xl mx-2 py-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+            className="bg-white rounded-2xl shadow-2xl max-w-none sm:max-w-6xl mx-2 py-4"
+          >
             {/* City Navigation */}
             <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-2 sm:gap-10 mb-5 px-2 sm:px-0">
               {cities.map((city) => (
@@ -112,28 +133,39 @@ function HeroSection() {
               </PrimaryButton>
             </div>
             {/* Thumbnails moved below the search card (rendered after this card) */}
-          </div>
+          </motion.div>
+          
           {/* Thumbnails displayed under the search card */}
-          <div className="mt-6 flex items-center justify-center gap-1 sm:gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto px-2">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+            className="mt-6 flex items-center justify-center gap-1 sm:gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto px-2"
+          >
             {/* Responsive image tiles: full width on small screens, fixed size on larger screens */}
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0">
+            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
               <Image src="/images/hero2.jpg" alt="hero 2" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0">
+            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
               <Image src="/images/hero3.jpg" alt="hero 3" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0">
+            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
               <Image src="/images/hero4.jpg" alt="hero 4" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0">
+            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
               <Image src="/images/hero5.jpg" alt="hero 5" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
       {/* Support Link */}
-      <div className="absolute bottom-8 left-8">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 1 }}
+        className="absolute bottom-8 left-8"
+      >
         <button className="flex items-center text-white hover:text-white/80 transition-colors gap-2">
           <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
             <span className="text-xs font-bold">?</span>
@@ -141,7 +173,7 @@ function HeroSection() {
           {/* <span className="font-medium">Support</span> */}
         </button>
           {/* Support area only (images moved into search card) */}
-      </div>
+      </motion.div>
       {/* <div className="mt-6">
       <Image 
         src="/images/HeroM.jpg"

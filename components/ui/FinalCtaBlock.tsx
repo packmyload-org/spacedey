@@ -2,22 +2,23 @@
 import React from "react";
 import Link from "next/link";
 import { Box } from "lucide-react"; // use Box instead of Cube
+import FadeIn from "@/components/ui/FadeIn";
 
 export default function UnitSizes() {
   return (
     <section className="bg-[#f9faff] min-h-full flex flex-col items-center justify-center px-4 py-12">
       {/* Heading */}
-      <div className="text-center mb-10">
+      <FadeIn direction="up" className="text-center mb-10">
         <h2 className="text-3xl font-bold text-[#003087]">
           Find The Right Size
         </h2>
         <div className="w-12 h-1 bg-[#e65c3a] mx-auto mt-3 rounded"></div>
-      </div>
+      </FadeIn>
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
         {/* Small */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
+        <FadeIn delay={0.1} direction="up" className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
           <h3 className="text-lg font-semibold mb-3">Small</h3>
           <div className="flex items-center text-sm text-gray-600 mb-3">
             <Box className="w-4 h-4 text-blue-600 mr-2" />
@@ -26,10 +27,10 @@ export default function UnitSizes() {
           <p className="text-gray-500 text-sm leading-relaxed">
             An extra closet for seasonal storage, bikes, and all the small things
           </p>
-        </div>
+        </FadeIn>
 
         {/* Medium */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
+        <FadeIn delay={0.2} direction="up" className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
           <h3 className="text-lg font-semibold mb-3">Medium</h3>
           <div className="flex items-center text-sm text-gray-600 mb-3">
             <Box className="w-4 h-4 text-blue-600 mr-2" />
@@ -38,10 +39,10 @@ export default function UnitSizes() {
           <p className="text-gray-500 text-sm leading-relaxed">
             Perfect for moving a 1 bedroom, sports gear, and business supplies
           </p>
-        </div>
+        </FadeIn>
 
         {/* Large */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
+        <FadeIn delay={0.3} direction="up" className="bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition">
           <h3 className="text-lg font-semibold mb-3">Large</h3>
           <div className="flex items-center text-sm text-gray-600 mb-3">
             <Box className="w-4 h-4 text-blue-600 mr-2" />
@@ -50,17 +51,17 @@ export default function UnitSizes() {
           <p className="text-gray-500 text-sm leading-relaxed">
             Fit 1-2 bedrooms&apos; worth of belongings, business inventory, and furniture
           </p>
-        </div>
+        </FadeIn>
       </div>
 
       {/* Explore Button */}
-      <div className="my-10">
+      <FadeIn delay={0.4} direction="up" className="my-10">
         <Link href="/sizing">
           <button className="px-14 py-2 border-1 font-semibold border-blue-600 text-blue-600  rounded-full hover:bg-blue-600 hover:text-white transition">
             Explore All Unit Sizes
           </button>
         </Link>
-      </div>
+      </FadeIn>
     </section>
   );
 }

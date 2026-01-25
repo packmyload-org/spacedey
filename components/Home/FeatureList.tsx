@@ -1,10 +1,9 @@
-"use client";
-
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import FadeIn from "@/components/ui/FadeIn";
 
 type Location = {
   city: string;
@@ -38,7 +37,7 @@ export default function FeatureList() {
   return (
     <section className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-12">
+        <FadeIn direction="up" className="flex items-center justify-between mb-12">
           <div className="flex-1" />
           <div className="text-center">
             {/* <h2 className="text-4xl lg:text-4xl font-bold text-[#0A1E5E] inline-block">Discover Our Locations</h2> */}
@@ -63,9 +62,9 @@ export default function FeatureList() {
               <ChevronRight className="w-6 h-6 text-gray-600" />
             </button>
           </div>
-        </div>
+        </FadeIn>
 
-        <div className="relative overflow-hidden">
+        <FadeIn direction="up" delay={0.2} className="relative overflow-hidden">
           <div className="p-0">
             <div
               className="flex transition-transform duration-500 ease-in-out"
@@ -98,7 +97,7 @@ export default function FeatureList() {
               ))}
             </div>
           </div>
-        </div>
+        </FadeIn>
       </div>
       {/* <div className="text-center text-xl font-bold mt-5  pt-5 text-[#1642F0] bg-[#FF00FF]">Explore All Locations</div> */}
     </section>

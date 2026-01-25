@@ -112,6 +112,7 @@ export interface StoreganiseUnitType {
   availableCount?: number; 
   unitTypeGroupId?: string;
   tags?: StoreganiseTag[];
+  [key: string]: unknown;
 }
 
 export interface StoreganiseUnitTypeGroup {

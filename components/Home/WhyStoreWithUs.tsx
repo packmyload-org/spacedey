@@ -4,6 +4,7 @@
 import React from 'react';
 import Link from "next/link";
 import PrimaryButton from "../ui/PrimaryButton"; 
+import FadeIn from "@/components/ui/FadeIn";
 
 // Define the custom colors used in the layout for easy reference
 const COLORS = {
@@ -53,32 +54,35 @@ const WhyStoreWithUs = () => {
       <div className="max-w-6xl mx-auto">
         
         {/* Title */}
-        <h2 
-          className="text-3xl lg:text-4xl font-bold text-center mb-1" 
-          style={{ color: COLORS.TITLE_NAVY }}
-        >
-          Why Store With Us?
-        </h2>
-        
-        {/* Underline */}
-        <div 
-          className="w-12 h-1 mx-auto mb-16"
-          style={{ backgroundColor: COLORS.UNDERLINE_ORANGE }}
-        ></div>
+        <FadeIn direction="up">
+          <h2 
+            className="text-3xl lg:text-4xl font-bold text-center mb-1" 
+            style={{ color: COLORS.TITLE_NAVY }}
+          >
+            Why Store With Us?
+          </h2>
+          
+          {/* Underline */}
+          <div 
+            className="w-12 h-1 mx-auto mb-16"
+            style={{ backgroundColor: COLORS.UNDERLINE_ORANGE }}
+          ></div>
+        </FadeIn>
 
         {/* Features Grid: Responsive layout */}
         <div className="grid grid-cols-2 lg:grid-cols-4 justify-items-center gap-y-12 gap-x-4 lg:gap-x-6">
-          {features.map(feature => (
-            <FeatureItem 
-              key={feature.id} 
-              iconUrl={feature.iconUrl} 
-              text={feature.text} 
-            />
+          {features.map((feature, index) => (
+            <FadeIn key={feature.id} delay={index * 0.1} direction="up" className="w-full flex justify-center">
+              <FeatureItem 
+                iconUrl={feature.iconUrl} 
+                text={feature.text} 
+              />
+            </FadeIn>
           ))}
         </div>
 
         {/* CTA Button */}
-        <div className="text-center mt-16">
+        <FadeIn delay={0.4} direction="up" className="text-center mt-16">
           <Link href="/search">
             <PrimaryButton 
               variant="custom" // Use the 'custom' variant for full Tailwind control
@@ -93,7 +97,7 @@ const WhyStoreWithUs = () => {
               Find A Storage Unit
             </PrimaryButton>
           </Link>
-        </div>
+        </FadeIn>
       </div>
     </section>
   );

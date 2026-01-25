@@ -2,8 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { ChevronLeft, MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
 import { StoreganiseSite, StoreganiseSitemap } from '@/lib/types/storeganise';
 
 interface SiteDetailsProps {
@@ -184,18 +183,13 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{getStr(unit.title)}</h3>
                                             <div className="flex flex-col gap-2 mt-2">
                                                 <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                                                    <span>{unit.width} &times; {unit.depth} {site.measure || 'm'}</span>
                                                     <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                                                 </div>
-                                                {unit.tags && unit.tags.length > 0 && (
                                                     <div className="flex flex-wrap gap-1">
-                                                        {unit.tags.map(tag => (
-                                                            <span key={tag.id || tag.name} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                                {tag.name}
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {getStr(unit?.info)}
                                                             </span>
-                                                        ))}
                                                     </div>
-                                                )}
                                             </div>
                                         </div>
                                         {/* Body */}
