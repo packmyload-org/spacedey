@@ -3,7 +3,8 @@ import {
   StoreganiseUnit, 
   StoreganiseUnitType, 
   StoreganiseAuthResponse, 
-  StoreganiseUser 
+  StoreganiseUser,
+  StoreganiseSitemap
 } from '@/lib/types/storeganise';
 
 const API_BASE_URL = process.env.STOREGANISE_API_URL;
@@ -111,7 +112,7 @@ export async function getSites(): Promise<StoreganiseSite[]> {
  * Docs: GET /v1/sites/:siteId?include=unitTypes
  */
 export async function getSiteDetails(siteId: string): Promise<StoreganiseSite> {
-  return storeganiseFetch<StoreganiseSite>(`/sites/${siteId}?include=unitTypes`);
+  return storeganiseFetch<StoreganiseSite>(`/sites/${siteId}?include=unitTypes,sitemap`);
 }
 
 /**
@@ -128,4 +129,14 @@ export async function getUnitTypes(siteId: string): Promise<StoreganiseUnitType[
  */
 export async function getUnits(siteId: string): Promise<StoreganiseUnit[]> {
   return storeganiseFetch<StoreganiseUnit[]>(`/sites/${siteId}/units`);
+}
+
+/**
+ * Fetches the sitemap (facility map) for a specific site.
+ * Docs: GET /v1/sites/:siteId/sitemap
+ */
+export async function getSiteSitemap(siteId: string): Promise<StoreganiseSitemap> {
+  return storeganiseFetch<StoreganiseSitemap>(`/sites/${siteId}/sitemap`, {
+    method: 'GET'
+  });
 }

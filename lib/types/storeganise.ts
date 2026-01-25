@@ -131,3 +131,10 @@ export interface StoreganiseUnit {
   status: string;
   price: number;
 }
+
+export interface StoreganiseSitemap {
+  id?: string;
+  siteId?: string;
+  svg?: string; // Often sitemaps are returned as SVG content or similar
+  [key: string]: unknown;
+}
