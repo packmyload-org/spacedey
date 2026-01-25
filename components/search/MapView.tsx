@@ -23,17 +23,13 @@ function MapUpdater({ center }: { center: { lat: number, lng: number } }) {
   return null;
 }
 
-export default function MapView({ selectedCity, sites }: MapViewProps) {
+export default function MapView({ selectedCity, sites }: Readonly<MapViewProps>) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   // Filter sites based on selected city
   const activeSites = useMemo(() => {
     if (!selectedCity) return sites;
-    return sites.filter(s => {
-      const addressParts = s.address.split(',').map(p => p.trim());
-      const city = addressParts.length > 1 ? addressParts[1] : (addressParts[0] || '');
-      return city.toLowerCase() === selectedCity.toLowerCase();
-    });
+    return sites.filter(s => s.code.toLowerCase() === selectedCity.toLowerCase());
   }, [selectedCity, sites]);
 
   const hasLocation = activeSites.length > 0;

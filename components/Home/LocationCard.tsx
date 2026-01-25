@@ -3,20 +3,30 @@
 import React, { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import Card from "../ui/Card";
-import PrimaryButton from "../ui/PrimaryButton";
 
 import type { ButtonVariant } from "../ui/PrimaryButton";
 
-type LocationImage = {
-  city: string;
-  image: string;
-};
+// Hook to lock body scroll using CSS class
+function useScrollLock(isLocked: boolean) {
+  useEffect(() => {
+    const body = document.body;
+    if (isLocked) {
+      body.classList.add('lock-scroll');
+    } else {
+      body.classList.remove('lock-scroll');
+    }
+
+    return () => {
+      body.classList.remove('lock-scroll');
+    };
+  }, [isLocked]);
+}
 
 interface LocationCardProps {
-  name?: string;
+  name: string;
   address?: string;
   hours?: string;
-  image?: string;
+  image: string;
   promo?: string;
   pricing?: Array<{ size: string; originalPrice: string; currentPrice: string }>;
   onBook?: (unit?: { size: string; originalPrice: string; currentPrice: string }) => void;
@@ -32,85 +42,26 @@ function LocationCard({
   image,
   promo,
   pricing,
-  onBook = () => {},
-  onViewDetails = () => {},
+  onBook = () => { },
+  onViewDetails = () => { },
   detailsLink = "#",
-  variant = "outline",
-}: LocationCardProps) {
+}: Readonly<LocationCardProps>) {
   const [showUnitSelector, setShowUnitSelector] = useState(false);
-  
+
+  // Custom hook to handle body scroll locking
+  useScrollLock(showUnitSelector);
+
   // Use location image if not provided, fall back to imageUrl
-  const displayImage = image;
-
-  // Prevent background scrolling when the mobile unit selector is open
-  useEffect(() => {
-    if (!showUnitSelector) return;
-
-    const y = window.scrollY || window.pageYOffset;
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
-    const originalTop = document.body.style.top;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-
-    // Lock body and html scroll
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${y}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-
-    // Prevent touchmove and wheel events (covers scrollable fixed children)
-    const preventDefault = (e: Event) => {
-      e.preventDefault();
-    };
-
-    document.addEventListener('touchmove', preventDefault as EventListener, { passive: false });
-    document.addEventListener('wheel', preventDefault as EventListener, { passive: false });
-
-    // Also find any scrollable elements (overflow: auto|scroll and scrollHeight>clientHeight)
-    const scrollableEls: Element[] = [];
-    const originalStyles = new Map<Element, { overflow?: string; touchAction?: string }>();
-    const all = Array.from(document.querySelectorAll<HTMLElement>('*'));
-    for (const el of all) {
-      try {
-        const style = window.getComputedStyle(el);
-        const overflowY = style.overflowY;
-        if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
-          scrollableEls.push(el);
-          originalStyles.set(el, { overflow: el.style.overflow, touchAction: el.style.touchAction });
-          el.style.overflow = 'hidden';
-          el.style.touchAction = 'none';
-        }
-      } catch (e) {
-        // ignore cross-origin or other access errors
-      }
-    }
-
-    return () => {
-      // restore body/html styles
-      document.body.style.overflow = originalOverflow || '';
-      document.body.style.position = originalPosition || '';
-      document.body.style.top = originalTop || '';
-      document.documentElement.style.overflow = originalHtmlOverflow || '';
-      window.scrollTo(0, y);
-
-      // remove listeners
-      document.removeEventListener('touchmove', preventDefault as EventListener);
-      document.removeEventListener('wheel', preventDefault as EventListener);
-
-      // restore scrollable elements
-      for (const el of scrollableEls) {
-        const orig = originalStyles.get(el) || {};
-        (el as HTMLElement).style.overflow = orig.overflow || '';
-        (el as HTMLElement).style.touchAction = orig.touchAction || '';
-      }
-    };
-  }, [showUnitSelector]);
+  // Handle case where image is just a filename (e.g. "Lagos.jpg")
+  const displayImage = useMemo(() => {
+    if (!image) return null;
+    if (image.startsWith('http') || image.startsWith('/')) return image;
+    return `/images/${image}`;
+  }, [image]);
 
   // Fallback mock units if pricing not provided
   const units = useMemo(() => {
-    if (pricing && pricing.length) {
+    if (pricing?.length) {
       return pricing.map((p, idx) => ({ id: idx + 1, size: p.size, originalPrice: p.originalPrice, currentPrice: p.currentPrice }));
     }
     return [
@@ -124,54 +75,70 @@ function LocationCard({
     <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue">
       <div className="lg:flex flex-1">
         {/* Left Side - Image & Basic Info */}
-        <div
-          className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4 hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer"
-          role="button"
-          onClick={onViewDetails}
-        >
-          {displayImage ? (
-            <div className="w-full h-full relative rounded-t-xl lg:rounded-xl flex-1 flex-grow-0 overflow-hidden">
+        <div className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4">
+          <button
+            type="button"
+            className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent"
+            onClick={onViewDetails}
+          >
+            <div className="w-full h-full relative rounded-t-xl lg:rounded-xl flex-1 flex-grow-0 overflow-hidden bg-red">
               <Image
                 alt={name}
-                src={displayImage}
+                src={displayImage || ''}
                 width={600}
                 height={170}
                 style={{ height: '170px', width: '100%' }}
                 className="object-cover rounded-t-xl lg:rounded-xl"
               />
             </div>
-          ) : (
-            <div className="h-[170px] w-full bg-gray-100 rounded-t-xl lg:rounded-xl" />
-          )}
-
+          </button>
+         
           <div className="p-4 lg:px-0">
-            <h3 className="text-xl font-semibold text-neutral-900 mb-1">{name}</h3>
-            <div className="font-serif text-brand-graphite mb-2 text-sm">{address}</div>
+            <button
+              type="button"
+              className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent"
+              onClick={onViewDetails}
+            >
+              <h3 className="text-xl font-semibold text-neutral-900 mb-1">{name}</h3>
+              <div className="font-serif text-brand-graphite mb-2 text-sm">{address}</div>
 
-            {/* Hours Info */}
-            <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#1642F0" viewBox="0 0 256 256">
-                <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
-              </svg>
-              <span>{hours}</span>
-            </div>
-
-            {/* Promo Tag */}
-            {promo && (
-              <div className="flex gap-2 font-serif items-center mb-3 p-2 bg-blue-50 rounded text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
-                  <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
+              {/* Hours Info */}
+              <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#1642F0" viewBox="0 0 256 256">
+                  <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
                 </svg>
-                <div className="text-xs">{promo}</div>
+                <span>{hours}</span>
               </div>
-            )}
+
+              {/* Promo Tag */}
+              {promo && (
+                <div className="flex gap-2 font-serif items-center mb-3 p-2 bg-blue-50 rounded text-xs">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
+                    <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
+                  </svg>
+                  <div className="text-xs">{promo}</div>
+                </div>
+              )}
+            </button>
 
             {/* Mobile-only CTA */}
             <div className="flex gap-2 mt-3 lg:hidden">
-              <a href={detailsLink} className="flex-1">
+              <a 
+                href={detailsLink} 
+                className="flex-1"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
               </a>
-              <button onClick={() => setShowUnitSelector(true)} className="flex-1 bg-blue-600 text-white px-3 py-2 rounded font-medium text-xs hover:bg-blue-700">Select a Unit</button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUnitSelector(true);
+                }} 
+                className="flex-1 bg-blue-600 text-white px-3 py-2 rounded font-medium text-xs hover:bg-blue-700"
+              >
+                Select a Unit
+              </button>
             </div>
 
             {/* Mobile Pricing Summary */}
@@ -180,7 +147,7 @@ function LocationCard({
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
                   <path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path>
                 </svg>
-                <span>Starting at: {units.slice(0,3).map(u => `${u.size.split(' ')[0]} ${u.currentPrice}`).join(' • ')}</span>
+                <span>Starting at: {units.slice(0, 3).map(u => `${u.size.split(' ')[0]} ${u.currentPrice}`).join(' • ')}</span>
               </div>
             )}
           </div>
@@ -204,7 +171,7 @@ function LocationCard({
               <div className="mb-4">
                 <p className="text-xs font-semibold text-neutral-600 uppercase mb-3">Pricing</p>
                 {units.map((unit, index) => (
-                  <div key={index} className="mb-3">
+                  <div key={index + unit.id} className="mb-3">
                     <div className="text-xs leading-3 text-neutral-600 mb-1">Starting at</div>
                     <div className="flex justify-between items-center">
                       <div className="text-sm">

@@ -12,90 +12,112 @@ interface CityListProps {
   sites: ApiSite[];
 }
 
+// Helper to map site to LocationCard props
+// Moved outside component to avoid recreation on re-renders
+const getSiteProps = (site: ApiSite) => {
+  // Map unit types to pricing format
+  const pricing = (site.unitTypes || [])
+    .slice(0, 3)
+    .map((ut) => ({
+      size: ut.name, // e.g. "10x10 ft"
+      originalPrice: (
+        ut.price.originalAmount || ut.price.amount * 1.2
+      ).toFixed(0),
+      currentPrice: ut.price.amount.toFixed(0),
+    }));
+
+  return {
+    name: site.name,
+    address: site.address,
+    hours: '8am - 6pm',
+    image: site.image,
+    pricing,
+    detailsLink: `/locations/${site.id}`,
+  };
+};
+
 export default function CityList({
   searchQuery,
   selectedCity,
   onSelectCity,
   sites,
 }: Readonly<CityListProps>) {
-  
-  // Group sites by code
   const citiesData = useMemo(() => {
     const map = new Map<string, ApiSite[]>();
-      sites.forEach(site => {
-        const code = site.code;
-        if (!map.has(code)) {
-          map.set(code, []);
-        }
-        map.get(code)?.push(site);
-      });
-    return Array.from(map.entries()).map(([code, sites]) => ({
+    sites.forEach((site) => {
+      const code = site.code;
+      if (!map.has(code)) {
+        map.set(code, []);
+      }
+      map.get(code)?.push(site);
+    });
+    return Array.from(map.entries()).map(([code, citySites]) => ({
       name: code,
-      sites
+      sites: citySites,
     }));
   }, [sites]);
 
-  // Filter cities based on search query
-  const filteredCities: { name: string, sites: ApiSite[] }[]= useMemo(() => {
+  const filteredCities = useMemo(() => {
     if (!searchQuery) return citiesData;
-    return citiesData.filter(c => 
-      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.sites.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    const lowerQuery = searchQuery.toLowerCase();
+    return citiesData.filter(
+      (c) =>
+        c.name.toLowerCase().includes(lowerQuery) ||
+        c.sites.some((s) => s.name.toLowerCase().includes(lowerQuery))
     );
   }, [citiesData, searchQuery]);
 
-  // Helper to map site to LocationCard props
-  const getSiteProps = (site: ApiSite) => {
-    // Map unit types to pricing format
-    const pricing = (site.unitTypes || [])
-      .slice(0, 3) 
-      .map(ut => ({
-        size: ut.name, // e.g. "10x10 ft"
-        originalPrice: (ut.price.originalAmount || ut.price.amount * 1.2).toFixed(0),
-        currentPrice: ut.price.amount.toFixed(0)
-      }));
+  const activeCityData = useMemo(() => {
+    if (selectedCity) {
+      return citiesData.find((city) => city.name === selectedCity);
+    }
+    if (
+      searchQuery &&
+      filteredCities.length === 1 &&
+      filteredCities[0].sites.length <= 1
+    ) {
+      return filteredCities[0];
+    }
+    return null;
+  }, [selectedCity, citiesData, searchQuery, filteredCities]);
 
-    return {
-      name: site.name,
-      address: site.address,
-      hours: '8am - 6pm', 
-      imageUrl: site.image,
-      pricing,
-      detailsLink: `/locations/${site.id}`,
-    };
-  };
+  // If we have active data but no manual selection, it's auto-selected
+  const isAutoSelected = !selectedCity && !!activeCityData;
 
-  // console.log(filteredCities, searchQuery, selectedCity)
   return (
     <div className="z-10 bg-brand-page-bg p-6 pt-20">
       <h1 className="font-semibold text-2xl mb-3 capitalize">
         Explore self storage facilities
       </h1>
 
-      {/* If a city is selected, show sites in that city */}
-      {selectedCity ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => onSelectCity('')}
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  ← Back to list
-                </button>
-                <h2 className="text-lg font-semibold">{selectedCity} (${citiesData.sites.length})</h2>
-              </div>
+      {/* If a city is selected (manually or auto), show sites in that city */}
+      {activeCityData ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 -y-2">
+            {!isAutoSelected && (
+              <button
+                onClick={() => onSelectCity('')}
+                className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
+              >
+                ← Back to list
+              </button>
+            )}
 
-              <div className="space-y-6">
-                {citiesData.sites.map(site => (
-                  <LocationCard
-                    key={site.id}
-                    {...getSiteProps(site)}
-                    onBook={() => console.log(`Booking at ${site.code}`)}
-                  />
-                ))}
-              </div>
-            </div>
-      
+            <h2 className="text-lg font-semibold">
+              {activeCityData.name} ({activeCityData.sites.length})
+            </h2>
+          </div>
+
+          <div className="space-y-6">
+            {activeCityData.sites.map((site) => (
+              <LocationCard
+                key={site.id}
+                {...getSiteProps(site)}
+                onBook={() => console.log(`Booking at ${site.code}`)}
+              />
+            ))}
+          </div>
+        </div>
       ) : (
         /* No city selected: show list of cities */
         <div className="space-y-4">
@@ -107,7 +129,9 @@ export default function CityList({
                   className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
                 >
                   <span className="flex-1 font-medium">{city.name}</span>
-                  <span className="text-sm text-gray-500 mr-2">{city.sites.length} locations</span>
+                  <span className="text-sm text-gray-500 mr-2">
+                    {city.sites.length} locations
+                  </span>
                   <ChevronRight className="w-6 h-6 flex-shrink-0" />
                 </button>
               </div>
