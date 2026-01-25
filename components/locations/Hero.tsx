@@ -16,7 +16,7 @@ export default function LocationSection() {
   };
 
   return (
-    <section className="relative overflow-hidden pt-16">
+    <section className="relative overflow-hidden">
       {/* Blue Background + Pattern */}
       <div
         className="relative lg:p-20 bg-[#1642F0] flex flex-col lg:flex-row items-center justify-center bg-cover bg-no-repeat overflow-hidden"

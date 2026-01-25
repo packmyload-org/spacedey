@@ -1,8 +1,9 @@
-import { 
-  StoreganiseSite, 
-  StoreganiseUnit, 
-  StoreganiseUnitType, 
-  StoreganiseAuthResponse, 
+import axios, { AxiosRequestConfig, AxiosError } from 'axios';
+import {
+  StoreganiseSite,
+  StoreganiseUnit,
+  StoreganiseUnitType,
+  StoreganiseAuthResponse,
   StoreganiseUser,
   StoreganiseSitemap
 } from '@/lib/types/storeganise';
@@ -18,17 +19,17 @@ export class StoreganiseError extends Error {
 }
 
 /**
- * Generic fetch wrapper for Storeganise API.
+ * Generic fetch wrapper for Storeganise API using Axios.
  * Handles authentication, error parsing, and base URL.
  */
-async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig = {}): Promise<T> {
   if (!API_BASE_URL) {
     console.error('Storeganise Error: STOREGANISE_API_URL is not defined');
     throw new Error('STOREGANISE_API_URL is not defined in environment variables.');
   }
 
   const url = API_BASE_URL.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
-  
+
   console.log(`[Storeganise] Fetching: ${url}`);
 
   const headers: Record<string, string> = {
@@ -42,32 +43,34 @@ async function storeganiseFetch<T>(endpoint: string, options: RequestInit = {}):
   }
 
   try {
-    const response = await fetch(url, { ...options, headers });
+    const response = await axios({
+      url,
+      ...options,
+      headers,
+    });
 
-    if (!response.ok) {
-      console.error(`[Storeganise] API Error Response: ${response.status} ${response.statusText}`);
-      let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-      let errorData = null;
-      
-      try {
-        errorData = await response.json();
-        console.error('[Storeganise] Error Data:', JSON.stringify(errorData, null, 2));
-        if (errorData.message) {
-          errorMessage = errorData.message;
-        }
-      } catch {
-        console.error('[Storeganise] Could not parse error JSON');
-      }
-     
-      console.error(`Storeganise Request Failed: ${url} -> ${response.status}`, errorData);
-      throw new StoreganiseError(response.status, errorMessage, errorData);
-    }
-
-    const data = await response.json();
+    const data = response.data;
     console.log(`[Storeganise] Success: ${url}`, Array.isArray(data) ? `Items: ${data.length}` : 'Object received');
-    return data;
+    return data as T;
   } catch (error) {
-    if (error instanceof StoreganiseError) throw error;
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      const status = axiosError.response?.status || 500;
+      const statusText = axiosError.response?.statusText || 'Unknown Error';
+      
+      console.error(`[Storeganise] API Error Response: ${status} ${statusText}`);
+      
+      let errorMessage = `API Error: ${status} ${statusText}`;
+      const errorData = axiosError.response?.data;
+
+      if (errorData && typeof errorData === 'object' && 'message' in errorData) {
+        errorMessage = String((errorData as { message: unknown }).message);
+      }
+
+      console.error(`Storeganise Request Failed: ${url} -> ${status}`, errorData);
+      throw new StoreganiseError(status, errorMessage, errorData);
+    }
+    
     console.error(`Storeganise API call failed for ${endpoint}:`, error);
     throw error;
   }
@@ -112,7 +115,7 @@ export async function getSites(): Promise<StoreganiseSite[]> {
  * Docs: GET /v1/sites/:siteId?include=unitTypes
  */
 export async function getSiteDetails(siteId: string): Promise<StoreganiseSite> {
-  return storeganiseFetch<StoreganiseSite>(`/sites/${siteId}?include=unitTypes,sitemap`);
+  return storeganiseFetch<StoreganiseSite>(`/sites/${siteId}?include=unitTypes`);
 }
 
 /**
@@ -137,6 +140,9 @@ export async function getUnits(siteId: string): Promise<StoreganiseUnit[]> {
  */
 export async function getSiteSitemap(siteId: string): Promise<StoreganiseSitemap> {
   return storeganiseFetch<StoreganiseSitemap>(`/sites/${siteId}/sitemap`, {
-    method: 'GET'
+    method: 'GET',
+    headers: {
+      'Authorization': `Api ${API_KEY}`
+    }
   });
 }

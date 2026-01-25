@@ -68,7 +68,26 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
       <div className="w-full lg:px-20" style={{ height: mapHeight }}>
         <div className="h-full relative overflow-hidden bg-gray-200 rounded-lg">
           {/* If API key not present, keep the placeholder */}
-          {!apiKey ? (
+          {apiKey ? (
+            <APIProvider apiKey={apiKey}>
+              <Map
+                defaultCenter={{ lat: 6.5244, lng: 3.3792 }} // Initial center, will be updated by MapHandler
+                defaultZoom={4}
+                disableDefaultUI={true}
+                className="w-full h-full"
+                mapId="storage-locations-map"
+              >
+                {displayLocations.map((loc, idx) => (
+                  <Marker
+                    key={`${loc.name}-${idx}`}
+                    position={{ lat: loc.lat, lng: loc.lng }}
+                    title={loc.name}
+                  />
+                ))}
+                <MapHandler locations={displayLocations} />
+              </Map>
+            </APIProvider>
+          ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <svg
@@ -99,36 +118,12 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
                 </p>
               </div>
             </div>
-          ) : (
-            <APIProvider apiKey={apiKey}>
-              <Map
-                defaultCenter={{ lat: 6.5244, lng: 3.3792 }} // Initial center, will be updated by MapHandler
-                defaultZoom={4}
-                disableDefaultUI={true}
-                className="w-full h-full"
-                mapId="storage-locations-map"
-              >
-                {displayLocations.map((loc, idx) => (
-                  <Marker
-                    key={`${loc.name}-${idx}`}
-                    position={{ lat: loc.lat, lng: loc.lng }}
-                    title={loc.name}
-                  />
-                ))}
-                <MapHandler locations={displayLocations} />
-              </Map>
-            </APIProvider>
           )}
 
-          {/* Instructions for implementation */}
-          <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-md max-w-sm text-xs pointer-events-none">
-            <p className="font-semibold mb-2">Implementation Note:</p>
-            <p className="text-gray-600">This component will render a Google Map when NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is set.</p>
-          </div>
         </div>
       </div>
       
-      <div className="flex justify-center mt-10">
+      <div className="flex justify-center my-10">
         <Link href="/search">
           <button
             type="button"

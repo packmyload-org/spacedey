@@ -117,6 +117,7 @@ export interface StoreganiseSite {
   products?: unknown[];
   measure?: string;
   availability?: unknown;
+  sitemap?: StoreganiseSitemap;
 }
 
 export interface StoreganiseSettingsResponse {

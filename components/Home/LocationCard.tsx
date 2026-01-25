@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import Card from "../ui/Card";
 
@@ -8,18 +9,7 @@ import type { ButtonVariant } from "../ui/PrimaryButton";
 
 // Hook to lock body scroll using CSS class
 function useScrollLock(isLocked: boolean) {
-  useEffect(() => {
-    const body = document.body;
-    if (isLocked) {
-      body.classList.add('lock-scroll');
-    } else {
-      body.classList.remove('lock-scroll');
-    }
-
-    return () => {
-      body.classList.remove('lock-scroll');
-    };
-  }, [isLocked]);
+// ... existing useScrollLock ...
 }
 
 interface LocationCardProps {
@@ -43,8 +33,8 @@ function LocationCard({
   promo,
   pricing,
   onBook = () => { },
-  onViewDetails = () => { },
-  detailsLink = "#",
+  onViewDetails,
+  detailsLink,
 }: Readonly<LocationCardProps>) {
   const [showUnitSelector, setShowUnitSelector] = useState(false);
 
@@ -71,35 +61,44 @@ function LocationCard({
     ];
   }, [pricing]);
 
+  const MainWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+    if (detailsLink) {
+      return <Link href={detailsLink} className={className}>{children}</Link>;
+    }
+    return (
+      <button
+        type="button"
+        className={className}
+        onClick={onViewDetails}
+      >
+        {children}
+      </button>
+    );
+  };
+
   return (
-    <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue">
+    <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue transition-all duration-200 hover:shadow-lg group">
       <div className="lg:flex flex-1">
         {/* Left Side - Image & Basic Info */}
         <div className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4">
-          <button
-            type="button"
-            className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent"
-            onClick={onViewDetails}
-          >
-            <div className="w-full h-full relative rounded-t-xl lg:rounded-xl flex-1 flex-grow-0 overflow-hidden bg-red">
-              <Image
-                alt={name}
-                src={displayImage || ''}
-                width={600}
-                height={170}
-                style={{ height: '170px', width: '100%' }}
-                className="object-cover rounded-t-xl lg:rounded-xl"
-              />
+          <MainWrapper className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
+            <div className="w-full h-full relative rounded-t-xl lg:rounded-xl flex-1 flex-grow-0 overflow-hidden bg-gray-100">
+              {displayImage && (
+                <Image
+                  alt={name}
+                  src={displayImage}
+                  width={600}
+                  height={170}
+                  style={{ height: '170px', width: '100%' }}
+                  className="object-cover rounded-t-xl lg:rounded-xl transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
             </div>
-          </button>
+          </MainWrapper>
          
           <div className="p-4 lg:px-0">
-            <button
-              type="button"
-              className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent"
-              onClick={onViewDetails}
-            >
-              <h3 className="text-xl font-semibold text-neutral-900 mb-1">{name}</h3>
+            <MainWrapper className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
+              <h3 className="text-xl font-semibold text-neutral-900 mb-1 group-hover:text-blue-700 transition-colors">{name}</h3>
               <div className="font-serif text-brand-graphite mb-2 text-sm">{address}</div>
 
               {/* Hours Info */}
@@ -119,17 +118,17 @@ function LocationCard({
                   <div className="text-xs">{promo}</div>
                 </div>
               )}
-            </button>
+            </MainWrapper>
 
             {/* Mobile-only CTA */}
             <div className="flex gap-2 mt-3 lg:hidden">
-              <a 
-                href={detailsLink} 
-                className="flex-1"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
-              </a>
+              {detailsLink ? (
+                 <Link href={detailsLink} className="flex-1">
+                    <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
+                 </Link>
+              ) : (
+                <button onClick={onViewDetails} className="flex-1 w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
+              )}
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
