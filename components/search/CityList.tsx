@@ -96,16 +96,17 @@ export default function CityList({
           <div className="flex items-center gap-3 -y-2">
             {!isAutoSelected && (
               <button
-                onClick={() => onSelectCity('')}
+                onClick={() => onSelectCity(activeCityData.name)}
                 className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
               >
-                ← Back to list
+                 
+                  <span className="flex-1 font-medium">{activeCityData.name}</span>
+                  <span className="text-sm text-gray-500 mr-2">
+                    {activeCityData.sites.length} locations
+                  </span>
+                  <ChevronRight className="w-6 h-6 flex-shrink-0" />
               </button>
             )}
-
-            <h2 className="text-lg font-semibold">
-              {activeCityData.name} ({activeCityData.sites.length})
-            </h2>
           </div>
 
           <div className="space-y-6">
