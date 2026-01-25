@@ -16,7 +16,7 @@ interface SiteDetailsProps {
 const getStr = (obj: unknown) => {
     if (typeof obj === 'string') return obj;
     if (obj && typeof obj === 'object') {
-        return obj?.en || Object.values(obj)[0] || '';
+        return obj.en || Object.values(obj)[0] || '';
     }
     return '';
 };
@@ -189,10 +189,9 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                             <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm font-medium">
                                                 <span>{unit.width} &times; {unit.depth} {site.measure || 'm'}</span>
                                                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                <span>{(unit.width * unit.depth).toFixed(1)} sq {site.measure || 'm'}</span>
+                                                {/* <span>{(unit.width * unit.depth).toFixed(1)} sq {site.measure || 'm'}</span> */}
                                             </div>
                                         </div>
-
                                         {/* Body */}
                                         <div className="p-6 flex-grow flex flex-col justify-between">
                                             <div className="space-y-5 mb-6">
