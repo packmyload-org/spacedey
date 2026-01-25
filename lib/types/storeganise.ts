@@ -81,6 +81,24 @@ export interface StoreganiseSiteAddress {
   country?: string;
 }
 
+export interface StoreganiseTag {
+  id: string;
+  name: string;
+  color?: string;
+}
+
+export interface StoreganiseProduct {
+  id: string;
+  title: LocalizedString;
+  description?: LocalizedString;
+  price: number;
+  image?: string;
+  type?: string;
+  trackInventory?: boolean;
+  inventory?: number;
+  maxQuantity?: number;
+}
+
 export interface StoreganiseUnitType {
   id: string;
   title: LocalizedString;
@@ -93,6 +111,7 @@ export interface StoreganiseUnitType {
   description?: LocalizedString;
   availableCount?: number; 
   unitTypeGroupId?: string;
+  tags?: StoreganiseTag[];
 }
 
 export interface StoreganiseUnitTypeGroup {
@@ -114,7 +133,7 @@ export interface StoreganiseSite {
   lng?: number;
   unitTypes?: StoreganiseUnitType[];
   unitTypeGroups?: StoreganiseUnitTypeGroup[];
-  products?: unknown[];
+  products?: StoreganiseProduct[];
   measure?: string;
   availability?: unknown;
   sitemap?: StoreganiseSitemap;

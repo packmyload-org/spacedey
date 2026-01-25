@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
 import { StoreganiseSite, StoreganiseSitemap } from '@/lib/types/storeganise';
-import SiteMapViewer from './SiteMapViewer';
 
 interface SiteDetailsProps {
     site: StoreganiseSite;
@@ -37,7 +36,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
     return (
         <div className="pb-20">
             {/* Breadcrumb */}
-            <div className="bg-white border-b border-gray-200 sticky top-[80px] z-10 shadow-sm backdrop-blur-md bg-white/90">
+            {/* <div className="bg-white border-b border-gray-200 sticky top-[80px] z-10 shadow-sm backdrop-blur-md bg-white/90">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                     <div className="flex items-center justify-between">
                          <div className="flex items-center text-sm text-gray-500 overflow-hidden whitespace-nowrap">
@@ -53,7 +52,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                         </Link>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
                 <div className="lg:grid lg:grid-cols-12 lg:gap-12">
@@ -86,9 +85,6 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                 </p>
                             </div>
                         )}
-
-                        {/* Sitemap Section */}
-                        <SiteMapViewer svgContent={sitemap?.svg} />
                     </div>
 
                     {/* Right Column: Key Info & Actions */}
@@ -186,10 +182,20 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                                 )}
                                             </div>
                                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{getStr(unit.title)}</h3>
-                                            <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm font-medium">
-                                                <span>{unit.width} &times; {unit.depth} {site.measure || 'm'}</span>
-                                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                                {/* <span>{(unit.width * unit.depth).toFixed(1)} sq {site.measure || 'm'}</span> */}
+                                            <div className="flex flex-col gap-2 mt-2">
+                                                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
+                                                    <span>{unit.width} &times; {unit.depth} {site.measure || 'm'}</span>
+                                                    <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                </div>
+                                                {unit.tags && unit.tags.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {unit.tags.map(tag => (
+                                                            <span key={tag.id || tag.name} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                                {tag.name}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         {/* Body */}
@@ -246,6 +252,39 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                         </div>
                     )}
                 </div>
+
+                {/* Products Section */}
+                {site.products && site.products.length > 0 && (
+                    <div className="mt-20">
+                        <div className="flex items-end justify-between mb-8 border-b border-gray-200 pb-4">
+                            <div>
+                                <h2 className="text-3xl font-bold text-gray-900">Products & Services</h2>
+                                <p className="text-gray-500 mt-2">Moving supplies and extra services</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {site.products.map((product) => (
+                                <div key={product.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all p-4 flex flex-col">
+                                    <div className="relative aspect-square mb-4 bg-gray-50 rounded-lg overflow-hidden">
+                                         <Image
+                                            src={product.image || '/images/image2.png'}
+                                            alt={getStr(product.title)}
+                                            fill
+                                            className="object-contain p-4"
+                                        />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-1">{getStr(product.title)}</h3>
+                                    {product.description && (
+                                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{getStr(product.description)}</p>
+                                    )}
+                                    <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
+                                        <span className="text-xl font-bold text-blue-600">₦{product.price.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

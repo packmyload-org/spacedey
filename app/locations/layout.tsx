@@ -1,4 +1,5 @@
 import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 
 export default function LocationsLayout({
   children,
@@ -7,7 +8,7 @@ export default function LocationsLayout({
 }>) {
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       {children}
       <Footer />
     </>
