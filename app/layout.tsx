@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import ZendeskWidget from "@/components/ZendeskWidget";
+import { StorageCartProvider } from "@/contexts/StorageCartContext";
+import StorageCart from "@/components/StorageCart";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,10 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="antialiased" suppressHydrationWarning>
-        {/* <ZendeskWidget /> */}
-        {/* <Header /> */}
-        {children}
-        {/* <Footer /> */}
+        <StorageCartProvider>
+          <ZendeskWidget />
+          {/* <Header /> */}
+          {children}
+          <StorageCart />
+          {/* <Footer /> */}
+        </StorageCartProvider>
       </body>
     </html>
   );

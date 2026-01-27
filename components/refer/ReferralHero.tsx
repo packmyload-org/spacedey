@@ -225,13 +225,13 @@ export default function ReferralHero() {
 
           {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full max-w-md">
+            <div className="relative w-full">
               <Image
                 src={imageSrc}
                 alt="Referral hero image"
                 width={964}
                 height={886}
-                className="w-full h-auto"
+                style={{ width: '100%', height: 'auto', minHeight: '600px', minWidth: '650px' }}
                 priority
                 unoptimized
                 onError={() => setImageSrc('/images/hero1.jpg')}

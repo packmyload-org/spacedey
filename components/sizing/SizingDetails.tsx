@@ -1,16 +1,14 @@
-'use client'; // This component uses client-side hooks like useState
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Link from "next/link";
 
-// Define the structure for the content of an individual storage size (e.g., 3x5)
 interface StorageSizeDetails {
   size: string;
   howBig: string;
   whatFits: string;
 }
 
-// Define the structure for the content of a major storage category (e.g., Small)
 interface StorageCategory {
   title: string;
   description: string;
@@ -98,117 +96,176 @@ const tabKeys: TabKey[] = ['Small', 'Medium', 'Large'];
 
 // Utility component for rendering the content of a single storage size
 const StorageSize = ({ details }: { details: StorageSizeDetails }) => {
-  const isMedium = details.size === '6 x 10 Storage Unit' || details.size === '10 x 10 Storage Unit';
-  const isLarge = details.size === '10 x 15 Storage Unit' || details.size === '10 x 20 Storage Unit';
-
   return (
-    <div>
-      <h4 className="lg:text-3xl text-2xl font-medium text-[#0C1E7D] lg:mb-4 mb-3">
-        {details.size}
-      </h4>
-      {/* 6x10 and 10x10 units don't have the 'How Big' title in the original HTML */}
-      {(isMedium || isLarge) ? (
-        <h5 className="text-xl font-medium text-[#0C1E7D] mb-3">
-          How Big is a {details.size}?
-        </h5>
-      ) : null}
-      <p className="lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
-        {details.howBig}
-      </p>
+    <article className="space-y-4">
+      <div>
+        <h4 className="lg:text-3xl text-2xl font-semibold text-blue-900 mb-4">
+          {details.size}
+        </h4>
+        <p className="lg:text-lg text-base font-normal text-brand-charcoal-2 leading-relaxed">
+          {details.howBig}
+        </p>
+      </div>
 
-      <h5 className="text-xl font-medium text-brand-secondary-blue mb-3">
-        What Fits in a {details.size}?
-      </h5>
-      <p className="lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-4 mb-8">
-        {details.whatFits}
-      </p>
-    </div>
+      <div>
+        <h5 className="text-xl font-semibold text-brand-primary mb-3">
+          What Fits in a {details.size}?
+        </h5>
+        <p className="lg:text-lg text-base font-normal text-brand-charcoal-2 leading-relaxed">
+          {details.whatFits}
+        </p>
+      </div>
+    </article>
   );
 };
 
-// Main Next.js/React component
+// Main component with improved HCI
 const SizingDetails = () => {
-  // Initialize state with 'Medium' as it was the selected tab in the original HTML
   const [activeTab, setActiveTab] = useState<TabKey>('Medium');
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const activeContent = storageData[activeTab];
 
-  // Logic to calculate the indicator position and width based on the active tab
+  // Calculate indicator position
   const activeTabIndex = tabKeys.indexOf(activeTab);
-  // Assuming equal width tabs (1/3), so width is 100% / 3 = 33.333%
   const indicatorWidthPercent = 100 / tabKeys.length;
-  // Position is (Index * Width)
   const indicatorLeftPercent = activeTabIndex * indicatorWidthPercent;
 
+  // Keyboard navigation handler
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
+    let nextIndex = currentIndex;
+
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      nextIndex = (currentIndex + 1) % tabKeys.length;
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      nextIndex = (currentIndex - 1 + tabKeys.length) % tabKeys.length;
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      nextIndex = tabKeys.length - 1;
+    } else {
+      return;
+    }
+
+    const nextTab = tabKeys[nextIndex];
+    setActiveTab(nextTab);
+    
+    // Focus the newly activated tab button
+    setTimeout(() => {
+      tabRefs.current[nextIndex]?.focus();
+    }, 0);
+  }, []);
+
+  const handleTabClick = (tabKey: TabKey, index: number) => {
+    setActiveTab(tabKey);
+    tabRefs.current[index]?.focus();
+  };
+
   return (
-    <section>
-      <div className="sizing-details-sec py-12 lg:px-20 px-6">
-        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
-          Sizing details
-        </h2>
-        <hr className="h-[3px] w-[50px] mt-6 lg:mb-12 mb-10 mx-auto bg-brand-orange border-0" />
-
-        {/* Custom Tabs Implementation */}
-        <div className="border-b-[1px] text-2xl border-gray-200 lg:mb-12 mb-10 relative">
-          <div className="flex " role="tablist">
-            {tabKeys.map((tabKey) => {
-              const isActive = tabKey === activeTab;
-              // Replicating the button styling from the original HTML as closely as possible
-              const tabClasses = `
-                w-1/3 py-3 px-1 font-sm font-medium text-blue-900 transition-all duration-200 ease-out
-                ${isActive ? 'text-brand-primary scale-105' : 'text-gray-500 hover:text-brand-primary hover:scale-102'}
-                relative focus:outline-none active:scale-95
-              `;
-
-              return (
-                <button
-                  key={tabKey}
-                  className={tabClasses}
-                  onClick={() => setActiveTab(tabKey)}
-                  role="tab"
-                  aria-selected={isActive}
-                >
-                  {tabKey}
-                </button>
-              );
-            })}
+    <section className="sizing-details-section">
+      <div className="py-12 lg:py-16 px-6 lg:px-8">
+        <div className="w-full max-w-6xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold text-blue-900 mb-4">
+              Sizing details
+            </h2>
+            <hr className="h-1 w-12 bg-brand-orange border-0 mx-auto" />
           </div>
-          {/* Custom Tab Indicator */}
-          <span
-            className="absolute bottom-0 h-[2px] bg-brand-primary transition-all duration-300"
-            style={{
-              width: `${indicatorWidthPercent}%`,
-              left: `${indicatorLeftPercent}%`,
-            }}
-          ></span>
-        </div>
 
-        {/* Tab Content */}
-        <div className="mb-5">
-          <h3 className="lg:text-3xl text-2xl font-semibold text-[#0C1E7D] lg:mb-4 mb-3">
-            {activeContent.title}
-          </h3>
-          <p className="lg:text-xl text-base font-normal text-brand-charcoal-2 lg:mb-10 mb-8">
-            {activeContent.description}
-          </p>
-          <div className="grid lg:grid-cols-2 gap-x-8 lg:gap-y-10">
-            {activeContent.sizes.map((sizeDetails, index) => (
-              <StorageSize key={index} details={sizeDetails} />
-            ))}
-          </div>
-        </div>
-
-        {/* Explore All Locations Button */}
-        <div className="text-center">
-          <Link href="/locations">
-            <button
-              className="
-           w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200
-            "
-              type="button"
+          {/* Main Content Card */}
+          <div className="bg-gray-50 rounded-2xl px-6 lg:px-8 py-10 lg:py-12 shadow-sm">
+            {/* Tablist */}
+            <div 
+              className="border-b border-gray-200 mb-10 lg:mb-12 relative"
+              role="tablist"
+              aria-label="Storage unit sizes"
             >
-              Explore all locations
-            </button>
-          </Link>
+              <div className="flex gap-0">
+                {tabKeys.map((tabKey, index) => {
+                  const isActive = tabKey === activeTab;
+                  
+                  return (
+                    <button
+                      key={tabKey}
+                      ref={(el) => {
+                        tabRefs.current[index] = el;
+                      }}
+                      className={`
+                        flex-1 py-4 px-2 lg:px-4 font-semibold text-center
+                        transition-all duration-200 ease-out
+                        border-b-2 -mb-[2px]
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary
+                        ${
+                          isActive
+                            ? 'text-brand-primary border-b-brand-primary'
+                            : 'text-blue-900 border-b-transparent hover:text-brand-primary hover:border-b-gray-300'
+                        }
+                      `}
+                      onClick={() => handleTabClick(tabKey, index)}
+                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls={`panel-${tabKey}`}
+                      tabIndex={isActive ? 0 : -1}
+                    >
+                      <span className="text-lg lg:text-xl">{tabKey}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tab Content Panel */}
+            <div 
+              id={`panel-${activeTab}`}
+              role="tabpanel"
+              aria-labelledby={activeTab}
+              className="space-y-8 lg:space-y-10"
+            >
+              {/* Category Title and Description */}
+              <div>
+                <h3 className="text-2xl lg:text-3xl font-bold text-blue-900 mb-4">
+                  {activeContent.title}
+                </h3>
+                <p className="lg:text-lg text-base text-brand-charcoal-2 leading-relaxed max-w-4xl">
+                  {activeContent.description}
+                </p>
+              </div>
+
+              {/* Storage Size Cards Grid */}
+              <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 ">
+                {activeContent.sizes.map((sizeDetails, index) => (
+                  <StorageSize key={`${activeTab}-${index}`} details={sizeDetails} />
+                ))}
+              </div>
+            </div>
+
+            {/* CTA Button */}
+            <div className="mt-12 lg:mt-14 pt-8 lg:pt-10 border-t border-gray-200 text-center">
+              <Link href="/locations">
+                <button
+                  className="
+                    inline-block px-8 lg:px-10 py-3 lg:py-4
+                    border-1 border-[#1642F0] text-[#1642F0] font-semibold
+                    rounded-full
+                    transition-all duration-200 ease-out
+                    hover:bg-brand-primary hover:text-white
+                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary
+                    active:scale-95
+                    text-base lg:text-lg
+                  "
+                  type="button"
+                  aria-label="Explore all storage locations"
+                >
+                  Explore all locations
+                </button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

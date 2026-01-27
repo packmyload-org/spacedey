@@ -1,16 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Card from "../ui/Card";
-
-import type { ButtonVariant } from "../ui/PrimaryButton";
-
-// Hook to lock body scroll using CSS class
-function useScrollLock() {
-// ... existing useScrollLock ...
-}
+import { useStorageCart } from "../../contexts/StorageCartContext";
+import { getLocationDetails } from "../../lib/sampleLocations";
 
 interface LocationCardProps {
   name: string;
@@ -22,32 +17,105 @@ interface LocationCardProps {
   onBook?: (unit?: { size: string; originalPrice: string; currentPrice: string }) => void;
   onViewDetails?: () => void;
   detailsLink?: string;
-  variant?: ButtonVariant;
 }
 
 function LocationCard({
-  name = "Spacedey Location",
+  name,
   address = "123 Main St, City, ST",
   hours = "6am - 10pm",
   image,
   promo,
   pricing,
-  onBook = () => { },
-  onViewDetails,
-  detailsLink,
-}: Readonly<LocationCardProps>) {
+  onBook = () => {},
+  onViewDetails = () => {},
+  detailsLink = "#",
+}: LocationCardProps) {
   const [showUnitSelector, setShowUnitSelector] = useState(false);
-
-  // Custom hook to handle body scroll locking
-  useScrollLock();
-
-  // Use location image if not provided, fall back to imageUrl
-  // Handle case where image is just a filename (e.g. "Lagos.jpg")
+  const { openCart } = useStorageCart();
+  
+  // Get complete location details from centralized data if name matches known city
+  const locationDetails = useMemo(() => getLocationDetails(name), [name]);
+  
+  // Use provided values or fall back to centralized location details
+  const finalName = name || locationDetails.name;
+  const finalAddress = address !== "123 Main St, City, ST" ? address : locationDetails.address;
+  const finalHours = hours !== "6am - 10pm" ? hours : locationDetails.hours;
+  
+  // Handle image: prioritize prop, then handle http/https, then fallback
   const displayImage = useMemo(() => {
-    if (!image) return null;
-    if (image.startsWith('http') || image.startsWith('/')) return image;
-    return `/images/${image}`;
-  }, [image]);
+    if (image) {
+       if (image.startsWith('http') || image.startsWith('/')) return image;
+       return `/images/${image}`;
+    }
+    return locationDetails.image;
+  }, [image, locationDetails.image]);
+
+
+  // Prevent background scrolling when the mobile unit selector is open
+  useEffect(() => {
+    if (!showUnitSelector) return;
+
+    const y = window.scrollY || window.pageYOffset;
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    // Lock body and html scroll
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${y}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Prevent touchmove and wheel events (covers scrollable fixed children)
+    const preventDefault = (e: Event) => {
+      e.preventDefault();
+    };
+
+    document.addEventListener('touchmove', preventDefault as EventListener, { passive: false });
+    document.addEventListener('wheel', preventDefault as EventListener, { passive: false });
+
+    // Also find any scrollable elements (overflow: auto|scroll and scrollHeight>clientHeight)
+    const scrollableEls: Element[] = [];
+    const originalStyles = new Map<Element, { overflow?: string; touchAction?: string }>();
+    const all = Array.from(document.querySelectorAll<HTMLElement>('*'));
+    for (const el of all) {
+      try {
+        const style = window.getComputedStyle(el);
+        const overflowY = style.overflowY;
+        if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
+          scrollableEls.push(el);
+          originalStyles.set(el, { overflow: el.style.overflow, touchAction: el.style.touchAction });
+          el.style.overflow = 'hidden';
+          el.style.touchAction = 'none';
+        }
+      } catch {
+        // ignore cross-origin or other access errors
+      }
+    }
+
+    return () => {
+      // restore body/html styles
+      document.body.style.overflow = originalOverflow || '';
+      document.body.style.position = originalPosition || '';
+      document.body.style.top = originalTop || '';
+      document.documentElement.style.overflow = originalHtmlOverflow || '';
+      window.scrollTo(0, y);
+
+      // remove listeners
+      document.removeEventListener('touchmove', preventDefault as EventListener);
+      document.removeEventListener('wheel', preventDefault as EventListener);
+
+      // restore scrollable elements
+      for (const el of scrollableEls) {
+        const orig = originalStyles.get(el) || {};
+        (el as HTMLElement).style.overflow = orig.overflow || '';
+        (el as HTMLElement).style.touchAction = orig.touchAction || '';
+      }
+    };
+  }, [showUnitSelector]);
 
   // Fallback mock units if pricing not provided
   const units = useMemo(() => {
@@ -55,14 +123,14 @@ function LocationCard({
       return pricing.map((p, idx) => ({ id: idx + 1, size: p.size, originalPrice: p.originalPrice, currentPrice: p.currentPrice }));
     }
     return [
-      { id: 1, size: "Small (6×8)", originalPrice: "720", currentPrice: "500.40" },
-      { id: 2, size: "Medium (5×9)", originalPrice: "680", currentPrice: "470.60" },
-      { id: 3, size: "Large (18×9)", originalPrice: "2430", currentPrice: "1700.10" },
+        { id: 1, size: "Small (6×8)", originalPrice: "7200", currentPrice: "5004.00" },
+        { id: 2, size: "Medium (5×9)", originalPrice: "6800", currentPrice: "4706.00" },
+        { id: 3, size: "Large (18×9)", originalPrice: "24300", currentPrice: "17001.00" },
     ];
   }, [pricing]);
 
   const MainWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-    if (detailsLink) {
+    if (detailsLink && detailsLink !== "#") {
       return <Link href={detailsLink} className={className}>{children}</Link>;
     }
     return (
@@ -80,17 +148,18 @@ function LocationCard({
     <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue transition-all duration-200 hover:shadow-lg group">
       <div className="lg:flex flex-1">
         {/* Left Side - Image & Basic Info */}
-        <div className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4">
+        <div
+          className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4"
+        >
           <MainWrapper className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
-            <div className="w-full h-full relative rounded-t-xl lg:rounded-xl flex-1 flex-grow-0 overflow-hidden bg-gray-100">
+             <div className="w-full h-[170px] lg:h-[220px] relative rounded-t-xl lg:rounded-xl overflow-hidden bg-gray-100">
               {displayImage && (
                 <Image
-                  alt={name}
-                  src={displayImage}
-                  width={600}
-                  height={170}
-                  style={{ height: '170px', width: '100%' }}
-                  className="object-cover rounded-t-xl lg:rounded-xl transition-transform duration-500 group-hover:scale-105"
+                    alt={finalName}
+                    src={displayImage}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover rounded-t-xl lg:rounded-xl transition-transform duration-500 group-hover:scale-105"
                 />
               )}
             </div>
@@ -98,31 +167,31 @@ function LocationCard({
          
           <div className="p-4 lg:px-0">
             <MainWrapper className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
-              <h3 className="text-xl font-semibold text-neutral-900 mb-1 group-hover:text-blue-700 transition-colors">{name}</h3>
-              <div className="font-serif text-brand-graphite mb-2 text-sm">{address}</div>
+                <h3 className="text-xl font-semibold text-neutral-900 mb-1 group-hover:text-blue-700 transition-colors">{finalName}</h3>
+                <div className="font-serif text-brand-graphite mb-2 text-sm">{finalAddress}</div>
 
-              {/* Hours Info */}
-              <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
+                {/* Hours Info */}
+                <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#1642F0" viewBox="0 0 256 256">
-                  <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
+                    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
                 </svg>
-                <span>{hours}</span>
-              </div>
-
-              {/* Promo Tag */}
-              {promo && (
-                <div className="flex gap-2 font-serif items-center mb-3 p-2 bg-blue-50 rounded text-xs">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
-                    <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
-                  </svg>
-                  <div className="text-xs">{promo}</div>
+                <span>{finalHours}</span>
                 </div>
-              )}
+
+                {/* Promo Tag */}
+                {promo && (
+                <div className="flex gap-2 font-serif items-center mb-3 p-2 bg-blue-50 rounded text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
+                    <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
+                    </svg>
+                    <div className="text-xs">{promo}</div>
+                </div>
+                )}
             </MainWrapper>
 
             {/* Mobile-only CTA */}
             <div className="flex gap-2 mt-3 lg:hidden">
-              {detailsLink ? (
+              {detailsLink && detailsLink !== "#" ? (
                  <Link href={detailsLink} className="flex-1">
                     <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
                  </Link>
@@ -156,7 +225,7 @@ function LocationCard({
         <div className="flex-col justify-between px-4 py-6 w-3/5 hidden lg:flex">
           <div>
             <div className="text-xs text-neutral-600 uppercase tracking-wide mb-2">Location Details</div>
-            <p className="text-sm text-neutral-700 mb-4 leading-relaxed">{address}</p>
+            <p className="text-sm text-neutral-700 mb-4 leading-relaxed">{finalAddress}</p>
 
             {promo && (
               <div className="mb-4 p-3 bg-green-50 border-l-4 border-green-500 rounded">
@@ -182,12 +251,7 @@ function LocationCard({
                            <strong className="text-blue-600 text-sm">₦{unit.currentPrice}</strong>
                         </div>
                       </div>
-                      <button 
-                        onClick={() => onBook(unit)} 
-                        className="px-4 py-1.5 bg-white border border-blue-200 text-blue-600 text-xs font-bold rounded-md hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"
-                      >
-                        RESERVE
-                      </button>
+                      <button onClick={() => { openCart(unit, finalName, finalAddress); onBook(unit); }} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
                     </div>
                   ))}
                 </div>
@@ -237,6 +301,7 @@ function LocationCard({
                     <li key={unit.id}>
                       <button
                         onClick={() => {
+                          openCart(unit, finalName, finalAddress);
                           onBook(unit);
                           setShowUnitSelector(false);
                         }}
