@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import Link from "next/link";
-import loadGoogleMaps from '../../lib/loadGoogleMaps';
+import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 
 interface MapLocation {
   lat: number;
@@ -15,23 +15,33 @@ interface StorageMapSectionProps {
   mapHeight?: string;
 }
 
-// Minimal interfaces for Google Maps objects used here
-interface MapLike {
-  setCenter(center: { lat: number; lng: number }): void;
-  setZoom(zoom: number): void;
-  fitBounds(bounds: unknown): void;
-}
+// Handler to fit bounds or center map based on locations
+function MapHandler({ locations }: { locations: MapLocation[] }) {
+  const map = useMap();
 
-interface MarkerLike {
-  setMap(map: MapLike | null): void;
-  getPosition(): unknown;
+  useEffect(() => {
+    if (!map || !locations.length) return;
+
+    if (locations.length === 1) {
+      map.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
+      map.setZoom(12);
+    } else {
+      const bounds = new google.maps.LatLngBounds();
+      locations.forEach(loc => {
+        bounds.extend({ lat: loc.lat, lng: loc.lng });
+      });
+      map.fitBounds(bounds);
+    }
+  }, [map, locations]);
+
+  return null;
 }
 
 const StorageMapSection: React.FC<StorageMapSectionProps> = ({
   locations = [],
   mapHeight = '600px'
 }) => {
-  const defaultLocations: MapLocation[] = [
+  const defaultLocations: MapLocation[] = useMemo(() => [
     { lat: 6.5244, lng: 3.3792, name: 'Lagos' },
     { lat: 9.0765, lng: 7.3986, name: 'Abuja' },
     { lat: 12.0022, lng: 8.6753, name: 'Kano' },
@@ -42,105 +52,10 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
     { lat: 6.4969, lng: 7.5519, name: 'Enugu' },
     { lat: 10.4904, lng: 7.6277, name: 'Kaduna' },
     { lat: 6.5897, lng: 3.3474, name: 'Abeokuta' }
-  ];
+  ], []);
 
   const displayLocations = locations.length > 0 ? locations : defaultLocations;
-  const mapDomRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<MapLike | null>(null);
-  const markersRef = useRef<MarkerLike[]>([]);
-  const [mapsLoading, setMapsLoading] = useState(false);
-  const [mapsError, setMapsError] = useState<string | null>(null);
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyAEHsYzuTiYRmGv79PIdjvP9TgUU5vZlTU';
-
-  const serializedDisplayLocations = JSON.stringify(displayLocations);
-
-  useEffect(() => {
-    if (!mapDomRef.current) return;
-
-    if (!apiKey) return; // keep placeholder if no key
-
-    let mounted = true;
-    async function init() {
-      setMapsLoading(true);
-      try {
-        await loadGoogleMaps(apiKey!);
-
-        if (!mounted || !mapDomRef.current) return;
-
-        // Parse a stable, serialized copy of locations to avoid complex deps
-        const locs: MapLocation[] = JSON.parse(serializedDisplayLocations);
-
-        // runtime access to window.google with minimal typed shape (avoid `any`)
-        type GoogleMapsLike = {
-          google: {
-            maps: {
-              LatLngBounds: new () => unknown;
-              Map: new (el: HTMLElement, opts: unknown) => unknown;
-              Marker: new (opts: unknown) => unknown;
-            };
-          };
-        };
-
-        const gw = window as unknown as GoogleMapsLike;
-  const bounds = new (gw.google.maps.LatLngBounds as unknown as { new (): unknown })();
-
-        if (!mapRef.current) {
-          mapRef.current = new (gw.google.maps.Map as unknown as { new (el: HTMLElement, opts: unknown): unknown })(
-            mapDomRef.current,
-            {
-              center: { lat: locs[0].lat, lng: locs[0].lng },
-              zoom: 4,
-              disableDefaultUI: true,
-            }
-          ) as unknown as MapLike;
-        }
-
-        // Clear existing markers
-        markersRef.current.forEach((m) => m.setMap(null));
-        markersRef.current = [];
-
-        // Add markers
-        locs.forEach((loc) => {
-          const marker = new (gw.google.maps.Marker as unknown as { new (opts: unknown): unknown })(
-            {
-              position: { lat: loc.lat, lng: loc.lng },
-              map: mapRef.current as unknown as object,
-              title: loc.name,
-            }
-          ) as unknown as MarkerLike;
-          markersRef.current.push(marker);
-          const boundsExt = bounds as unknown as { extend(pos: unknown): void };
-          const markerPos = (marker as unknown as { getPosition(): unknown }).getPosition();
-          boundsExt.extend(markerPos);
-        });
-
-        if (locs.length === 1) {
-          mapRef.current.setCenter({ lat: locs[0].lat, lng: locs[0].lng });
-          mapRef.current.setZoom(12);
-        } else {
-          // fitBounds expects a LatLngBounds-like object — call via the typed wrapper
-          const mapWithFit = mapRef.current as unknown as { fitBounds(bounds: unknown): void };
-          mapWithFit.fitBounds(bounds);
-        }
-      } catch (e) {
-        setMapsError(String(e ?? 'Failed to load Google Maps'));
-      } finally {
-        setMapsLoading(false);
-      }
-    }
-
-    init();
-
-    return () => {
-      mounted = false;
-      // clean markers
-      markersRef.current.forEach((m) => m.setMap(null));
-      markersRef.current = [];
-    };
-  // Use a stable serialized key for location array to avoid complex deps
-  }, [serializedDisplayLocations, apiKey]);
-
-  // loader delegated to lib/loadGoogleMaps
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   return (
     <div>
@@ -153,7 +68,26 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
       <div className="w-full lg:px-20" style={{ height: mapHeight }}>
         <div className="h-full relative overflow-hidden bg-gray-200 rounded-lg">
           {/* If API key not present, keep the placeholder */}
-          {!apiKey ? (
+          {apiKey ? (
+            <APIProvider apiKey={apiKey}>
+              <Map
+                defaultCenter={{ lat: 6.5244, lng: 3.3792 }} // Initial center, will be updated by MapHandler
+                defaultZoom={4}
+                disableDefaultUI={true}
+                className="w-full h-full"
+                mapId="storage-locations-map"
+              >
+                {displayLocations.map((loc, idx) => (
+                  <Marker
+                    key={`${loc.name}-${idx}`}
+                    position={{ lat: loc.lat, lng: loc.lng }}
+                    title={loc.name}
+                  />
+                ))}
+                <MapHandler locations={displayLocations} />
+              </Map>
+            </APIProvider>
+          ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <svg
@@ -184,39 +118,12 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
                 </p>
               </div>
             </div>
-          ) : (
-            <>
-              <div ref={mapDomRef} className="absolute inset-0" />
-              {mapsLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-                  <div className="text-center bg-white/80 p-6 rounded-lg shadow">
-                    <div className="text-4xl mb-2">🗺️</div>
-                    <p className="text-gray-600">Loading map...</p>
-                  </div>
-                </div>
-              )}
-              {mapsError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-white/80 p-6">
-                  <div className="bg-white p-6 rounded-lg shadow text-center max-w-md">
-                    <h3 className="text-lg font-semibold mb-2">Map unavailable</h3>
-                    <p className="text-sm text-gray-700 mb-4">{mapsError}</p>
-                    <p className="text-sm text-gray-600">This often means billing is not enabled for your Google Cloud project. Follow the Google instructions to enable billing for the Maps JavaScript API.</p>
-                    <p className="text-xs text-gray-500 mt-3">See: <a className="text-blue-600 underline" href="https://developers.google.com/maps/documentation/javascript/error-messages#billing-not-enabled-map-error" target="_blank" rel="noreferrer">BillingNotEnabledMapError</a></p>
-                  </div>
-                </div>
-              )}
-            </>
           )}
 
-          {/* Instructions for implementation */}
-          <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-md max-w-sm text-xs">
-            <p className="font-semibold mb-2">Implementation Note:</p>
-            <p className="text-gray-600">This component will render a Google Map when NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is set.</p>
-          </div>
         </div>
       </div>
       
-      <div className="flex justify-center mt-10">
+      <div className="flex justify-center my-10">
         <Link href="/search">
           <button
             type="button"
@@ -231,51 +138,3 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
 };
 
 export default StorageMapSection;
-
-/* 
- * IMPLEMENTATION GUIDE:
- * 
- * 1. Install Google Maps for React:
- *    npm install @react-google-maps/api
- * 
- * 2. Get a Google Maps API key from Google Cloud Console
- * 
- * 3. Add to your .env.local:
- *    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key_here
- * 
- * 4. Replace the placeholder div with:
- * 
- *    import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
- * 
- *    const mapContainerStyle = {
- *      width: '100%',
- *      height: '100%'
- *    };
- * 
- *    const center = {
- *      lat: 38.794595,
- *      lng: -106.534838
- *    };
- * 
- *    <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}>
- *      <GoogleMap
- *        mapContainerStyle={mapContainerStyle}
- *        center={center}
- *        zoom={4}
- *      >
- *        {displayLocations.map((location, idx) => (
- *          <Marker
- *            key={idx}
- *            position={{ lat: location.lat, lng: location.lng }}
- *            icon={{
- *              path: "M24 3.795c-4.374 0-8.568 1.74-11.661 4.833...",
- *              fillColor: '#1642F0',
- *              fillOpacity: 1,
- *              strokeWeight: 0,
- *              scale: 1,
- *            }}
- *          />
- *        ))}
- *      </GoogleMap>
- *    </LoadScript>
- */

@@ -3,7 +3,7 @@ interface PriceMarkerProps {
   onClick?: () => void;
 }
 
-export default function PriceMarker({ price, onClick }: PriceMarkerProps) {
+export default function PriceMarker({ price, onClick }: Readonly<PriceMarkerProps>) {
   return (
     <button
       onClick={onClick}

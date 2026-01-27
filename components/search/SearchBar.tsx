@@ -6,7 +6,7 @@ interface SearchBarProps {
   onSearch?: (value: string) => void;
 }
 
-export default function SearchBar({ value, onChange, onSearch }: SearchBarProps) {
+export default function SearchBar({ value, onChange, onSearch }: Readonly<SearchBarProps>) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && value.trim() && onSearch) {
       onSearch(value.trim());

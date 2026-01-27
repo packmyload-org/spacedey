@@ -8,7 +8,7 @@ export interface SectionTitleProps {
 }
 
 export default function SectionTitle({ children, as = "h2", className = "" }: SectionTitleProps) {
-  const Tag = as as keyof JSX.IntrinsicElements;
+  const Tag = as as React.ElementType;
   return (
     <Tag className={`font-extrabold tracking-tight text-neutral-900 mb-6 text-3xl sm:text-4xl lg:text-5xl ${className}`}>
       {children}

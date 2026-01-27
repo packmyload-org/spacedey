@@ -1,29 +1,30 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import { useState, useMemo } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import Card from "../ui/Card";
 import { useStorageCart } from "../../contexts/StorageCartContext";
 import { getLocationDetails } from "../../lib/sampleLocations";
+import UnitSelectorModal from "./UnitSelectorModal";
 
 interface LocationCardProps {
-  name?: string;
+  name: string;
   address?: string;
   hours?: string;
-  imageUrl?: string;
+  image: string;
   promo?: string;
   pricing?: Array<{ size: string; originalPrice: string; currentPrice: string }>;
   onBook?: (unit?: { size: string; originalPrice: string; currentPrice: string }) => void;
   onViewDetails?: () => void;
   detailsLink?: string;
-  
 }
 
 function LocationCard({
-  name = "Spacedey Location",
+  name,
   address = "123 Main St, City, ST",
   hours = "6am - 10pm",
-  imageUrl,
+  image,
   promo,
   pricing,
   onBook = () => {},
@@ -33,84 +34,26 @@ function LocationCard({
   const [showUnitSelector, setShowUnitSelector] = useState(false);
   const { openCart } = useStorageCart();
   
-  // Get complete location details from centralized data
+  // Get complete location details from centralized data if name matches known city
   const locationDetails = useMemo(() => getLocationDetails(name), [name]);
   
   // Use provided values or fall back to centralized location details
   const finalName = name || locationDetails.name;
   const finalAddress = address !== "123 Main St, City, ST" ? address : locationDetails.address;
   const finalHours = hours !== "6am - 10pm" ? hours : locationDetails.hours;
-  const displayImage = imageUrl || locationDetails.image;
-
-  // Prevent background scrolling when the mobile unit selector is open
-  useEffect(() => {
-    if (!showUnitSelector) return;
-
-    const y = window.scrollY || window.pageYOffset;
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
-    const originalTop = document.body.style.top;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
-
-    // Lock body and html scroll
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${y}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-
-    // Prevent touchmove and wheel events (covers scrollable fixed children)
-    const preventDefault = (e: Event) => {
-      e.preventDefault();
-    };
-
-    document.addEventListener('touchmove', preventDefault as EventListener, { passive: false });
-    document.addEventListener('wheel', preventDefault as EventListener, { passive: false });
-
-    // Also find any scrollable elements (overflow: auto|scroll and scrollHeight>clientHeight)
-    const scrollableEls: Element[] = [];
-    const originalStyles = new Map<Element, { overflow?: string; touchAction?: string }>();
-    const all = Array.from(document.querySelectorAll<HTMLElement>('*'));
-    for (const el of all) {
-      try {
-        const style = window.getComputedStyle(el);
-        const overflowY = style.overflowY;
-        if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) {
-          scrollableEls.push(el);
-          originalStyles.set(el, { overflow: el.style.overflow, touchAction: el.style.touchAction });
-          el.style.overflow = 'hidden';
-          el.style.touchAction = 'none';
-        }
-      } catch {
-        // ignore cross-origin or other access errors
-      }
+  
+  // Handle image: prioritize prop, then handle http/https, then fallback
+  const displayImage = useMemo(() => {
+    if (image) {
+       if (image.startsWith('http') || image.startsWith('/')) return image;
+       return `/images/${image}`;
     }
-
-    return () => {
-      // restore body/html styles
-      document.body.style.overflow = originalOverflow || '';
-      document.body.style.position = originalPosition || '';
-      document.body.style.top = originalTop || '';
-      document.documentElement.style.overflow = originalHtmlOverflow || '';
-      window.scrollTo(0, y);
-
-      // remove listeners
-      document.removeEventListener('touchmove', preventDefault as EventListener);
-      document.removeEventListener('wheel', preventDefault as EventListener);
-
-      // restore scrollable elements
-      for (const el of scrollableEls) {
-        const orig = originalStyles.get(el) || {};
-        (el as HTMLElement).style.overflow = orig.overflow || '';
-        (el as HTMLElement).style.touchAction = orig.touchAction || '';
-      }
-    };
-  }, [showUnitSelector]);
+    return locationDetails.image;
+  }, [image, locationDetails.image]);
 
   // Fallback mock units if pricing not provided
   const units = useMemo(() => {
-    if (pricing && pricing.length) {
+    if (pricing?.length) {
       return pricing.map((p, idx) => ({ id: idx + 1, size: p.size, originalPrice: p.originalPrice, currentPrice: p.currentPrice }));
     }
     return [
@@ -120,66 +63,93 @@ function LocationCard({
     ];
   }, [pricing]);
 
+  const MainWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+    if (detailsLink && detailsLink !== "#") {
+      return <Link href={detailsLink} className={className}>{children}</Link>;
+    }
+    return (
+      <button
+        type="button"
+        className={className}
+        onClick={onViewDetails}
+      >
+        {children}
+      </button>
+    );
+  };
+
   return (
-    <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue">
+    <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue transition-all duration-200 hover:shadow-lg group">
       <div className="lg:flex flex-1">
         {/* Left Side - Image & Basic Info */}
         <div
-          className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4 hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer"
-          role="button"
-          onClick={onViewDetails}
+          className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4"
         >
-          {displayImage ? (
-              <div className="w-full h-[170px] lg:h-[220px] relative rounded-t-xl lg:rounded-xl overflow-hidden">
-              <Image
-                alt={finalName}
-                src={displayImage}
-                fill
-                sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover rounded-t-xl lg:rounded-xl"
-              />
+          <MainWrapper className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
+             <div className="w-full h-[170px] lg:h-[220px] relative rounded-t-xl lg:rounded-xl overflow-hidden bg-gray-100">
+              {displayImage && (
+                <Image
+                    alt={finalName}
+                    src={displayImage}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className="object-cover rounded-t-xl lg:rounded-xl transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
             </div>
-          ) : (
-            <div className="h-[170px] w-full bg-gray-100 rounded-t-xl lg:rounded-xl" />
-          )}
-
+          </MainWrapper>
+         
           <div className="p-4 lg:px-0">
-            <h3 className="text-xl font-semibold text-neutral-900 mb-1">{finalName}</h3>
-            <div className="font-serif text-brand-graphite mb-2 text-sm">{finalAddress}</div>
+            <MainWrapper className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
+                <h3 className="text-xl font-semibold text-neutral-900 mb-1 group-hover:text-blue-700 transition-colors">{finalName}</h3>
+                <div className="font-serif text-brand-graphite mb-2 text-sm">{finalAddress}</div>
 
-            {/* Hours Info */}
-            <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#1642F0" viewBox="0 0 256 256">
-                <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
-              </svg>
-              <span>{finalHours}</span>
-            </div>
-
-            {/* Promo Tag */}
-            {promo && (
-              <div className="flex gap-2 font-serif items-center mb-3 p-2 bg-blue-50 rounded text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
-                  <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
+                {/* Hours Info */}
+                <div className="flex gap-2 font-serif items-center text-sm text-neutral-600 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#1642F0" viewBox="0 0 256 256">
+                    <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v72h56A8,8,0,0,1,192,128Z"></path>
                 </svg>
-                <div className="text-xs">{promo}</div>
-              </div>
-            )}
+                <span>{finalHours}</span>
+                </div>
+
+                {/* Promo Tag */}
+                {promo && (
+                <div className="flex gap-2 font-serif items-center mb-3 p-2 bg-blue-50 rounded text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
+                    <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
+                    </svg>
+                    <div className="text-xs">{promo}</div>
+                </div>
+                )}
+            </MainWrapper>
 
             {/* Mobile-only CTA */}
             <div className="flex gap-2 mt-3 lg:hidden">
-              <a href={detailsLink} className="flex-1">
-                <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
-              </a>
-              <button onClick={() => setShowUnitSelector(true)} className="flex-1 bg-blue-600 text-white px-3 py-2 rounded font-medium text-xs hover:bg-blue-700">Select a Unit</button>
+              {detailsLink && detailsLink !== "#" ? (
+                 <Link href={detailsLink} className="flex-1">
+                    <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
+                 </Link>
+              ) : (
+                <button onClick={onViewDetails} className="flex-1 w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
+              )}
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowUnitSelector(true);
+                }} 
+                className="flex-1 bg-blue-600 text-white px-3 py-2 rounded font-medium text-xs hover:bg-blue-700"
+              >
+                Select a Unit
+              </button>
             </div>
 
             {/* Mobile Pricing Summary */}
             {units && units.length > 0 && (
-              <div className="flex gap-2 font-serif items-center lg:hidden mt-3 p-2 bg-gray-50 rounded text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
+              <div className="flex gap-2 font-serif items-center lg:hidden mt-3 p-2 bg-gray-50 rounded text-xs border border-gray-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256" className="flex-shrink-0">
                   <path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path>
                 </svg>
-                <span>Starting at: {units.slice(0,3).map(u => `${u.size.split(' ')[0]} ${u.currentPrice}`).join(' • ')}</span>
+                <span className="text-gray-700">Starting at: {units.slice(0, 3).map(u => `${u.size.split(' ')[0]} ₦${u.currentPrice}`).join(' • ')}</span>
               </div>
             )}
           </div>
@@ -201,75 +171,50 @@ function LocationCard({
             {/* Desktop Pricing Table */}
             {units && units.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs font-semibold text-neutral-600 uppercase mb-3">Pricing</p>
-                {units.map((unit, index) => (
-                  <div key={index} className="mb-3">
-                    <div className="text-xs leading-3 text-neutral-600 mb-1">Starting at</div>
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm">
-                        {unit.size} - <span className="text-neutral-500 line-through"> ₦{unit.originalPrice}</span> <strong className="text-blue-600"> ₦{unit.currentPrice}</strong>
+                <p className="text-xs font-semibold text-neutral-600 uppercase mb-3">Available Units</p>
+                <div className="space-y-2">
+                  {units.map((unit, index) => (
+                    <div 
+                      key={index + unit.id} 
+                      className="flex justify-between items-center p-3 rounded-lg bg-gray-50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-sm transition-all duration-200 group"
+                    >
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900 group-hover:text-blue-700 transition-colors">{unit.size}</div>
+                        <div className="flex items-center gap-2 text-xs mt-0.5">
+                           <span className="text-neutral-400 line-through">₦{unit.originalPrice}</span>
+                           <strong className="text-blue-600 text-sm">₦{unit.currentPrice}</strong>
+                        </div>
                       </div>
                       <button onClick={() => { openCart(unit, finalName, finalAddress); onBook(unit); }} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
           <div className="flex gap-3">
             <a href={detailsLink} className="flex-1">
-              <button className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded font-semibold uppercase text-sm hover:bg-blue-50">View Details</button>
+              <button className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded font-semibold uppercase text-sm hover:bg-blue-50 transition-colors">View Details</button>
             </a>
-            <button onClick={() => setShowUnitSelector(true)} className="flex-1 bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700">Book Now</button>
+            <button 
+              onClick={() => setShowUnitSelector(true)} 
+              className="flex-1 bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 transition-colors shadow-sm"
+            >
+              Book Now
+            </button>
           </div>
         </div>
       </div>
 
-      {/* MOBILE UNIT SELECTOR OVERLAY */}
-      {showUnitSelector && (
-        <div className="fixed inset-0 z-50 top-0 flex items-center justify-center bg-black/40 backdrop-blur-sm lg:hidden">
-          <div className="w-full max-w-md mx-4 mb-6">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden max-h-[80vh] flex flex-col">
-              <div className="px-4 py-3 flex items-center justify-between border-b">
-                <div className="flex-1 text-center">
-                  <div className="w-14 h-1.5 bg-gray-200 rounded-full mx-auto" />
-                </div>
-                <button onClick={() => setShowUnitSelector(false)} className="text-gray-500 hover:text-gray-800">✕</button>
-              </div>
-
-              <div className="p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold mb-3">Select a Unit</h3>
-                <p className="text-sm text-gray-500 mb-4">Choose a unit to reserve — tap any option to continue.</p>
-
-                <ul className="divide-y divide-gray-100">
-                  <li className="p-3 text-sm text-gray-500">Available units</li>
-                  {units.map((unit) => (
-                    <li key={unit.id} className="p-3">
-                      <button
-                        onClick={() => {
-                          openCart(unit, finalName, finalAddress);
-                          onBook(unit);
-                          setShowUnitSelector(false);
-                        }}
-                        className="w-full flex items-center justify-between gap-3 text-left p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div>
-                          <div className="font-medium text-black">{unit.size}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-sm text-gray-400 line-through">${unit.originalPrice}</div>
-                          <div className="text-sm font-semibold text-black">${unit.currentPrice}</div>
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <UnitSelectorModal
+        isOpen={showUnitSelector}
+        onClose={() => setShowUnitSelector(false)}
+        units={units}
+        locationName={finalName}
+        locationAddress={finalAddress}
+        onBook={onBook}
+      />
     </Card>
   );
 }
