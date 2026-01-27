@@ -14,12 +14,13 @@ interface SiteDetailsProps {
 const getStr = (obj: unknown) => {
     if (typeof obj === 'string') return obj;
     if (obj && typeof obj === 'object') {
-        return obj.en || Object.values(obj)[0] || '';
+        const localizedObj = obj as { en?: string; [key: string]: unknown };
+        return localizedObj.en || (Object.values(localizedObj).find(val => typeof val === 'string') as string) || '';
     }
     return '';
 };
 
-export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
+export default function SiteDetails({ site }: Readonly<SiteDetailsProps>) {
     const title = getStr(site.title) || site.code;
 
     const addressStr = typeof getStr(site.address) == 'string'? getStr(site.address) :'Address available on request';

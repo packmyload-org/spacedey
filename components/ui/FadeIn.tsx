@@ -1,14 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
-interface FadeInProps extends HTMLMotionProps<"div"> {
+interface FadeInProps {
   children: React.ReactNode;
   delay?: number;
   duration?: number;
   direction?: "up" | "down" | "left" | "right" | "none";
   amount?: number | "some" | "all";
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function FadeIn({
@@ -16,12 +19,11 @@ export default function FadeIn({
   delay = 0,
   duration = 0.5,
   direction = "up",
-  amount = 0.2, // Trigger when 20% of the element is visible
+  amount = 0.2,
   className,
   style,
-  ...props
-}: FadeInProps) {
-  const getVariants = () => {
+}: Readonly<FadeInProps>) {
+  const getVariants = (): Variants => {
     const hidden: any = { opacity: 0 };
     const visible: any = { opacity: 1 };
 
@@ -64,11 +66,10 @@ export default function FadeIn({
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount }}
+      viewport={{ once: true, amount: amount as any }}
       variants={getVariants()}
       className={className}
       style={style}
-      {...props}
     >
       {children}
     </motion.div>

@@ -8,7 +8,7 @@ import Card from "../ui/Card";
 import type { ButtonVariant } from "../ui/PrimaryButton";
 
 // Hook to lock body scroll using CSS class
-function useScrollLock(isLocked: boolean) {
+function useScrollLock() {
 // ... existing useScrollLock ...
 }
 
@@ -39,7 +39,7 @@ function LocationCard({
   const [showUnitSelector, setShowUnitSelector] = useState(false);
 
   // Custom hook to handle body scroll locking
-  useScrollLock(showUnitSelector);
+  useScrollLock();
 
   // Use location image if not provided, fall back to imageUrl
   // Handle case where image is just a filename (e.g. "Lagos.jpg")
