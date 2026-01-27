@@ -1,6 +1,6 @@
 'use client';
 
-// import Image from 'next/image';
+import Image from 'next/image';
 
 interface FeaturedLocationProps {
   title?: string;
@@ -10,7 +10,7 @@ interface FeaturedLocationProps {
   space?: string;
   openingDate?: string;
   occupancy?: string;
-  // beforeImage?: string;
+  beforeImage?: string;
   partnerLink?: string;
 }
 
@@ -22,7 +22,7 @@ export default function LandlordFeaturedLocation({
   space = "4,000 sf in back-of-house mezzanine",
   openingDate = "November 2021",
   occupancy = "averaged 93% occupancy in 2023",
-  // beforeImage = "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop",
+  beforeImage = "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&h=400&fit=crop",
   partnerLink = "#get-in-touch"
 }: FeaturedLocationProps) {
   return (
