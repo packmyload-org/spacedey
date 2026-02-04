@@ -39,7 +39,7 @@ async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig
 
   // Only add API_KEY if Authorization is not already provided (e.g. Basic or Bearer)
   if (API_KEY && !headers['Authorization']) {
-    headers['Authorization'] = `Api ${API_KEY}`;
+    headers['Authorization'] = `ApiKey ${API_KEY}`;
   }
 
   try {
@@ -142,7 +142,50 @@ export async function getSiteSitemap(siteId: string): Promise<StoreganiseSitemap
   return storeganiseFetch<StoreganiseSitemap>(`/sites/${siteId}/sitemap`, {
     method: 'GET',
     headers: {
-      'Authorization': `Api ${API_KEY}`
+      'Authorization': `ApiKey ${API_KEY}`
     }
+  });
+}
+
+/**
+ * Creates a new user account.
+ * Docs: POST /v1/users
+ */
+export async function createUser(params: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  recaptchaResponse?: string;
+}): Promise<StoreganiseUser> {
+  return storeganiseFetch<StoreganiseUser>('/users', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+/**
+ * Sends a reset password email.
+ * Docs: POST /v1/auth/forgot-password
+ */
+export async function sendResetPasswordToken(email: string): Promise<unknown> {
+  return storeganiseFetch('/auth/forgot-password', {
+    method: 'POST',
+    data: { email },
+  });
+}
+
+/**
+ * Resets a password using the token emailed to the user.
+ * Docs: POST /v1/auth/reset-password
+ */
+export async function resetPassword(params: {
+  token: string;
+  email: string;
+  password: string;
+}): Promise<unknown> {
+  return storeganiseFetch('/auth/reset-password', {
+    method: 'POST',
+    data: params,
   });
 }

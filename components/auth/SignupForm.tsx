@@ -3,19 +3,56 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
 export default function SignupForm() {
   const router = useRouter();
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const loadRecaptcha = async () => {
+    if (!recaptchaSiteKey) return;
+    if (window.grecaptcha) return;
+    if (document.querySelector(`script[src^=\"https://www.google.com/recaptcha/api.js\"]`)) return;
+
+    await new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = `https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`;
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load reCAPTCHA.'));
+      document.head.appendChild(script);
+    });
+  };
+
+  const getRecaptchaToken = async (): Promise<string | null> => {
+    if (!recaptchaSiteKey) return null;
+    await loadRecaptcha();
+    await new Promise<void>((resolve) => {
+      window.grecaptcha?.ready(() => resolve());
+    });
+    if (!window.grecaptcha) return null;
+    return window.grecaptcha.execute(recaptchaSiteKey, { action: 'signup' });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!name || !email || !password || !confirm) {
+    if (!firstName || !lastName || !email || !password || !confirm) {
       setError('Please complete all fields.');
       return;
     }
@@ -24,11 +61,43 @@ export default function SignupForm() {
       return;
     }
 
-    // TODO: hook up real signup API. For now show success and redirect to login.
-    setSuccess(true);
-    setTimeout(() => {
-      router.push('/login');
-    }, 1200);
+    setIsSubmitting(true);
+    try {
+      const recaptchaResponse = await getRecaptchaToken();
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          recaptchaResponse,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to create account.');
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/auth/signin');
+      }, 1200);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong.';
+      if (message.toLowerCase().includes('recaptcha')) {
+        setError('Signup requires reCAPTCHA. Please ensure it is configured and try again.');
+      } else {
+        setError(message);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -37,8 +106,23 @@ export default function SignupForm() {
       {success && <div className="mb-4 text-sm text-green-600">Account created — redirecting...</div>}
 
       <label className="block mb-3">
-        <span className="text-sm font-medium text-gray-700">Full name</span>
-        <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Jane Doe" />
+        <span className="text-sm font-medium text-gray-700">First name</span>
+        <input
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          className="mt-1 block w-full border rounded-lg px-3 py-2"
+          placeholder="Jane"
+        />
+      </label>
+
+      <label className="block mb-3">
+        <span className="text-sm font-medium text-gray-700">Last name</span>
+        <input
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          className="mt-1 block w-full border rounded-lg px-3 py-2"
+          placeholder="Doe"
+        />
       </label>
 
       <label className="block mb-3">
@@ -56,7 +140,13 @@ export default function SignupForm() {
         <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Repeat password" />
       </label>
 
-      <button type="submit" className="w-full bg-[#1642F0] text-white font-semibold py-2 rounded-lg">Create account</button>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-[#1642F0] text-white font-semibold py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isSubmitting ? 'Creating account...' : 'Create account'}
+      </button>
     </form>
   );
 }

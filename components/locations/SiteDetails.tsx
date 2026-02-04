@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
 import { StoreganiseSite, StoreganiseSitemap } from '@/lib/types/storeganise';
+import SiteMapViewer from '@/components/locations/SiteMapViewer';
 
 interface SiteDetailsProps {
     site: StoreganiseSite;
@@ -20,7 +21,7 @@ const getStr = (obj: unknown) => {
     return '';
 };
 
-export default function SiteDetails({ site }: Readonly<SiteDetailsProps>) {
+export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
     const title = getStr(site.title) || site.code;
 
     const addressStr = typeof getStr(site.address) == 'string'? getStr(site.address) :'Address available on request';
@@ -246,6 +247,11 @@ export default function SiteDetails({ site }: Readonly<SiteDetailsProps>) {
                             </a>
                         </div>
                     )}
+                </div>
+
+                {/* Sitemap Section */}
+                <div className="mt-20">
+                    <SiteMapViewer svgContent={sitemap?.svg} />
                 </div>
 
                 {/* Products Section */}
