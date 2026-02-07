@@ -10,12 +10,18 @@ import {
 
 const API_BASE_URL = process.env.STOREGANISE_API_URL;
 const API_KEY = process.env.STOREGANISE_API_KEY;
+const APP_SCOPE = 'user';
 
 export class StoreganiseError extends Error {
   constructor(public status: number, message: string, public data?: unknown) {
     super(message);
     this.name = 'StoreganiseError';
   }
+}
+
+function withScope(endpoint: string, scope: 'admin' | 'user' = APP_SCOPE): string {
+  const separator = endpoint.includes('?') ? '&' : '?';
+  return `${endpoint}${separator}scope=${scope}`;
 }
 
 /**
@@ -82,20 +88,22 @@ async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig
  */
 export async function authenticateUser(email: string, password: string): Promise<StoreganiseAuthResponse> {
   const credentials = Buffer.from(`${email}:${password}`).toString('base64');
-  return storeganiseFetch<StoreganiseAuthResponse>('/auth/token', {
+  return storeganiseFetch<StoreganiseAuthResponse>(withScope('/auth/token'), {
     method: 'POST',
     headers: {
-      'Authorization': `Basic ${credentials}`
+      'Authorization': `Basic ${credentials}`,
+      // Prevent Safari from showing a native Basic Auth modal.
+      'X-Requested-With': 'XMLHttpRequest',
     }
   });
 }
 
 /**
  * Fetches the authenticated user's profile.
- * Docs: GET /v1/auth/userinfo
+ * Docs: GET /v1/user
  */
 export async function getUserProfile(accessToken: string): Promise<StoreganiseUser> {
-  return storeganiseFetch<StoreganiseUser>('/auth/userinfo', {
+  return storeganiseFetch<StoreganiseUser>('/user', {
     headers: {
       'Authorization': `Bearer ${accessToken}`
     }
@@ -169,7 +177,7 @@ export async function createUser(params: {
  * Docs: POST /v1/auth/forgot-password
  */
 export async function sendResetPasswordToken(email: string): Promise<unknown> {
-  return storeganiseFetch('/auth/forgot-password', {
+  return storeganiseFetch(withScope('/auth/forgot-password'), {
     method: 'POST',
     data: { email },
   });
