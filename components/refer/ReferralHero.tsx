@@ -41,6 +41,7 @@ export default function ReferralHero() {
 
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState('/images/referHero.png');
 
   const handleChange = (
@@ -56,6 +57,7 @@ export default function ReferralHero() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       // Submit to your API endpoint
@@ -67,22 +69,28 @@ export default function ReferralHero() {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        setSubmitted(true);
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          refereeFirstName: '',
-          refereeLastName: '',
-          refereeEmail: '',
-          refereePhone: '',
-          refereeLocation: '',
-        });
-        setTimeout(() => setSubmitted(false), 3000);
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to submit referral.');
       }
+
+      setSubmitted(true);
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        refereeFirstName: '',
+        refereeLastName: '',
+        refereeEmail: '',
+        refereePhone: '',
+        refereeLocation: '',
+      });
+      setTimeout(() => setSubmitted(false), 3000);
     } catch (error) {
       console.error('Error submitting referral:', error);
+      const message = error instanceof Error ? error.message : 'Something went wrong.';
+      setError(message);
     } finally {
       setIsLoading(false);
     }
@@ -214,6 +222,12 @@ export default function ReferralHero() {
               >
                 {isLoading ? 'Submitting...' : 'Submit Referral'}
               </button>
+
+              {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
 
               {submitted && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">

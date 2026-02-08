@@ -9,22 +9,22 @@ export async function POST(request: Request) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'email and password are required.' },
+        { ok: false, error: 'email and password are required.' },
         { status: 400 }
       );
     }
 
     const authResponse = await authenticateUser(email, password);
-    return NextResponse.json(authResponse);
+    return NextResponse.json({ ok: true, ...authResponse });
   } catch (error) {
     if (error instanceof StoreganiseError) {
       return NextResponse.json(
-        { error: error.message, data: error.data },
+        { ok: false, error: error.message, data: error.data },
         { status: error.status }
       );
     }
 
     const message = error instanceof Error ? error.message : 'Internal Server Error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

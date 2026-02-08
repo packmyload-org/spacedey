@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
-        { error: 'firstName, lastName, email, and password are required.' },
+        { ok: false, error: 'firstName, lastName, email, and password are required.' },
         { status: 400 }
       );
     }
@@ -24,16 +24,16 @@ export async function POST(request: Request) {
       password,
       recaptchaResponse: recaptchaResponse || undefined,
     });
-    return NextResponse.json({ user });
+    return NextResponse.json({ ok: true, user });
   } catch (error) {
     if (error instanceof StoreganiseError) {
       return NextResponse.json(
-        { error: error.message, data: error.data },
+        { ok: false, error: error.message, data: error.data },
         { status: error.status }
       );
     }
 
     const message = error instanceof Error ? error.message : 'Internal Server Error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
