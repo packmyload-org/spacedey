@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { storeganiseAPI } from '@/lib/storeganise-api';
 
 interface FormData {
   firstName: string;
@@ -59,16 +60,8 @@ export default function ReferralHero() {
     setIsLoading(true);
 
     try {
-      // Submit to your API endpoint
-      const response = await fetch('/api/referral', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
+      // Submit to Storeganise backend API
+      await storeganiseAPI.submitReferral(formData);
         setSubmitted(true);
         setFormData({
           firstName: '',
@@ -81,9 +74,9 @@ export default function ReferralHero() {
           refereeLocation: '',
         });
         setTimeout(() => setSubmitted(false), 3000);
-      }
     } catch (error) {
       console.error('Error submitting referral:', error);
+      alert('Failed to submit referral. Please try again.');
     } finally {
       setIsLoading(false);
     }
