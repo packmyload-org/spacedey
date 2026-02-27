@@ -1,11 +1,8 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "pnpm build"
 
 [functions]
   node_bundler = "esbuild"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
