@@ -19,8 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Verify reCAPTCHA token if provided
-    let recaptchaResponse: string | undefined = undefined;
-    let isRecaptchaValid = true;
+    let recaptchaResponse: string | undefined;
 
     if (recaptchaToken) {
       if (!shouldSkipRecaptchaVerification()) {
@@ -29,7 +28,6 @@ export async function POST(request: Request) {
 
           if (!verification.success) {
             console.warn('[Signup] reCAPTCHA verification failed:', verification.error_codes);
-            isRecaptchaValid = false;
             // Don't send invalid reCAPTCHA to Storeganise
             recaptchaResponse = undefined;
           } else if (verification.score !== undefined && verification.score > 0.5) {
@@ -38,7 +36,6 @@ export async function POST(request: Request) {
           }
         } catch (error) {
           console.error('[Signup] reCAPTCHA verification error:', error);
-          isRecaptchaValid = false;
           recaptchaResponse = undefined;
         }
       } else {
@@ -67,7 +64,8 @@ export async function POST(request: Request) {
           typeof error.data === 'object' &&
           'error' in error.data
         ) {
-          const errorMsg = (error.data as any).error?.message || '';
+          const storeganiseErrorData = error.data as { error?: { message?: string } };
+          const errorMsg = storeganiseErrorData.error?.message || '';
           if (errorMsg.includes('Recaptcha') || errorMsg.includes('recaptcha')) {
             console.warn('[Signup] Storeganise rejected reCAPTCHA, retrying without it');
             // Retry without reCAPTCHA
