@@ -2,7 +2,8 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -12,17 +13,14 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans, "Inter", system-ui, -apple-system, "Segoe UI", sans-serif);
+  font-family: var(--font-sans, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body.lock-scroll {
@@ -68,4 +66,44 @@ body.lock-scroll {
   animation: torchSweep 6s ease-in-out infinite;
   pointer-events: none;
   border-radius: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: #DBEAFE;
+  color: #0F172A;
+}
+
+
+@layer base {
+  h1, h2, h3, h4 {
+    color: #0f172a;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    color: #1f2937;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid #1642F0;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .text-muted {
+    color: #4b5563;
+  }
+
+  .text-subtle {
+    color: #6b7280;
+  }
 }

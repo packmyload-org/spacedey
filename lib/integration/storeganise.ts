@@ -10,6 +10,9 @@ import {
 
 const API_BASE_URL = process.env.STOREGANISE_API_URL;
 const API_KEY = process.env.STOREGANISE_API_KEY;
+const APP_SCOPE = 'user';
+const ADMIN_SCOPE = 'admin' as const;
+
 
 export class StoreganiseError extends Error {
   constructor(public status: number, message: string, public data?: unknown) {
@@ -18,11 +21,17 @@ export class StoreganiseError extends Error {
   }
 }
 
+function withScope(endpoint: string, scope: 'admin' | 'user' = APP_SCOPE): string {
+  const separator = endpoint.includes('?') ? '&' : '?';
+  return `${endpoint}${separator}scope=${scope}`;
+}
+
 /**
  * Generic fetch wrapper for Storeganise API using Axios.
  * Handles authentication, error parsing, and base URL.
  */
 async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig = {}): Promise<T> {
+
   if (!API_BASE_URL) {
     console.error('Storeganise Error: STOREGANISE_API_URL is not defined');
     throw new Error('STOREGANISE_API_URL is not defined in environment variables.');
@@ -30,21 +39,20 @@ async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig
 
   const url = API_BASE_URL.replace(/\/$/, '') + (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
 
-  console.log(`[Storeganise] Fetching: ${url}`);
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string>),
   };
 
-  // Only add API_KEY if Authorization is not already provided (e.g. Basic or Bearer)
   if (API_KEY && !headers['Authorization']) {
-    headers['Authorization'] = `Api ${API_KEY}`;
+    headers['Authorization'] = `ApiKey ${API_KEY}`;
   }
 
   try {
     const response = await axios({
       url,
+      timeout: 15000,
       ...options,
       headers,
     });
@@ -82,20 +90,21 @@ async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig
  */
 export async function authenticateUser(email: string, password: string): Promise<StoreganiseAuthResponse> {
   const credentials = Buffer.from(`${email}:${password}`).toString('base64');
-  return storeganiseFetch<StoreganiseAuthResponse>('/auth/token', {
+  return storeganiseFetch<StoreganiseAuthResponse>(withScope('/auth/token'), {
     method: 'POST',
     headers: {
-      'Authorization': `Basic ${credentials}`
+      'Authorization': `Basic ${credentials}`,
+      'X-Requested-With': 'XMLHttpRequest',
     }
   });
 }
 
 /**
  * Fetches the authenticated user's profile.
- * Docs: GET /v1/auth/userinfo
+ * Docs: GET /v1/user
  */
 export async function getUserProfile(accessToken: string): Promise<StoreganiseUser> {
-  return storeganiseFetch<StoreganiseUser>('/auth/userinfo', {
+  return storeganiseFetch<StoreganiseUser>('/user', {
     headers: {
       'Authorization': `Bearer ${accessToken}`
     }
@@ -107,7 +116,7 @@ export async function getUserProfile(accessToken: string): Promise<StoreganiseUs
  * Docs: GET /v1/sites
  */
 export async function getSites(): Promise<StoreganiseSite[]> {
-  return storeganiseFetch<StoreganiseSite[]>('/sites');
+  return storeganiseFetch<StoreganiseSite[]>(withScope('/sites', ADMIN_SCOPE));
 }
 
 /**
@@ -115,7 +124,7 @@ export async function getSites(): Promise<StoreganiseSite[]> {
  * Docs: GET /v1/sites/:siteId?include=unitTypes
  */
 export async function getSiteDetails(siteId: string): Promise<StoreganiseSite> {
-  return storeganiseFetch<StoreganiseSite>(`/sites/${siteId}?include=unitTypes`);
+  return storeganiseFetch<StoreganiseSite>(withScope(`/sites/${siteId}?include=unitTypes`, ADMIN_SCOPE));
 }
 
 /**
@@ -123,7 +132,7 @@ export async function getSiteDetails(siteId: string): Promise<StoreganiseSite> {
  * Docs: GET /v1/sites/:siteId/unit-types
  */
 export async function getUnitTypes(siteId: string): Promise<StoreganiseUnitType[]> {
-  return storeganiseFetch<StoreganiseUnitType[]>(`/sites/${siteId}/unit-types`);
+  return storeganiseFetch<StoreganiseUnitType[]>(withScope(`/sites/${siteId}/unit-types`, ADMIN_SCOPE));
 }
 
 /**
@@ -131,7 +140,7 @@ export async function getUnitTypes(siteId: string): Promise<StoreganiseUnitType[
  * Docs: GET /v1/sites/:siteId/units
  */
 export async function getUnits(siteId: string): Promise<StoreganiseUnit[]> {
-  return storeganiseFetch<StoreganiseUnit[]>(`/sites/${siteId}/units`);
+  return storeganiseFetch<StoreganiseUnit[]>(withScope(`/sites/${siteId}/units`, ADMIN_SCOPE));
 }
 
 /**
@@ -139,10 +148,61 @@ export async function getUnits(siteId: string): Promise<StoreganiseUnit[]> {
  * Docs: GET /v1/sites/:siteId/sitemap
  */
 export async function getSiteSitemap(siteId: string): Promise<StoreganiseSitemap> {
-  return storeganiseFetch<StoreganiseSitemap>(`/sites/${siteId}/sitemap`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Api ${API_KEY}`
-    }
+  return storeganiseFetch<StoreganiseSitemap>(withScope(`/sites/${siteId}/sitemap`, ADMIN_SCOPE), { method: 'GET' });
+}
+
+/**
+ * Creates a new user account.
+ * Docs: POST /v1/users
+ */
+export async function createUser(params: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  recaptchaResponse?: string;
+}): Promise<StoreganiseUser> {
+  // Build the request data, excluding empty recaptchaResponse
+  const data: Record<string, unknown> = {
+    firstName: params.firstName,
+    lastName: params.lastName,
+    email: params.email,
+    password: params.password,
+  };
+  
+  // Only include recaptchaResponse if it's provided and not empty
+  if (params.recaptchaResponse && params.recaptchaResponse.trim()) {
+    data.recaptchaResponse = params.recaptchaResponse;
+  }
+
+  return storeganiseFetch<StoreganiseUser>(withScope('/users'), {
+    method: 'POST',
+    data,
+  });
+}
+
+/**
+ * Sends a reset password email.
+ * Docs: POST /v1/auth/forgot-password
+ */
+export async function sendResetPasswordToken(email: string): Promise<unknown> {
+  return storeganiseFetch(withScope('/auth/forgot-password'), {
+    method: 'POST',
+    data: { email },
+  });
+}
+
+/**
+ * Resets a password using the token emailed to the user.
+ * Docs: POST /v1/auth/reset-password
+ */
+export async function resetPassword(params: {
+  token: string;
+  email: string;
+  password: string;
+}): Promise<unknown> {
+  return storeganiseFetch('/auth/reset-password', {
+    method: 'POST',
+    data: params,
   });
 }

@@ -26,7 +26,7 @@ function MapHandler({ locations }: { locations: MapLocation[] }) {
       map.setCenter({ lat: locations[0].lat, lng: locations[0].lng });
       map.setZoom(12);
     } else {
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new (globalThis as any).google.maps.LatLngBounds();
       locations.forEach(loc => {
         bounds.extend({ lat: loc.lat, lng: loc.lng });
       });

@@ -53,7 +53,7 @@ export async function GET() {
       };
     });
 
-    const response: ApiSitesResponse = { sites };
+    const response: ApiSitesResponse & { ok: true } = { ok: true, sites };
     return NextResponse.json(response);
   } catch (error: unknown) {
     console.error('API Route /api/sites Error:', error);
@@ -61,6 +61,6 @@ export async function GET() {
     const errorResponse: ApiErrorResponse = {
       error: errorMessage,
     };
-    return NextResponse.json(errorResponse, { status: 500 });
+    return NextResponse.json({ ok: false, ...errorResponse }, { status: 500 });
   }
 }

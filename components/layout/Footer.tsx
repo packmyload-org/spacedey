@@ -122,7 +122,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/refer" className="hover:text-gray-300">
+                <Link href="/referral" className="hover:text-gray-300">
                   Refer a Friend
                 </Link>
               </li>
