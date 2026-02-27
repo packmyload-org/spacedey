@@ -41,12 +41,18 @@ export default function SignupForm() {
 
   const getRecaptchaToken = async (): Promise<string | null> => {
     if (!recaptchaSiteKey) return null;
-    await loadRecaptcha();
-    await new Promise<void>((resolve) => {
-      window.grecaptcha?.ready(() => resolve());
-    });
-    if (!window.grecaptcha) return null;
-    return window.grecaptcha.execute(recaptchaSiteKey, { action: 'signup' });
+    try {
+      await loadRecaptcha();
+      await new Promise<void>((resolve) => {
+        window.grecaptcha?.ready(() => resolve());
+      });
+      if (!window.grecaptcha) return null;
+      const token = await window.grecaptcha.execute(recaptchaSiteKey, { action: 'signup' });
+      return token || null;
+    } catch (error) {
+      console.warn('reCAPTCHA token generation failed:', error);
+      return null; // Fail gracefully - proceed without reCAPTCHA
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
