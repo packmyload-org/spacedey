@@ -194,7 +194,7 @@ export default function Header() {
 
           <div className="mt-auto pt-6">
             <Link href="/search" onClick={() => setOpen(false)}>
-              <PrimaryButton className="w-full py-3 bg-white text-[#1642F0]">Reserve Now</PrimaryButton>
+              <PrimaryButton className="w-full py-3 bg-[#1642F0] text-white hover:bg-[#0f35d4]">Reserve Now</PrimaryButton>
             </Link>
           </div>
         </div>
