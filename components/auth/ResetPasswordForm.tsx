@@ -21,9 +21,23 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setSuccess(false);
 
-    if (!token || !email || !password || !confirm) {
+    const normalizedToken = token.trim();
+    const normalizedEmail = email.trim();
+
+    if (!normalizedToken || !normalizedEmail || !password || !confirm) {
       setError('Please complete all fields.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
       return;
     }
 
@@ -39,7 +53,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, email, password }),
+        body: JSON.stringify({ token: normalizedToken, email: normalizedEmail, password }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -61,15 +75,15 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Set a new password</h1>
-        <p className="text-gray-700">Enter the reset token, your email, and a new password.</p>
+        <p className="text-gray-600">Enter the reset token, your email, and a new password.</p>
       </div>
 
-      {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
+      {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
       {success && (
-        <div className="mb-4 text-sm text-green-600">
+        <div role="status" className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
           Password updated. Redirecting to login...
         </div>
       )}
@@ -81,7 +95,10 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder="Reset token"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
+            autoComplete="one-time-code"
+            required
+            aria-invalid={!!error}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -91,7 +108,10 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
+            autoComplete="email"
+            required
+            aria-invalid={!!error}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -101,7 +121,11 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="New password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
+            autoComplete="new-password"
+            minLength={8}
+            required
+            aria-invalid={!!error}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -111,7 +135,11 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="Confirm new password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
+            autoComplete="new-password"
+            minLength={8}
+            required
+            aria-invalid={!!error}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -124,7 +152,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-700">
+      <div className="mt-6 text-center text-sm text-gray-600">
         Back to{' '}
         <Link href="/auth/signin" className="text-[#1642F0] font-semibold hover:underline">
           Log in

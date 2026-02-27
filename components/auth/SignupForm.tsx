@@ -58,10 +58,27 @@ export default function SignupForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!firstName || !lastName || !email || !password || !confirm) {
+    setSuccess(false);
+
+    const normalizedFirstName = firstName.trim();
+    const normalizedLastName = lastName.trim();
+    const normalizedEmail = email.trim();
+
+    if (!normalizedFirstName || !normalizedLastName || !normalizedEmail || !password || !confirm) {
       setError('Please complete all fields.');
       return;
     }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long.');
+      return;
+    }
+
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
@@ -76,9 +93,9 @@ export default function SignupForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
+          firstName: normalizedFirstName,
+          lastName: normalizedLastName,
+          email: normalizedEmail,
           password,
           recaptchaResponse,
         }),
@@ -107,17 +124,20 @@ export default function SignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-      {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
-      {success && <div className="mb-4 text-sm text-green-600">Account created — redirecting...</div>}
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-6">
+      {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+      {success && <div role="status" className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">Account created — redirecting...</div>}
 
       <label className="block mb-3">
         <span className="text-sm font-medium text-gray-700">First name</span>
         <input
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
-          className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent"
+          className="mt-1 block w-full border rounded-lg px-3 py-2"
           placeholder="Jane"
+          autoComplete="given-name"
+          required
+          aria-invalid={!!error}
         />
       </label>
 
@@ -126,30 +146,33 @@ export default function SignupForm() {
         <input
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
-          className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent"
+          className="mt-1 block w-full border rounded-lg px-3 py-2"
           placeholder="Doe"
+          autoComplete="family-name"
+          required
+          aria-invalid={!!error}
         />
       </label>
 
       <label className="block mb-3">
         <span className="text-sm font-medium text-gray-700">Email</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent" placeholder="you@example.com" />
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required aria-invalid={!!error} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="you@example.com" />
       </label>
 
       <label className="block mb-3">
         <span className="text-sm font-medium text-gray-700">Password</span>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent" placeholder="Choose a password" />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={8} required aria-invalid={!!error} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Choose a password" />
       </label>
 
       <label className="block mb-4">
         <span className="text-sm font-medium text-gray-700">Confirm password</span>
-        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent" placeholder="Repeat password" />
+        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" minLength={8} required aria-invalid={!!error} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Repeat password" />
       </label>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-[#1642F0] hover:bg-[#103ff9] text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full bg-[#1642F0] text-white font-semibold py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'Creating account...' : 'Create account'}
       </button>

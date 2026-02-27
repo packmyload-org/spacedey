@@ -20,8 +20,15 @@ export default function LoginForm() {
     event.preventDefault();
     setError(null);
 
-    if (!email || !password) {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password) {
       setError('Email and password are required.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -32,7 +39,7 @@ export default function LoginForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -52,13 +59,14 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Login with your email
           </h1>
-          <p className="text-gray-700">
+          <p className="text-gray-600">
             Don&apos;t have an Account? 
             <Link href="/auth/signup" className="text-[#1642F0] font-semibold hover:underline">
               Create Account
@@ -69,7 +77,7 @@ export default function LoginForm() {
         <hr className="border-gray-200 mb-6" />
 
         <form onSubmit={handleSubmit}>
-          {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
+          {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
 
           {/* Email Input */}
           <div className="mb-4">
@@ -78,7 +86,10 @@ export default function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-900 placeholder:text-gray-500"
+              autoComplete="email"
+              required
+              aria-invalid={!!error}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
             />
           </div>
 
@@ -89,7 +100,10 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-900 placeholder:text-gray-500"
+              autoComplete="current-password"
+              required
+              aria-invalid={!!error}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
             />
             <button
               type="button"
@@ -133,7 +147,7 @@ export default function LoginForm() {
               <span className="text-gray-700">Remember me?</span>
             </label>
 
-            <Link href="/auth/forgot-password" className="text-gray-700 hover:text-gray-900">
+            <Link href="/auth/forgot-password" className="text-gray-600 hover:text-gray-900">
               Forgot Password?
             </Link>
           </div>
@@ -147,6 +161,7 @@ export default function LoginForm() {
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
+      </div>
     </div>
   );
 }

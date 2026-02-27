@@ -24,12 +24,19 @@ const getStr = (obj: unknown) => {
 export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
     const title = getStr(site.title) || site.code;
 
-    const addressStr = site.address
-        ? [site.address.street, site.address.city, site.address.state, site.address.country]
-              .map((part) => getStr(part))
+    const addressParts = site.address
+        ? [
+              site.address.street,
+              site.address.city,
+              site.address.state,
+              site.address.postalCode,
+              site.address.country,
+          ]
+              .map((part) => getStr(part).trim())
               .filter(Boolean)
-              .join(', ')
-        : 'Address available on request';
+        : [];
+
+    const addressStr = addressParts.length > 0 ? addressParts.join(', ') : 'Address available on request';
 
     const unitTypes = site.unitTypes || [];
 
@@ -102,7 +109,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-bold text-gray-900">Location Info</h2>
-                                    <p className="text-sm text-gray-600">Contact & Hours</p>
+                                    <p className="text-sm text-gray-500">Contact & Hours</p>
                                 </div>
                             </div>
                             
@@ -162,7 +169,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                     <div className="flex items-end justify-between mb-8 border-b border-gray-200 pb-4">
                         <div>
                             <h2 className="text-3xl font-bold text-gray-900">Available Storage Units</h2>
-                            <p className="text-gray-600 mt-2">Choose the perfect size for your needs</p>
+                            <p className="text-gray-500 mt-2">Choose the perfect size for your needs</p>
                         </div>
                         <div className="hidden sm:block text-sm text-blue-600 font-medium bg-blue-50 px-4 py-2 rounded-full">
                             {unitTypes.length} unit types available
@@ -231,7 +238,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                             <button className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95 active:translate-y-0">
                                                 Reserve Now
                                             </button>
-                                            <p className="text-center text-[10px] text-gray-500 mt-3 uppercase tracking-wide font-medium">
+                                            <p className="text-center text-[10px] text-gray-400 mt-3 uppercase tracking-wide font-medium">
                                                 No payment needed today
                                             </p>
                                         </div>
@@ -245,7 +252,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                 <Clock className="w-10 h-10 text-gray-400" />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">No Units Available Online</h3>
-                            <p className="text-gray-600 max-w-md mx-auto mb-8">We might have units that aren&apos;t listed yet. Please give us a call to check availability.</p>
+                            <p className="text-gray-500 max-w-md mx-auto mb-8">We might have units that aren&apos;t listed yet. Please give us a call to check availability.</p>
                             <a href={`tel:${site.phone}`} className="inline-flex items-center px-6 py-3 bg-white border border-gray-300 shadow-sm text-gray-700 font-medium rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors">
                                 <Phone className="w-4 h-4 mr-2" />
                                 Call {site.phone}
@@ -281,7 +288,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                     </div>
                                     <h3 className="text-lg font-bold text-gray-900 mb-1">{getStr(product.title)}</h3>
                                     {product.description && (
-                                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{getStr(product.description)}</p>
+                                        <p className="text-sm text-gray-500 mb-3 line-clamp-2">{getStr(product.description)}</p>
                                     )}
                                     <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
                                         <span className="text-xl font-bold text-blue-600">₦{product.price.toLocaleString()}</span>

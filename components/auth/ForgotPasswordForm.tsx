@@ -12,9 +12,17 @@ export default function ForgotPasswordForm() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setSuccess(false);
 
-    if (!email) {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
       setError('Email is required.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Please enter a valid email address.');
       return;
     }
 
@@ -25,7 +33,7 @@ export default function ForgotPasswordForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: normalizedEmail }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -44,15 +52,15 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset your password</h1>
-        <p className="text-gray-700">Enter your email and we&apos;ll send a reset link.</p>
+        <p className="text-gray-600">Enter your email and we&apos;ll send a reset link.</p>
       </div>
 
-      {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
+      {error && <div role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
       {success && (
-        <div className="mb-4 text-sm text-green-600">
+        <div role="status" className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
           If an account exists for this email, a reset link has been sent.
         </div>
       )}
@@ -64,7 +72,10 @@ export default function ForgotPasswordForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
+            autoComplete="email"
+            required
+            aria-invalid={!!error}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -77,7 +88,7 @@ export default function ForgotPasswordForm() {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-700">
+      <div className="mt-6 text-center text-sm text-gray-600">
         Remembered your password?{' '}
         <Link href="/auth/signin" className="text-[#1642F0] font-semibold hover:underline">
           Log in
