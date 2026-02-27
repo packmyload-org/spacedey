@@ -52,6 +52,7 @@ async function storeganiseFetch<T>(endpoint: string, options: AxiosRequestConfig
   try {
     const response = await axios({
       url,
+      timeout: 15000,
       ...options,
       headers,
     });
