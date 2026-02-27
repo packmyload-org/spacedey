@@ -52,14 +52,13 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Login with your email
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-700">
             Don&apos;t have an Account? 
             <Link href="/auth/signup" className="text-[#1642F0] font-semibold hover:underline">
               Create Account
@@ -79,7 +78,7 @@ export default function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email Address"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-900 placeholder:text-gray-500"
             />
           </div>
 
@@ -90,7 +89,7 @@ export default function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-900 placeholder:text-gray-500"
             />
             <button
               type="button"
@@ -134,7 +133,7 @@ export default function LoginForm() {
               <span className="text-gray-700">Remember me?</span>
             </label>
 
-            <Link href="/auth/forgot-password" className="text-gray-600 hover:text-gray-900">
+            <Link href="/auth/forgot-password" className="text-gray-700 hover:text-gray-900">
               Forgot Password?
             </Link>
           </div>
@@ -148,7 +147,6 @@ export default function LoginForm() {
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
         </form>
-      </div>
     </div>
   );
 }

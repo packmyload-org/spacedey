@@ -107,7 +107,7 @@ export default function SignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
       {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
       {success && <div className="mb-4 text-sm text-green-600">Account created — redirecting...</div>}
 
@@ -116,7 +116,7 @@ export default function SignupForm() {
         <input
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
-          className="mt-1 block w-full border rounded-lg px-3 py-2"
+          className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent"
           placeholder="Jane"
         />
       </label>
@@ -126,30 +126,30 @@ export default function SignupForm() {
         <input
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
-          className="mt-1 block w-full border rounded-lg px-3 py-2"
+          className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent"
           placeholder="Doe"
         />
       </label>
 
       <label className="block mb-3">
         <span className="text-sm font-medium text-gray-700">Email</span>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="you@example.com" />
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent" placeholder="you@example.com" />
       </label>
 
       <label className="block mb-3">
         <span className="text-sm font-medium text-gray-700">Password</span>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Choose a password" />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent" placeholder="Choose a password" />
       </label>
 
       <label className="block mb-4">
         <span className="text-sm font-medium text-gray-700">Confirm password</span>
-        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Repeat password" />
+        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent" placeholder="Repeat password" />
       </label>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-[#1642F0] text-white font-semibold py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full bg-[#1642F0] hover:bg-[#103ff9] text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'Creating account...' : 'Create account'}
       </button>

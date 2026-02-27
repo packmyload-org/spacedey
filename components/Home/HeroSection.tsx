@@ -61,7 +61,7 @@ function HeroSection() {
             </div>
           </div>
           <p className="text-xs sm:text-sm text-neutral-700">
-            Trusted by thousands of renters across <span className="text-neutral-400">7 cities</span>
+            Trusted by thousands of renters across <span className="text-neutral-600">7 cities</span>
           </p>
         </div>
       </motion.div>

@@ -44,10 +44,10 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Reset your password</h1>
-        <p className="text-gray-600">Enter your email and we&apos;ll send a reset link.</p>
+        <p className="text-gray-700">Enter your email and we&apos;ll send a reset link.</p>
       </div>
 
       {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
@@ -64,7 +64,7 @@ export default function ForgotPasswordForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -77,7 +77,7 @@ export default function ForgotPasswordForm() {
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
+      <div className="mt-6 text-center text-sm text-gray-700">
         Remembered your password?{' '}
         <Link href="/auth/signin" className="text-[#1642F0] font-semibold hover:underline">
           Log in

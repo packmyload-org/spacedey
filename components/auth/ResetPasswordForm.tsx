@@ -61,10 +61,10 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Set a new password</h1>
-        <p className="text-gray-600">Enter the reset token, your email, and a new password.</p>
+        <p className="text-gray-700">Enter the reset token, your email, and a new password.</p>
       </div>
 
       {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
@@ -81,7 +81,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={token}
             onChange={(e) => setToken(e.target.value)}
             placeholder="Reset token"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -91,7 +91,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -101,7 +101,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="New password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -111,7 +111,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="Confirm new password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1642F0] focus:border-transparent text-gray-700"
           />
         </div>
 
@@ -124,7 +124,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-gray-600">
+      <div className="mt-6 text-center text-sm text-gray-700">
         Back to{' '}
         <Link href="/auth/signin" className="text-[#1642F0] font-semibold hover:underline">
           Log in

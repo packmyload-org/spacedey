@@ -201,7 +201,7 @@ export async function resetPassword(params: {
   email: string;
   password: string;
 }): Promise<unknown> {
-  return storeganiseFetch('/auth/reset-password', {
+  return storeganiseFetch(withScope('/auth/reset-password'), {
     method: 'POST',
     data: params,
   });

@@ -23,7 +23,7 @@ export default function InputSearch({
 }: InputSearchProps) {
   return (
     <div className={`relative flex items-center ${className}`} {...props}>
-      <span className="pointer-events-none absolute left-3 text-neutral-400">
+      <span className="pointer-events-none absolute left-3 text-neutral-500">
         <svg
           width="20"
           height="20"
@@ -40,7 +40,7 @@ export default function InputSearch({
         onChange={onChange}
         onKeyDown={onKeyDown}
         type="text"
-        className={`w-full rounded-lg border border-neutral-300 bg-white pl-10 pr-4 py-3 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${inputClassName}`}
+        className={`w-full rounded-lg border border-neutral-300 bg-white pl-10 pr-4 py-3 text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent ${inputClassName}`}
         placeholder={placeholder}
       />
     </div>
