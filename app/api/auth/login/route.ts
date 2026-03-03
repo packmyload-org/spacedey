@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       firstName: user.firstName,
       lastName: user.lastName,
       phone: user.phone,
+      role: user.role,
     };
 
     return NextResponse.json({

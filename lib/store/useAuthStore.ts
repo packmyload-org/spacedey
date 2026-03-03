@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { UserResponse } from '@/lib/types/local';
+import { UserRole } from '@/lib/types/roles';
 
 interface AuthState {
   user: UserResponse | null;
@@ -10,11 +11,12 @@ interface AuthState {
   // Actions
   setAuth: (user: UserResponse, accessToken: string) => void;
   logout: () => void;
+  isAdmin: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       accessToken: null,
       isAuthenticated: false,
@@ -30,6 +32,11 @@ export const useAuthStore = create<AuthState>()(
         accessToken: null, 
         isAuthenticated: false 
       }),
+
+      isAdmin: () => {
+        const { user } = get();
+        return user?.role === UserRole.ADMIN ?? false;
+      },
     }),
     {
       name: 'spacedey-auth-storage',

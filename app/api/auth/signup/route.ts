@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       lastName,
       email,
       password,
-      isAdmin: false,
+      role: 'user', // Default to user role
     });
 
     const accessToken = generateToken(newUser._id.toString());
@@ -77,6 +77,7 @@ export async function POST(request: Request) {
       firstName: newUser.firstName,
       lastName: newUser.lastName,
       phone: newUser.phone,
+      role: newUser.role,
     };
 
     return NextResponse.json(

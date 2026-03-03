@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { UserRole } from '@/lib/types/roles';
 
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
@@ -8,7 +9,8 @@ export interface IUser extends Document {
   firstName: string;
   lastName: string;
   phone?: string;
-  isAdmin: boolean;
+  role: UserRole;
+  isAdmin: boolean; // Deprecated - use role instead
   createdAt: Date;
   updatedAt: Date;
   comparePassword(password: string): Promise<boolean>;
@@ -41,13 +43,22 @@ const UserSchema = new Schema<IUser>(
       required: [true, 'Please provide a last name'],
     },
     phone: String,
+    role: {
+      type: String,
+      enum: [UserRole.ADMIN, UserRole.USER],
+      default: UserRole.USER,
+    },
     isAdmin: {
       type: Boolean,
       default: false,
+      get: function () {
+        return this.role === UserRole.ADMIN;
+      },
     },
   },
   {
     timestamps: true,
+    toJSON: { getters: true },
   }
 );
 

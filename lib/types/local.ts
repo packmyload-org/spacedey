@@ -2,6 +2,7 @@
  * Local types for storage application
  * These replace the storeganise-specific types
  */
+import { UserRole } from '@/lib/types/roles';
 
 export interface User {
   id: string;
@@ -104,4 +105,5 @@ export interface UserResponse {
   firstName: string;
   lastName: string;
   phone?: string;
+  role: UserRole;
 }
