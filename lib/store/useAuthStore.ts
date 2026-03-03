@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
 
       isAdmin: () => {
         const { user } = get();
-        return user?.role === UserRole.ADMIN ?? false;
+        return (user?.role === UserRole.ADMIN) || false;
       },
     }),
     {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo } from 'react';
+import { env } from '@/config';
 import Link from "next/link";
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 
@@ -55,7 +56,7 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
   ], []);
 
   const displayLocations = locations.length > 0 ? locations : defaultLocations;
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = env.googleMaps.apiKey;
 
   return (
     <div>

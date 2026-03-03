@@ -1,5 +1,7 @@
 import crypto from 'crypto';
-import { User, UserResponse } from '@/lib/types/local';
+import { env } from '@/config';
+import { UserResponse } from '@/lib/types/local';
+import type { IUser } from '@/lib/db/models/User';
 
 /**
  * Hash a password using a simple approach (in production, use bcrypt or similar)
@@ -8,7 +10,7 @@ import { User, UserResponse } from '@/lib/types/local';
 export function hashPassword(password: string): string {
   return crypto
     .createHash('sha256')
-    .update(password + process.env.PASSWORD_SALT || 'spacedey-salt')
+    .update(password + env.security.passwordSalt)
     .digest('hex');
 }
 
@@ -25,20 +27,21 @@ export function verifyPassword(password: string, hash: string): boolean {
  */
 export function generateAccessToken(userId: string): string {
   const timestamp = Date.now();
-  const data = `${userId}:${timestamp}:${process.env.TOKEN_SECRET || 'spacedey-secret'}`;
+  const data = `${userId}:${timestamp}:${env.security.tokenSecret}`;
   return Buffer.from(data).toString('base64');
 }
 
 /**
  * Convert User to UserResponse (excludes sensitive data)
  */
-export function userToResponse(user: User): UserResponse {
+export function userToResponse(user: IUser): UserResponse {
   return {
-    id: user.id,
+    id: user._id.toString(),
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
     phone: user.phone,
+    role: user.role,
   };
 }
 

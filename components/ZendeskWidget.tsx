@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { env } from "@/config";
 
 type Props = {
   widgetKey?: string;
@@ -17,7 +18,7 @@ declare global {
 }
 
 export default function ZendeskWidget({ widgetKey }: Props) {
-  const key = widgetKey || process.env.NEXT_PUBLIC_ZENDESK_KEY;
+  const key = widgetKey || env.integrations.zendesk.key;
 
   useEffect(() => {
     if (!key) {

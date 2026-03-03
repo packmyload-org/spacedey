@@ -7,8 +7,9 @@ import { Types } from 'mongoose';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const adminCheck = await requireAdmin(request);
 
   if (!adminCheck.authorized) {
@@ -19,8 +20,6 @@ export async function GET(
   }
 
   try {
-    const { id } = params;
-
     if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
         { ok: false, error: 'Invalid user ID' },
@@ -60,8 +59,9 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const adminCheck = await requireAdmin(request);
 
   if (!adminCheck.authorized) {
@@ -72,7 +72,6 @@ export async function PATCH(
   }
 
   try {
-    const { id } = params;
     const body = await request.json();
     const { firstName, lastName, email, role, phone } = body;
 
@@ -141,8 +140,9 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const adminCheck = await requireAdmin(request);
 
   if (!adminCheck.authorized) {
@@ -153,7 +153,6 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params;
 
     if (!Types.ObjectId.isValid(id)) {
       return NextResponse.json(
