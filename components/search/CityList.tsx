@@ -2,7 +2,7 @@
 
 import { ChevronRight } from 'lucide-react';
 import LocationCard from '@/components/Home/LocationCard';
-import { ApiSite } from '@/lib/types/storeganise';
+import { ApiSite } from '@/lib/types/local';
 import { useMemo } from 'react';
 
 interface CityListProps {

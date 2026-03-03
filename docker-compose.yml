@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: spacedey-mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-spacedey}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spacedey-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spacedey-app
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/${MONGO_DB_NAME:-spacedey}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
+      NEXT_PUBLIC_RECAPTCHA_SITE_KEY: ${NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+      SKIP_RECAPTCHA_VERIFICATION: ${SKIP_RECAPTCHA_VERIFICATION:-false}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - spacedey-network
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  mongodb_config:
+
+networks:
+  spacedey-network:
+    driver: bridge

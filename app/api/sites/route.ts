@@ -1,59 +1,49 @@
 // app/api/sites/route.ts
 import { NextResponse } from 'next/server';
-import { getSites } from '@/lib/integration/storeganise';
-import { ApiSite, ApiSitesResponse, ApiErrorResponse } from '@/lib/types/storeganise';
-import { getLocalizedValue } from '@/lib/utils/storeganise';
+import { connectToDatabase } from '@/lib/db/mongo';
+import Site from '@/lib/db/models/Site';
+import UnitType from '@/lib/db/models/UnitType';
+import { ApiSite, ApiSitesResponse, ApiErrorResponse } from '@/lib/types/local';
 
 export async function GET() {
   try {
-    const rawSites = await getSites();
+    await connectToDatabase();
 
-    const sites: ApiSite[] = rawSites.map((site) => {
-      // Create a clean address string
-      const addressParts = [];
-      if (site.address) {
-        if (site.address.street) addressParts.push(getLocalizedValue(site.address.street));
-        if (site.address.city) addressParts.push(getLocalizedValue(site.address.city));
-        if (site.address.state) addressParts.push(getLocalizedValue(site.address.state));
-      }
-      const addressString = addressParts.length > 0 
-        ? addressParts.join(', ') 
-        : 'Address not available';
+    const sites = await Site.find().populate('unitTypes').exec();
 
-      return {
-        id: site.id,
-        name: getLocalizedValue(site.title),
-        code: site.code,
-        image: site.image || '',
-        address: addressString,
-        contact: {
-          phone: site.phone || '',
-          email: site.email || '',
+    const apiSites: ApiSite[] = sites.map((site) => ({
+      id: site._id.toString(),
+      name: site.name,
+      code: site.code,
+      image: site.image || '',
+      address: site.address,
+      contact: {
+        phone: site.contact.phone,
+        email: site.contact.email,
+      },
+      coordinates: {
+        lat: site.coordinates.lat,
+        lng: site.coordinates.lng,
+      },
+      unitTypes: (site.unitTypes || []).map((ut: any) => ({
+        id: ut._id.toString(),
+        name: ut.name,
+        dimensions: {
+          width: ut.dimensions.width,
+          depth: ut.dimensions.depth,
+          unit: ut.dimensions.unit,
         },
-        coordinates: {
-          lat: site.lat || 0,
-          lng: site.lng || 0,
+        price: {
+          amount: ut.price.amount,
+          currency: ut.price.currency,
+          originalAmount: ut.price.originalAmount,
         },
-        unitTypes: (site.unitTypes || []).map((ut) => ({
-          id: ut.id,
-          name: getLocalizedValue(ut.title),
-          dimensions: {
-            width: ut.width,
-            depth: ut.depth,
-            unit: site.measure || 'ft',
-          },
-          price: {
-            amount: ut.price,
-            currency: 'NGN', // Assuming NGN for now, could be ut.currency if available
-            originalAmount: ut.price * 1.2, // Mocking original price for promo
-          },
-          description: getLocalizedValue(ut.description),
-          availableCount: ut.availableCount || 0,
-        })),
-      };
-    });
+        description: ut.description,
+        availableCount: ut.availableCount,
+      })),
+    }));
 
-    const response: ApiSitesResponse & { ok: true } = { ok: true, sites };
+    const response: ApiSitesResponse & { ok: true } = { ok: true, sites: apiSites };
     return NextResponse.json(response);
   } catch (error: unknown) {
     console.error('API Route /api/sites Error:', error);

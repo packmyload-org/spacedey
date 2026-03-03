@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createUser, StoreganiseError } from '@/lib/integration/storeganise';
+import { connectToDatabase } from '@/lib/db/mongo';
+import User from '@/lib/db/models/User';
+import { generateToken } from '@/lib/auth/jwt';
 import { verifyRecaptchaToken, shouldSkipRecaptchaVerification } from '@/lib/integration/recaptcha';
 
 export async function POST(request: Request) {
@@ -7,7 +9,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const firstName = String(body?.firstName || '').trim();
     const lastName = String(body?.lastName || '').trim();
-    const email = String(body?.email || '').trim();
+    const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '').trim();
     const recaptchaToken = String(body?.recaptchaResponse || '').trim();
 
@@ -19,7 +21,6 @@ export async function POST(request: Request) {
     }
 
     // Verify reCAPTCHA token if provided
-    let recaptchaResponse: string | undefined = undefined;
     let isRecaptchaValid = true;
 
     if (recaptchaToken) {
@@ -30,67 +31,64 @@ export async function POST(request: Request) {
           if (!verification.success) {
             console.warn('[Signup] reCAPTCHA verification failed:', verification.error_codes);
             isRecaptchaValid = false;
-            // Don't send invalid reCAPTCHA to Storeganise
-            recaptchaResponse = undefined;
-          } else if (verification.score !== undefined && verification.score > 0.5) {
-            // Only include valid tokens with acceptable score
-            recaptchaResponse = recaptchaToken;
+          } else if (verification.score !== undefined && verification.score < 0.5) {
+            isRecaptchaValid = false;
           }
         } catch (error) {
           console.error('[Signup] reCAPTCHA verification error:', error);
           isRecaptchaValid = false;
-          recaptchaResponse = undefined;
         }
-      } else {
-        // In development/skip mode, include token as-is if provided
-        recaptchaResponse = recaptchaToken;
       }
     }
 
-    // Attempt user creation
-    try {
-      const user = await createUser({
-        firstName,
-        lastName,
-        email,
-        password,
-        recaptchaResponse,
-      });
-      return NextResponse.json({ ok: true, user });
-    } catch (error) {
-      if (error instanceof StoreganiseError) {
-        // If we get an invalid-input-response error from Storeganise,
-        // it means reCAPTCHA validation failed server-side
-        if (
-          error.status === 400 &&
-          error.data &&
-          typeof error.data === 'object' &&
-          'error' in error.data
-        ) {
-          const errorMsg = (error.data as any).error?.message || '';
-          if (errorMsg.includes('Recaptcha') || errorMsg.includes('recaptcha')) {
-            console.warn('[Signup] Storeganise rejected reCAPTCHA, retrying without it');
-            // Retry without reCAPTCHA
-            const retryUser = await createUser({
-              firstName,
-              lastName,
-              email,
-              password,
-              // Don't send recaptcha
-            });
-            return NextResponse.json({ ok: true, user: retryUser });
-          }
-        }
-
-        return NextResponse.json(
-          { ok: false, error: error.message, data: error.data },
-          { status: error.status }
-        );
-      }
-
-      throw error;
+    if (!isRecaptchaValid && !shouldSkipRecaptchaVerification()) {
+      return NextResponse.json(
+        { ok: false, error: 'reCAPTCHA verification failed. Please try again.' },
+        { status: 400 }
+      );
     }
+
+    await connectToDatabase();
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { ok: false, error: 'User with this email already exists.' },
+        { status: 409 }
+      );
+    }
+
+    // Create new user
+    const newUser = await User.create({
+      firstName,
+      lastName,
+      email,
+      password,
+      isAdmin: false,
+    });
+
+    const accessToken = generateToken(newUser._id.toString());
+
+    const userResponse = {
+      id: newUser._id.toString(),
+      email: newUser.email,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      phone: newUser.phone,
+    };
+
+    return NextResponse.json(
+      {
+        ok: true,
+        accessToken,
+        user: userResponse,
+      },
+      { status: 201 }
+    );
   } catch (error) {
+    console.error('Signup error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }

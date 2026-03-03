@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useEffect } from 'react';
-import { ApiSite } from '@/lib/types/storeganise';
+import { ApiSite } from '@/lib/types/local';
 import { MapComingSoon } from './MapComingSoon';
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 

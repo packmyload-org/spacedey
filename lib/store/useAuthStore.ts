@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { StoreganiseUser } from '@/lib/types/storeganise';
+import { UserResponse } from '@/lib/types/local';
 
 interface AuthState {
-  user: StoreganiseUser | null;
+  user: UserResponse | null;
   accessToken: string | null;
   isAuthenticated: boolean;
 
   // Actions
-  setAuth: (user: StoreganiseUser, accessToken: string) => void;
+  setAuth: (user: UserResponse, accessToken: string) => void;
   logout: () => void;
 }
 
