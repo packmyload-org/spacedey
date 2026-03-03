@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed": "node scripts/seed-db.js"
   },
   "dependencies": {
     "@google-cloud/recaptcha-enterprise": "^6.4.0",
