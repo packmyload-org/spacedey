@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, type HydratedDocument } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { UserRole } from '@/lib/types/roles';
 
@@ -51,7 +51,7 @@ const UserSchema = new Schema<IUser>(
     isAdmin: {
       type: Boolean,
       default: false,
-      get: function () {
+      get: function (this: HydratedDocument<IUser>) {
         return this.role === UserRole.ADMIN;
       },
     },
@@ -64,16 +64,17 @@ const UserSchema = new Schema<IUser>(
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
+  const doc = this as HydratedDocument<IUser>;
+  
+  if (!doc.isModified('password')) {
+    return;
   }
 
   try {
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
+    doc.password = await bcrypt.hash(doc.password, salt);
   } catch (error) {
-    next(error as Error);
+    throw error instanceof Error ? error : new Error(String(error));
   }
 });
 

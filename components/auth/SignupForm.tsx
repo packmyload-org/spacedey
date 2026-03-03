@@ -3,15 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-declare global {
-  interface Window {
-    grecaptcha?: {
-      ready: (callback: () => void) => void;
-      execute: (siteKey: string, options: { action: string }) => Promise<string>;
-    };
-  }
-}
-
 export default function SignupForm() {
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
@@ -22,38 +13,6 @@ export default function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
-
-  const loadRecaptcha = async () => {
-    if (!recaptchaSiteKey) return;
-    if (window.grecaptcha) return;
-    if (document.querySelector(`script[src^=\"https://www.google.com/recaptcha/api.js\"]`)) return;
-
-    await new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = `https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`;
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load reCAPTCHA.'));
-      document.head.appendChild(script);
-    });
-  };
-
-  const getRecaptchaToken = async (): Promise<string | null> => {
-    if (!recaptchaSiteKey) return null;
-    try {
-      await loadRecaptcha();
-      await new Promise<void>((resolve) => {
-        window.grecaptcha?.ready(() => resolve());
-      });
-      if (!window.grecaptcha) return null;
-      const token = await window.grecaptcha.execute(recaptchaSiteKey, { action: 'signup' });
-      return token || null;
-    } catch (error) {
-      console.warn('reCAPTCHA token generation failed:', error);
-      return null; // Fail gracefully - proceed without reCAPTCHA
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +28,6 @@ export default function SignupForm() {
 
     setIsSubmitting(true);
     try {
-      const recaptchaResponse = await getRecaptchaToken();
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -80,7 +38,6 @@ export default function SignupForm() {
           lastName,
           email,
           password,
-          recaptchaResponse,
         }),
       });
 
@@ -107,49 +64,53 @@ export default function SignupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-8 max-w-lg mx-auto">
       {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
       {success && <div className="mb-4 text-sm text-green-600">Account created — redirecting...</div>}
 
-      <label className="block mb-3">
-        <span className="text-sm font-medium text-gray-700">First name</span>
-        <input
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          className="mt-1 block w-full border rounded-lg px-3 py-2"
-          placeholder="Jane"
-        />
-      </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <label className="block">
+          <span className="text-sm font-medium text-gray-700">First name</span>
+          <input
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="mt-1 block w-full border rounded-lg px-3 py-2"
+            placeholder="Jane"
+          />
+        </label>
 
-      <label className="block mb-3">
-        <span className="text-sm font-medium text-gray-700">Last name</span>
-        <input
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          className="mt-1 block w-full border rounded-lg px-3 py-2"
-          placeholder="Doe"
-        />
-      </label>
+        <label className="block">
+          <span className="text-sm font-medium text-gray-700">Last name</span>
+          <input
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="mt-1 block w-full border rounded-lg px-3 py-2"
+            placeholder="Doe"
+          />
+        </label>
+      </div>
 
-      <label className="block mb-3">
+      <label className="block mb-4">
         <span className="text-sm font-medium text-gray-700">Email</span>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="you@example.com" />
       </label>
 
-      <label className="block mb-3">
-        <span className="text-sm font-medium text-gray-700">Password</span>
-        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Choose a password" />
-      </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <label className="block">
+          <span className="text-sm font-medium text-gray-700">Password</span>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Choose a password" />
+        </label>
 
-      <label className="block mb-4">
-        <span className="text-sm font-medium text-gray-700">Confirm password</span>
-        <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Repeat password" />
-      </label>
+        <label className="block">
+          <span className="text-sm font-medium text-gray-700">Confirm password</span>
+          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 block w-full border rounded-lg px-3 py-2" placeholder="Repeat password" />
+        </label>
+      </div>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-[#1642F0] text-white font-semibold py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full bg-[#1642F0] text-white font-semibold py-3 rounded-2xl disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'Creating account...' : 'Create account'}
       </button>

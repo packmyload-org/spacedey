@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useEffect } from 'react';
+import { env } from '@/config';
 import { ApiSite } from '@/lib/types/local';
 import { MapComingSoon } from './MapComingSoon';
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
@@ -24,7 +25,7 @@ function MapUpdater({ center }: { center: { lat: number, lng: number } }) {
 }
 
 export default function MapView({ selectedCity, sites }: Readonly<MapViewProps>) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const apiKey = env.googleMaps.apiKey;
 
   // Filter sites based on selected city
   const activeSites = useMemo(() => {

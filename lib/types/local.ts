@@ -10,6 +10,7 @@ export interface User {
   firstName: string;
   lastName: string;
   phone?: string;
+  role: UserRole;
   passwordHash: string;
   createdAt: Date;
   updatedAt: Date;

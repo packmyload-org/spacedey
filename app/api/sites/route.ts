@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongo';
 import Site from '@/lib/db/models/Site';
 import UnitType from '@/lib/db/models/UnitType';
-import { ApiSite, ApiSitesResponse, ApiErrorResponse } from '@/lib/types/local';
+import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
 
 export async function GET() {
   try {
@@ -48,9 +48,6 @@ export async function GET() {
   } catch (error: unknown) {
     console.error('API Route /api/sites Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
-    const errorResponse: ApiErrorResponse = {
-      error: errorMessage,
-    };
-    return NextResponse.json({ ok: false, ...errorResponse }, { status: 500 });
+    return NextResponse.json({ ok: false, error: errorMessage }, { status: 500 });
   }
 }

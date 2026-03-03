@@ -1,5 +1,17 @@
+/**
+ * Database configuration
+ * Centralized database connection setup for MongoDB using Mongoose
+ * 
+ * This module must ONLY be imported server-side. It uses Node.js APIs not available in browsers.
+ */
+
 import mongoose, { Mongoose, Connection } from 'mongoose';
-import { env } from '@/config';
+import { env } from './env';
+
+interface CachedConnection {
+  conn: Connection | null;
+  promise: Promise<Mongoose> | null;
+}
 
 declare global {
   var mongoose: {
@@ -8,12 +20,19 @@ declare global {
   };
 }
 
+if (!env.mongodb.uri) {
+  throw new Error('Please add your MONGODB_URI to .env');
+}
+
 let cached = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
   global.mongoose = cached;
 }
 
+/**
+ * Connect to MongoDB using Mongoose
+ */
 export async function connectToDatabase(): Promise<Connection> {
   if (cached.conn) {
     return cached.conn;
@@ -46,3 +65,16 @@ export async function connectToDatabase(): Promise<Connection> {
 
   return cached.conn as Connection;
 }
+
+/**
+ * Disconnect from MongoDB
+ */
+export async function disconnectFromDatabase(): Promise<void> {
+  if (cached.conn) {
+    await cached.conn.close();
+    cached.conn = null;
+    cached.promise = null;
+  }
+}
+
+export default { connectToDatabase, disconnectFromDatabase };

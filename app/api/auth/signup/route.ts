@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongo';
 import User from '@/lib/db/models/User';
 import { generateToken } from '@/lib/auth/jwt';
-import { verifyRecaptchaToken, shouldSkipRecaptchaVerification } from '@/lib/integration/recaptcha';
 
 export async function POST(request: Request) {
   try {
@@ -16,34 +15,6 @@ export async function POST(request: Request) {
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
         { ok: false, error: 'firstName, lastName, email, and password are required.' },
-        { status: 400 }
-      );
-    }
-
-    // Verify reCAPTCHA token if provided
-    let isRecaptchaValid = true;
-
-    if (recaptchaToken) {
-      if (!shouldSkipRecaptchaVerification()) {
-        try {
-          const verification = await verifyRecaptchaToken(recaptchaToken, 'signup');
-
-          if (!verification.success) {
-            console.warn('[Signup] reCAPTCHA verification failed:', verification.error_codes);
-            isRecaptchaValid = false;
-          } else if (verification.score !== undefined && verification.score < 0.5) {
-            isRecaptchaValid = false;
-          }
-        } catch (error) {
-          console.error('[Signup] reCAPTCHA verification error:', error);
-          isRecaptchaValid = false;
-        }
-      }
-    }
-
-    if (!isRecaptchaValid && !shouldSkipRecaptchaVerification()) {
-      return NextResponse.json(
-        { ok: false, error: 'reCAPTCHA verification failed. Please try again.' },
         { status: 400 }
       );
     }
