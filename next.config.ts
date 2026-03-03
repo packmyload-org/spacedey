@@ -18,10 +18,6 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'cdn.builder.io',
       },
-      {
-        protocol: 'https',
-        hostname: 'storeganise.s3.amazonaws.com',
-      },
     ],
   },
 };

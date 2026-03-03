@@ -3,15 +3,15 @@
 import React from 'react';
 import Image from 'next/image';
 import { MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
-import { StoreganiseSite, StoreganiseSitemap } from '@/lib/types/storeganise';
+import { Site } from '@/lib/types/local';
 import SiteMapViewer from '@/components/locations/SiteMapViewer';
 
 interface SiteDetailsProps {
-    site: StoreganiseSite;
-    sitemap: StoreganiseSitemap | null;
+    site: Site;
+    sitemap?: Record<string, unknown> | null;
 }
 
-// Helper to get localized string
+// Helper to get localized string (kept for backward compatibility)
 const getStr = (obj: unknown) => {
     if (typeof obj === 'string') return obj;
     if (obj && typeof obj === 'object') {
@@ -22,9 +22,9 @@ const getStr = (obj: unknown) => {
 };
 
 export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
-    const title = getStr(site.title) || site.code;
+    const title = site.name || site.code;
 
-    const addressStr = typeof getStr(site.address) == 'string'? getStr(site.address) :'Address available on request';
+    const addressStr = site.address || 'Address available on request';
 
     const unitTypes = site.unitTypes || [];
 
@@ -75,6 +75,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                         </div>
 
                         {/* Description (if any) */}
+                        {/*
                         {site.subtitle && (
                             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                                 <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -86,6 +87,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                 </p>
                             </div>
                         )}
+                        */}
                     </div>
 
                     {/* Right Column: Key Info & Actions */}
@@ -107,23 +109,23 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                             </div>
 
                             <div className="space-y-5 border-t border-gray-100 pt-6">
-                                {site.phone && (
+                                {site.contact.phone && (
                                     <div className="flex items-center justify-between group">
                                         <div className="flex items-center gap-3 text-gray-600">
                                             <Phone className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                             <span className="text-sm font-medium">Phone</span>
                                         </div>
-                                        <a href={`tel:${site.phone}`} className="text-blue-600 font-bold hover:underline">{site.phone}</a>
+                                        <a href={`tel:${site.contact.phone}`} className="text-blue-600 font-bold hover:underline">{site.contact.phone}</a>
                                     </div>
                                 )}
 
-                                {site.email && (
+                                {site.contact.email && (
                                     <div className="flex items-center justify-between group">
                                          <div className="flex items-center gap-3 text-gray-600">
                                             <Mail className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                             <span className="text-sm font-medium">Email</span>
                                         </div>
-                                        <a href={`mailto:${site.email}`} className="text-blue-600 font-bold hover:underline text-sm">{site.email}</a>
+                                        <a href={`mailto:${site.contact.email}`} className="text-blue-600 font-bold hover:underline text-sm">{site.contact.email}</a>
                                     </div>
                                 )}
 
