@@ -1,9 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongo';
-import User from '@/lib/db/models/User';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
-import { Types } from 'mongoose';
 
 export async function GET(
   request: NextRequest,
@@ -20,16 +19,17 @@ export async function GET(
   }
 
   try {
-    if (!Types.ObjectId.isValid(id)) {
+    // Basic UUID validation
+    if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json(
         { ok: false, error: 'Invalid user ID' },
         { status: 400 }
       );
     }
 
-    await connectToDatabase();
-
-    const user = await User.findById(id).select('-password');
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
+    const user = await repo.findOne({ where: { id } });
 
     if (!user) {
       return NextResponse.json(
@@ -89,9 +89,9 @@ export async function PATCH(
       );
     }
 
-    await connectToDatabase();
-
-    const user = await User.findById(id);
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
+    const user = await repo.findOne({ where: { id } });
 
     if (!user) {
       return NextResponse.json(
@@ -102,7 +102,7 @@ export async function PATCH(
 
     // Check if email is being changed and if new email already exists
     if (email && email !== user.email) {
-      const existingUser = await User.findOne({ email: email.toLowerCase() });
+      const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
       if (existingUser) {
         return NextResponse.json(
           { ok: false, error: 'Email already in use' },
@@ -117,10 +117,10 @@ export async function PATCH(
     if (phone) user.phone = phone;
     if (role) user.role = role;
 
-    await user.save();
+    await repo.save(user);
 
     const userResponse = {
-      id: user._id.toString(),
+      id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -154,17 +154,18 @@ export async function DELETE(
 
   try {
 
-    if (!Types.ObjectId.isValid(id)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json(
         { ok: false, error: 'Invalid user ID' },
         { status: 400 }
       );
     }
 
-    await connectToDatabase();
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
 
     // Prevent deleting the admin user (optional, adjust as needed)
-    const user = await User.findById(id);
+    const user = await repo.findOne({ where: { id } });
 
     if (!user) {
       return NextResponse.json(
@@ -174,14 +175,14 @@ export async function DELETE(
     }
 
     // Prevent self-deletion
-    if (user._id.toString() === adminCheck.userId) {
+    if (user.id === adminCheck.userId) {
       return NextResponse.json(
         { ok: false, error: 'Cannot delete your own account' },
         { status: 400 }
       );
     }
 
-    await User.findByIdAndDelete(id);
+    await repo.remove(user);
 
     return NextResponse.json({
       ok: true,

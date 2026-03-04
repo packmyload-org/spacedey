@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongo';
-import User from '@/lib/db/models/User';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 
 export async function POST(request: Request) {
@@ -19,10 +19,11 @@ export async function POST(request: Request) {
       );
     }
 
-    await connectToDatabase();
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await repo.findOne({ where: { email } });
 
     if (existingUser) {
       return NextResponse.json(
@@ -30,20 +31,21 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-
     // Create new user
-    const newUser = await User.create({
+    const newUser = repo.create({
       firstName,
       lastName,
       email,
       password,
-      role: 'user', // Default to user role
-    });
+      role: 'user',
+    } as any);
 
-    const accessToken = generateToken(newUser._id.toString());
+    await repo.save(newUser);
+
+    const accessToken = generateToken(newUser.id);
 
     const userResponse = {
-      id: newUser._id.toString(),
+      id: newUser.id,
       email: newUser.email,
       firstName: newUser.firstName,
       lastName: newUser.lastName,

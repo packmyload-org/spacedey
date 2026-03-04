@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongo';
-import User from '@/lib/db/models/User';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 
 export async function POST(request: Request) {
@@ -16,9 +16,14 @@ export async function POST(request: Request) {
       );
     }
 
-    await connectToDatabase();
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await repo
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
 
     if (!user) {
       return NextResponse.json(
@@ -36,7 +41,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const accessToken = generateToken(user._id.toString());
+    const accessToken = generateToken(user.id);
 
     const userResponse = {
       id: user._id.toString(),

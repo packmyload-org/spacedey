@@ -1,15 +1,15 @@
 // app/api/sites/route.ts
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongo';
-import Site from '@/lib/db/models/Site';
-import UnitType from '@/lib/db/models/UnitType';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import Site from '@/lib/db/entities/Site';
+import UnitType from '@/lib/db/entities/UnitType';
 import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
 
 export async function GET() {
   try {
-    await connectToDatabase();
-
-    const sites = await Site.find().populate('unitTypes').exec();
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(Site);
+    const sites = await repo.find({ relations: ['unitTypes'] });
 
     const apiSites: ApiSite[] = sites.map((site) => ({
       id: site._id.toString(),
@@ -26,17 +26,17 @@ export async function GET() {
         lng: site.coordinates.lng,
       },
       unitTypes: (site.unitTypes || []).map((ut: any) => ({
-        id: ut._id.toString(),
+        id: ut.id,
         name: ut.name,
         dimensions: {
-          width: ut.dimensions.width,
-          depth: ut.dimensions.depth,
-          unit: ut.dimensions.unit,
+          width: ut.width,
+          depth: ut.depth,
+          unit: ut.unit,
         },
         price: {
-          amount: ut.price.amount,
-          currency: ut.price.currency,
-          originalAmount: ut.price.originalAmount,
+          amount: ut.priceAmount,
+          currency: ut.priceCurrency,
+          originalAmount: ut.priceOriginalAmount,
         },
         description: ut.description,
         availableCount: ut.availableCount,
