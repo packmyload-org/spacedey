@@ -14,40 +14,40 @@ export class UnitType extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name!: string;
 
-  @Column('float')
+  @Column({ type: 'float' })
   width!: number;
 
-  @Column('float')
+  @Column({ type: 'float' })
   depth!: number;
 
-  @Column({ default: 'ft' })
+  @Column({ type: 'varchar', default: 'ft' })
   unit!: string;
 
-  @Column('float')
+  @Column({ type: 'float' })
   priceAmount!: number;
 
-  @Column({ default: 'NGN' })
+  @Column({ type: 'varchar', default: 'NGN' })
   priceCurrency!: string;
 
-  @Column('float', { nullable: true })
+  @Column({ type: 'float', nullable: true })
   priceOriginalAmount?: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   description?: string;
 
-  @Column({ default: 0 })
+  @Column({ type: 'int', default: 0 })
   availableCount!: number;
 
   @ManyToOne(() => Site, (site) => site.unitTypes, { onDelete: 'CASCADE' })
   site!: Site;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 }
 

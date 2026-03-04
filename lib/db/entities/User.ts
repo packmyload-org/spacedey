@@ -17,19 +17,19 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   email!: string;
 
-  @Column({ select: false })
+  @Column({ type: 'varchar', select: false })
   password!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   firstName!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   lastName!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   phone?: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
@@ -40,10 +40,10 @@ export class User extends BaseEntity {
     return this.role === UserRole.ADMIN;
   }
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 
   @BeforeInsert()

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import dotenv from 'dotenv';
-import { AppDataSource } from '../lib/db';
-import User from '../lib/db/entities/User';
+import { AppDataSource } from '../lib/db/index.js';
+import User from '../lib/db/entities/User.js';
 
 dotenv.config();
 

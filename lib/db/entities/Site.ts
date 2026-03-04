@@ -14,35 +14,38 @@ export class Site extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name!: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   code!: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   image?: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   address!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   contactPhone!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   contactEmail!: string;
 
-  @Column('float')
+  @Column({ type: 'float' })
   lat!: number;
 
-  @Column('float')
+  @Column({ type: 'float' })
   lng!: number;
 
   @OneToMany(() => UnitType, (unit) => unit.site, { cascade: true })
   unitTypes!: UnitType[];
 
-  @Column({ default: 'ft' })
+  @Column({ type: 'varchar', default: 'ft' })
   measuringUnit!: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  siteMapUrl?: string;
 
   @CreateDateColumn()
   createdAt!: Date;
