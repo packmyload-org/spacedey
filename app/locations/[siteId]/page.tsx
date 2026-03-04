@@ -1,13 +1,13 @@
-import { connectToDatabase } from '@/lib/db/mongo';
-import Site from '@/lib/db/models/Site';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import Site from '@/lib/db/entities/Site';
 import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
-import { ISite } from '@/lib/db/models/Site';
 
-async function getSiteByIdFromDB(siteId: string): Promise<ISite | null> {
+async function getSiteByIdFromDB(siteId: string) {
   try {
-    await connectToDatabase();
-    const site = await Site.findById(siteId).populate('unitTypes').exec();
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(Site);
+    const site = await repo.findOne({ where: { id: siteId }, relations: ['unitTypes'] });
     return site;
   } catch (error) {
     console.error(`Failed to fetch site ${siteId}`, error);
@@ -21,14 +21,36 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
   try {
     const site = await getSiteByIdFromDB(siteId);
 
-    if (!site) {
-      return notFound();
-    }
+    if (!site) return notFound();
 
-    // Convert Mongoose document to plain object
     const siteData = {
-      ...site.toObject(),
-      id: site._id.toString(),
+      id: site.id,
+      name: site.name,
+      code: site.code,
+      image: site.image,
+      address: {
+        street: site.address || undefined,
+      },
+      contact: {
+        phone: site.contactPhone,
+        email: site.contactEmail,
+      },
+      coordinates: {
+        lat: site.lat,
+        lng: site.lng,
+      },
+      unitTypes: (site.unitTypes || []).map((ut: any) => ({
+        id: ut.id,
+        name: ut.name,
+        code: ut.id,
+        price: ut.priceAmount,
+        dimensions: { width: ut.width, depth: ut.depth, height: 0, unit: ut.unit },
+        description: ut.description,
+        availableCount: ut.availableCount,
+        siteId: site.id,
+      })),
+      createdAt: site.createdAt,
+      updatedAt: site.updatedAt,
     };
     
     return (

@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongo';
-import User from '@/lib/db/models/User';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
 
@@ -15,12 +15,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await connectToDatabase();
-
-    const users = await User.find({}).select('-password');
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
+    const users = await repo.find();
 
     const formattedUsers = users.map((user) => ({
-      id: user._id.toString(),
+      id: user.id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -70,9 +70,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectToDatabase();
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
 
     if (existingUser) {
       return NextResponse.json(
@@ -80,17 +81,18 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
-
-    const newUser = await User.create({
+    const newUser = repo.create({
       firstName,
       lastName,
       email: email.toLowerCase(),
       password,
       role: role || UserRole.USER,
-    });
+    } as any);
+
+    await repo.save(newUser);
 
     const userResponse = {
-      id: newUser._id.toString(),
+      id: newUser.id,
       email: newUser.email,
       firstName: newUser.firstName,
       lastName: newUser.lastName,

@@ -1,18 +1,17 @@
 services:
-  mongodb:
-    image: mongodb@latest
-    container_name: spacedey-mongodb
+  postgres:
+    image: postgres:15
+    container_name: spacedey-postgres
     ports:
-      - '27017:27017'
+      - '5432:5432'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
-      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-spacedey}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-spacedey}
     volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,18 +27,21 @@ services:
       - '3000:3000'
     environment:
       NODE_ENV: production
-      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/${MONGO_DB_NAME:-spacedey}?authSource=admin
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-spacedey}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
     networks:
       - spacedey-network
     restart: unless-stopped
 
 volumes:
-  mongodb_data:
-  mongodb_config:
+  postgres_data:
 
 networks:
   spacedey-network:

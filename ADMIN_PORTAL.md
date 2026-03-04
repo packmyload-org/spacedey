@@ -29,10 +29,10 @@ Regular users have access to:
 
 ### 1. Seed Default Users
 
-After setting up MongoDB and the application, seed the database with default users:
+After setting up Postgres and the application, seed the database with default users:
 
 ```bash
-pnpm seed
+pnpm run seed:typeorm
 ```
 
 This creates two default users:
@@ -98,7 +98,7 @@ Response:
   "ok": true,
   "accessToken": "jwt_token",
   "user": {
-    "id": "mongodb_id",
+    "id": "user_id",
     "email": "john@example.com",
     "firstName": "John",
     "lastName": "Doe",
@@ -122,7 +122,7 @@ Response:
   "ok": true,
   "accessToken": "jwt_token",
   "user": {
-    "id": "mongodb_id",
+    "id": "user_id",
     "email": "john@example.com",
     "firstName": "John",
     "lastName": "Doe",

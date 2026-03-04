@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/db/mongo';
-import User from '@/lib/db/models/User';
+import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import User from '@/lib/db/entities/User';
 import { verifyToken } from '@/lib/auth/jwt';
 import { UserRole } from '@/lib/types/roles';
 
@@ -26,8 +26,9 @@ export async function requireAdmin(request: NextRequest) {
       };
     }
 
-    await connectToDatabase();
-    const user = await User.findById(decoded.userId);
+    await connectTypeORM();
+    const repo = AppDataSource.getRepository(User);
+    const user = await repo.findOne({ where: { id: decoded.userId } });
 
     if (!user) {
       return {

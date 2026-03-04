@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { env } from '@/config';
 import { UserResponse } from '@/lib/types/local';
-import type { IUser } from '@/lib/db/models/User';
+import type User from '@/lib/db/entities/User';
 
 /**
  * Hash a password using a simple approach (in production, use bcrypt or similar)
@@ -34,9 +34,9 @@ export function generateAccessToken(userId: string): string {
 /**
  * Convert User to UserResponse (excludes sensitive data)
  */
-export function userToResponse(user: IUser): UserResponse {
+export function userToResponse(user: any): UserResponse {
   return {
-    id: user._id.toString(),
+    id: user.id?.toString?.() || String(user.id),
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,

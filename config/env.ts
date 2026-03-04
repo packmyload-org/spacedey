@@ -4,17 +4,20 @@
  */
 
 export const env = {
-  // MongoDB Configuration
-  mongodb: {
-    uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/spacedey',
-    username: process.env.MONGO_USERNAME,
-    password: process.env.MONGO_PASSWORD,
-    dbName: process.env.MONGO_DB_NAME || 'spacedey',
-  },
-
   // JWT Configuration
   jwt: {
     secret: process.env.JWT_SECRET || 'your-secret-key-change-this-in-production',
+  },
+
+  // Postgres / MySQL Configuration (for TypeORM)
+  postgres: {
+    host: process.env.POSTGRES_HOST || process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.POSTGRES_PORT || process.env.DB_PORT || '5432', 10),
+    username: process.env.POSTGRES_USER || process.env.DB_USER || 'postgres',
+    password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'password',
+    database: process.env.POSTGRES_DB || process.env.DB_NAME || 'spacedey',
+    ssl: process.env.DB_SSL === 'true' || false,
+    type: (process.env.DB_TYPE as any) || 'postgres',
   },
 
   // Google Maps Configuration
@@ -48,7 +51,7 @@ export const env = {
  * Validate required environment variables
  */
 export function validateEnvironment() {
-  const required = ['MONGODB_URI', 'JWT_SECRET'];
+  const required = ['JWT_SECRET'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {

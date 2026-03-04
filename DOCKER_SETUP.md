@@ -1,8 +1,8 @@
-# Spacedey - Docker & MongoDB Setup Guide
+# Spacedey - Docker & Postgres Setup Guide
 
 ## Overview
 
-This application has been migrated from the Storeganise integration to a custom MongoDB-backed backend using Next.js API routes and Mongoose ORM.
+This application uses a Postgres database with TypeORM for server-side data access. The repo includes a TypeORM DataSource and entity definitions; for local development we provide a Postgres service in `docker-compose.yml`.
 
 ## Prerequisites
 
@@ -32,18 +32,21 @@ This application has been migrated from the Storeganise integration to a custom 
    docker-compose up -d
    ```
 
-The application will be available at `http://localhost:3000` and MongoDB at `localhost:27017`.
+The application will be available at `http://localhost:3000` and Postgres at `localhost:5432`.
 
 ### Environment Variables
 
 Create a `.env.local` file based on `.env.example`:
 
 ```env
-# MongoDB
-MONGODB_URI=mongodb://admin:password@mongodb:27017/spacedey?authSource=admin
-MONGO_USERNAME=admin
-MONGO_PASSWORD=password
-MONGO_DB_NAME=spacedey
+# Postgres
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_USER=admin
+POSTGRES_PASSWORD=password
+POSTGRES_DB=spacedey
+DB_TYPE=postgres
+DB_SSL=false
 
 # JWT
 JWT_SECRET=your-secure-secret-key
@@ -60,9 +63,9 @@ SKIP_RECAPTCHA_VERIFICATION=false
 
 ### Without Docker
 
-1. **Install MongoDB locally** or run MongoDB in Docker:
+1. **Install Postgres locally** or run Postgres in Docker:
    ```bash
-   docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password mongo:7.0
+   docker run -d -p 5432:5432 -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password -e POSTGRES_DB=spacedey postgres:15
    ```
 
 2. **Install dependencies:**
@@ -84,36 +87,12 @@ SKIP_RECAPTCHA_VERIFICATION=false
 
 2. **Access the app:**
    - Application: http://localhost:3000
-   - MongoDB: localhost:27017
+   - Postgres: localhost:5432
    - Credentials: admin / password
 
-## Database Models
+## Database Models (overview)
 
-### User
-- `email` (unique, lowercase)
-- `password` (hashed with bcryptjs)
-- `firstName`
-- `lastName`
-- `phone` (optional)
-- `isAdmin` (default: false)
-- `createdAt`, `updatedAt` (timestamps)
-
-### Site
-- `name` (required)
-- `code` (unique)
-- `image` (optional)
-- `address` (required)
-- `contact` { phone, email }
-- `coordinates` { lat, lng }
-- `unitTypes` (references to UnitType documents)
-- `measuringUnit` (default: 'ft')
-
-### UnitType
-- `name` (required)
-- `dimensions` { width, depth, unit }
-- `price` { amount, currency, originalAmount }
-- `description` (optional)
-- `availableCount`
+The project defines TypeORM entities for `User`, `Site`, and `UnitType` with columns and relations that map the previous MongoDB schema.
 
 ## API Routes
 
@@ -129,7 +108,7 @@ SKIP_RECAPTCHA_VERIFICATION=false
 ## Security Considerations
 
 1. **Change JWT Secret:** Update `JWT_SECRET` in production
-2. **Change MongoDB Credentials:** Update `MONGO_USERNAME` and `MONGO_PASSWORD`
+2. **Change DB Credentials:** Update `POSTGRES_USER` and `POSTGRES_PASSWORD`
 3. **Enable reCAPTCHA:** Configure proper reCAPTCHA keys
 4. **Use HTTPS:** Deploy with HTTPS in production
 5. **Environment Variables:** Never commit `.env.local` to version control
@@ -154,12 +133,12 @@ docker-compose down
 ### View Logs
 ```bash
 docker-compose logs -f app
-docker-compose logs -f mongodb
+docker-compose logs -f postgres
 ```
 
-### Access MongoDB Shell
+### Access Postgres Shell
 ```bash
-docker-compose exec mongodb mongosh -u admin -p password
+docker-compose exec postgres psql -U admin -d spacedey
 ```
 
 ## Deployment
@@ -172,39 +151,32 @@ docker build -t spacedey:latest .
 # Run container
 docker run -d \
   -p 3000:3000 \
-  -e MONGODB_URI=<your-mongodb-uri> \
+  -e POSTGRES_HOST=<your-postgres-host> \
+  -e POSTGRES_PORT=<your-postgres-port> \
+  -e POSTGRES_USER=<your-postgres-user> \
+  -e POSTGRES_PASSWORD=<your-postgres-password> \
+  -e POSTGRES_DB=<your-postgres-db> \
   -e JWT_SECRET=<your-jwt-secret> \
   spacedey:latest
 ```
 
 ### Environment Setup for Production
 Ensure these are set as environment variables:
-- `MONGODB_URI` - External MongoDB connection string
+- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 - `JWT_SECRET` - Secure random string
 - `NODE_ENV=production`
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
 - `RECAPTCHA_SECRET_KEY`
 
-## Removed Dependencies
-
-The following Storeganise integration code has been removed:
-- Storeganise API integration (`/lib/integration/storeganise.ts`)
-- Storeganise type definitions (`/lib/types/storeganise.ts`)
-- Storeganise utility functions (`/lib/utils/storeganise.ts`)
-- Storeganise image hosting configuration
-
 ## Migration Notes
 
-- All authentication now uses JWT tokens instead of Storeganise tokens
-- User data is stored in MongoDB with bcrypt password hashing
-- Site and UnitType data must be manually migrated from Storeganise or added through admin tools
-- Password reset endpoints need to be configured with email service
+- TypeORM `synchronize` is enabled for development; generate migrations for production and set `synchronize=false`.
 
 ## Support
 
 For local development issues, check:
-1. MongoDB is running: `docker ps`
+1. Postgres is running: `docker ps`
 2. Environment variables are set correctly
-3. Ports 3000 and 27017 are not in use
+3. Ports 3000 and 5432 are not in use
 4. Node version is 18+
 
