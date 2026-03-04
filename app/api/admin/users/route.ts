@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       email: email.toLowerCase(),
       password,
       role: role || UserRole.USER,
-    } as any);
+    } as Partial<User>);
 
     await repo.save(newUser);
 

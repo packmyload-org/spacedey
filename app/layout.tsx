@@ -19,10 +19,8 @@ export default function RootLayout({
       <body className="antialiased" suppressHydrationWarning>
         <StorageCartProvider>
           <ZendeskWidget />
-          {/* <Header /> */}
           {children}
           <StorageCart />
-          {/* <Footer /> */}
         </StorageCartProvider>
       </body>
     </html>

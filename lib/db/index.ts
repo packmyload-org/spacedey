@@ -2,11 +2,13 @@ import 'reflect-metadata';
 import path from 'path';
 import { DataSource } from 'typeorm';
 import { env } from '@/config/env';
+import User from './entities/User';
+import UnitType from './entities/UnitType';
+import Site from './entities/Site';
 
-const entitiesPath = path.join(process.cwd(), 'lib/db/entities/*{.ts,.js}');
 
 export const AppDataSource = new DataSource({
-  type: (env.postgres.type as any) || 'postgres',
+  type: (env.postgres.type) || 'postgres',
   host: env.postgres.host,
   port: env.postgres.port,
   username: env.postgres.username,
@@ -14,7 +16,7 @@ export const AppDataSource = new DataSource({
   database: env.postgres.database,
   synchronize: env.app.isDevelopment,
   logging: env.app.isDevelopment,
-  entities: [entitiesPath],
+  entities: [User, UnitType, Site],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 

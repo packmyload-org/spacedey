@@ -1,4 +1,4 @@
-import { getAvailableCities } from '@/lib/cities';
+import { getAvailableCities } from '@/lib/utils/cities';
 
 const StorageLocationsByCity = () => {
   const availableCities = getAvailableCities();
@@ -8,7 +8,7 @@ const StorageLocationsByCity = () => {
       <h3 className="text-xl text-blue-900 font-semibold mb-6 lg:mb-12">
         Storage locations by city
       </h3>
-      
+
       {/* Available Cities */}
       <div className="flex flex-wrap gap-4 lg:gap-6">
         {availableCities.map((city) => (

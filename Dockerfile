@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN pnpm build
 
 # Production stage
-FROM node:18-alpine
+FROM node:lts-alpine
 
 WORKDIR /app
 
@@ -27,8 +27,7 @@ RUN npm install -g pnpm
 COPY package*.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
 
 # Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
-
+RUN pnpm install --frozen-lockfile --prod 
 # Copy built application from builder
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public

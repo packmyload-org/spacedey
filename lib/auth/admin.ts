@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { verifyToken } from '@/lib/auth/jwt';
 import { UserRole } from '@/lib/types/roles';
