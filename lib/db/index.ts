@@ -5,16 +5,17 @@ import { env } from '@/config/env';
 import User from './entities/User';
 import UnitType from './entities/UnitType';
 import Site from './entities/Site';
+import { PostgresConnectionOptions } from 'typeorm/browser/driver/postgres/PostgresConnectionOptions.js';
 
 
 export const AppDataSource = new DataSource({
-  type: (env.postgres.type) || 'postgres',
+  type: env.postgres.type as PostgresConnectionOptions['type'] || 'postgres',
   host: env.postgres.host,
   port: env.postgres.port,
   username: env.postgres.username,
   password: env.postgres.password,
   database: env.postgres.database,
-  synchronize: env.app.isDevelopment,
+  synchronize: true,
   logging: env.app.isDevelopment,
   entities: [User, UnitType, Site],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
