@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       email,
       password,
       role: 'user',
-    } as any);
+    } as Partial<User>);
 
     await repo.save(newUser);
 

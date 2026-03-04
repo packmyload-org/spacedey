@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
@@ -39,7 +39,7 @@ export async function GET(
     }
 
     const userResponse = {
-      id: user._id.toString(),
+      id: user.id.toString(),
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -75,7 +75,7 @@ export async function PATCH(
     const body = await request.json();
     const { firstName, lastName, email, role, phone } = body;
 
-    if (!Types.ObjectId.isValid(id)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json(
         { ok: false, error: 'Invalid user ID' },
         { status: 400 }

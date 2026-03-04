@@ -2,9 +2,11 @@
 
 import React from "react";
 import { useStorageCart } from "@/contexts/StorageCartContext";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 export default function StorageCart() {
   const { isOpen, closeCart, selectedUnit, cartItems, addToCart, removeFromCart } = useStorageCart();
+  const { isAuthenticated } = useAuthStore();
 
   if (!isOpen) return null;
 
@@ -91,7 +93,7 @@ export default function StorageCart() {
               <span>Total:</span>
               <span>₦{cartItems.reduce((sum, item) => sum + parseFloat(item.currentPrice), 0).toFixed(2)}</span>
             </div>
-            <button className="w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700">
+            <button className={`w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!isAuthenticated}>
               Proceed to Checkout
             </button>
           </div>

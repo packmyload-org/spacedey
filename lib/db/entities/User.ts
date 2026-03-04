@@ -13,6 +13,7 @@ import { UserRole } from '@/lib/types/roles';
 
 @Entity({ name: 'users' })
 export class User extends BaseEntity {
+  // @ts-ignore
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 

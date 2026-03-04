@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getAvailableCities } from "@/lib/cities";
+import { getAvailableCities } from "@/lib/utils/cities";
 
 export default function LocationSection() {
   const router = useRouter();

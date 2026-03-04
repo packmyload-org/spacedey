@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     const accessToken = generateToken(user.id);
 
     const userResponse = {
-      id: user._id.toString(),
+      id: user.id.toString(),
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,

@@ -1,6 +1,6 @@
 // app/api/sites/route.ts
 import { NextResponse } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import UnitType from '@/lib/db/entities/UnitType';
 import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
@@ -10,20 +10,19 @@ export async function GET() {
     await connectTypeORM();
     const repo = AppDataSource.getRepository(Site);
     const sites = await repo.find({ relations: ['unitTypes'] });
-
     const apiSites: ApiSite[] = sites.map((site) => ({
-      id: site._id.toString(),
+      id: site.id.toString(),
       name: site.name,
       code: site.code,
       image: site.image || '',
       address: site.address,
       contact: {
-        phone: site.contact.phone,
-        email: site.contact.email,
+        phone: site.contactPhone,
+        email: site.contactEmail,
       },
       coordinates: {
-        lat: site.coordinates.lat,
-        lng: site.coordinates.lng,
+        lat: site.lat,
+        lng: site.lng,
       },
       unitTypes: (site.unitTypes || []).map((ut: any) => ({
         id: ut.id,

@@ -1,4 +1,4 @@
-import { connectTypeORM, AppDataSource } from '@/lib/db/typeorm';
+import { connectTypeORM, AppDataSource } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
@@ -17,7 +17,7 @@ async function getSiteByIdFromDB(siteId: string) {
 
 export default async function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = await params;
-  
+
   try {
     const site = await getSiteByIdFromDB(siteId);
 
@@ -52,7 +52,7 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
       createdAt: site.createdAt,
       updatedAt: site.updatedAt,
     };
-    
+
     return (
       <main className="min-h-screen bg-gray-50 pt-[80px]">
         <SiteDetails site={siteData} />

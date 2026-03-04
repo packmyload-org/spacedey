@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from "react";
 
 export interface StorageUnit {
   size: string;
@@ -44,7 +44,7 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
   const closeCart = () => {
     setIsOpen(false);
     // Optionally clear selectedUnit on close
-    setTimeout(() => setSelectedUnit(null), 300); // Delay to allow animation
+    // setTimeout(() => setSelectedUnit(null), 300); // Delay to allow animation
   };
 
   const addToCart = (item: CartItem) => {

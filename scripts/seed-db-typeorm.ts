@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import dotenv from 'dotenv';
-import { AppDataSource } from '../lib/db/typeorm';
+import { AppDataSource } from '../lib/db';
 import User from '../lib/db/entities/User';
 
 dotenv.config();

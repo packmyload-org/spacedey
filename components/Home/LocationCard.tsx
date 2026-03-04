@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Card from "../ui/Card";
 import { useStorageCart } from "../../contexts/StorageCartContext";
-import { getLocationDetails } from "../../lib/sampleLocations";
+import { getLocationDetails } from "../../lib/utils/sampleLocations";
 import UnitSelectorModal from "./UnitSelectorModal";
 
 interface LocationCardProps {

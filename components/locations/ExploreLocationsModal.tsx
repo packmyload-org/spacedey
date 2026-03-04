@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { getAvailableCities } from '@/lib/cities';
+import { getAvailableCities } from '@/lib/utils/cities';
 
 interface ExploreLocationsModalProps {
   isOpen: boolean;
@@ -30,7 +30,7 @@ export default function ExploreLocationsModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black bg-opacity-50"
         onClick={onClose}
       />
@@ -59,10 +59,9 @@ export default function ExploreLocationsModal({
                 <span className="text-lg text-blue-600 font-medium group-hover:text-blue-700">
                   {city.name}
                 </span>
-                <ChevronRight 
-                  className={`w-5 h-5 text-red-500 transition-transform ${
-                    hoveredLocation === city.name ? 'translate-x-1' : ''
-                  }`}
+                <ChevronRight
+                  className={`w-5 h-5 text-red-500 transition-transform ${hoveredLocation === city.name ? 'translate-x-1' : ''
+                    }`}
                 />
               </button>
             ))}
@@ -77,7 +76,7 @@ export default function ExploreLocationsModal({
             fill
             className="object-cover"
           />
-          
+
           {/* Close Button */}
           <button
             onClick={onClose}
