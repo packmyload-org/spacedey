@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronRight } from 'lucide-react';
-import LocationCard from '@/components/Home/LocationCard';
+import LocationCard from '@/components/home/LocationCard';
 import { ApiSite } from '@/lib/types/local';
 import { useMemo } from 'react';
 
@@ -99,12 +99,12 @@ export default function CityList({
                 onClick={() => onSelectCity(activeCityData.name)}
                 className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
               >
-                 
-                  <span className="flex-1 font-medium">{activeCityData.name}</span>
-                  <span className="text-sm text-gray-500 mr-2">
-                    {activeCityData.sites.length} locations
-                  </span>
-                  <ChevronRight className="w-6 h-6 flex-shrink-0" />
+
+                <span className="flex-1 font-medium">{activeCityData.name}</span>
+                <span className="text-sm text-gray-500 mr-2">
+                  {activeCityData.sites.length} locations
+                </span>
+                <ChevronRight className="w-6 h-6 flex-shrink-0" />
               </button>
             )}
           </div>

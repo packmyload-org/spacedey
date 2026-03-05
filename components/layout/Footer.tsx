@@ -46,6 +46,7 @@ export default function Footer() {
                   alt="Spacedey Logo"
                   width={107}
                   height={28}
+                  style={{ height: 'auto' }}
                   className="rounded-xl"
                   priority
                 />
