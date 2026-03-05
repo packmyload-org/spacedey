@@ -1,24 +1,23 @@
 import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 import { env } from '@/config';
 import { UserResponse } from '@/lib/types/local';
 import type User from '@/lib/db/entities/User';
 
 /**
- * Hash a password using a simple approach (in production, use bcrypt or similar)
- * For now using crypto for basic hashing
+ * Hash a password using a secure password hashing algorithm.
+ * Uses bcrypt with a reasonable cost factor.
  */
 export function hashPassword(password: string): string {
-  return crypto
-    .createHash('sha256')
-    .update(password + env.security.passwordSalt)
-    .digest('hex');
+  const saltRounds = 12;
+  return bcrypt.hashSync(password, saltRounds);
 }
 
 /**
  * Verify a password against a hash
  */
 export function verifyPassword(password: string, hash: string): boolean {
-  return hashPassword(password) === hash;
+  return bcrypt.compareSync(password, hash);
 }
 
 /**
