@@ -3,14 +3,28 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
   const [isLocationsModalOpen, setIsLocationsModalOpen] = React.useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
+
+  const navLinkClass = "text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring transition-colors duration-200";
+
+  const handleReserveNow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      router.push("/auth/signin");
+    } else {
+      router.push("/search");
+    }
+  };
 
   // Close modal when pathname changes (user navigates)
   useEffect(() => {
@@ -37,13 +51,14 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center justify-start h-20 z-10">
             <Link href="/">
-              <Image 
-                src="/images/logo.png" 
-                alt="Spacedey Logo" 
-                width={107} 
-                height={28} 
-                className="rounded-xl" 
-                priority 
+              <Image
+                src="/images/logo.png"
+                alt="Spacedey Logo"
+                width={107}
+                height={28}
+                style={{ height: 'auto' }}
+                className="rounded-xl"
+                priority
               />
               {/* <div className="flex items-center gap-1">
                 <Image 
@@ -58,87 +73,54 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="space-x-10 hidden lg:flex mx-6 font-bold">
-            <Link 
-              href="/search" 
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
-            >
+            <Link href="/search" className={navLinkClass}>
               Search
             </Link>
-            <button 
+            <button
               onClick={() => setIsLocationsModalOpen(true)}
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
+              className={navLinkClass}
             >
               Locations
             </button>
-            <Link 
-              href="/sizing" 
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
-            >
+            <Link href="/sizing" className={navLinkClass}>
               Sizing
             </Link>
-            {/* <Link 
-              href="/landlord" 
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
-            >
-              Landlord
-            </Link> */}
-            <Link 
-              href="/products" 
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
-            >
+            <Link href="/products" className={navLinkClass}>
               Products
             </Link>
-            <Link 
-              href="/blog" 
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
-            >
+            <Link href="/blog" className={navLinkClass}>
               Blog
             </Link>
-            <Link 
-              href="/referral" 
-              className="text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring"
-            >
+            <Link href="/referral" className={navLinkClass}>
               Refer a Friend
             </Link>
-            <a 
-              href="tel:09166680777" 
-              className="flex items-center"
-            >
-              <p className="text-white font-bold text-sm xl:text-base">
-               Call Us
-              </p>
+            <a href="tel:09166680777" className={navLinkClass}>
+              Call Us
             </a>
-            <Link 
-                href="/auth/signin" 
-                className="font-bold inline-flex text-center items-center hover:cursor-pointer text-white text-xs lg:text-xs xl:text-base py-1.5 "
-              >
-                Log in
-              </Link>
           </nav>
 
           {/* Desktop Right Side Actions */}
           <div className="hidden lg:flex items-center justify-end lg:gap-6">
-           
+
             <div className="hidden lg:flex items-start justify-end">
-             
+
             </div>
             <div className="hidden lg:flex items-start justify-end">
-              <Link 
-                href="/search" 
-                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-[#D96541] text-white rounded-full  text-xs lg:text-xs xl:text-base truncate py-3.5 px-6"
+              <button
+                onClick={handleReserveNow}
+                className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-[#D96541] text-white rounded-full text-xs lg:text-xs xl:text-base truncate py-3.5 px-6"
               >
                 Reserve Now
-              </Link>
+              </button>
             </div>
           </div>
 
           {/* Mobile Right Side Actions */}
           <div className="flex flex-row gap-4 lg:hidden">
-            <a 
-              href="tel:09166680777" 
-              className="flex flex-row items-center gap-2" 
+            <a
+              href="tel:09166680777"
+              className="flex flex-row items-center gap-2"
               title="Call Us"
             >
               <span className="text-white font-bold text-sm">Call Us</span>
@@ -162,7 +144,7 @@ export default function Header() {
                 alt="Spacedey Logo"
                 width={128}
                 height={32}
-                style={{ width: 'auto' }}
+                style={{ height: 'auto' }}
                 className="object-contain h-full"
                 priority
               />
@@ -180,22 +162,26 @@ export default function Header() {
             </button>
           </div>
 
-          <nav className="mt-8 flex flex-col gap-5 text-lg text-neutral-800">
-            <Link href="/search" onClick={() => setOpen(false)} className="hover:text-neutral-900">Search</Link>
-            <button onClick={() => { setIsLocationsModalOpen(true); setOpen(false); }} className="text-left hover:text-neutral-900">Locations</button>
-            <Link href="/sizing" onClick={() => setOpen(false)} className="hover:text-neutral-900">Sizing</Link>
-            {/* <Link href="/landlord" onClick={() => setOpen(false)} className="hover:text-neutral-900">Landlord</Link> */}
-            <Link href="/products" onClick={() => setOpen(false)} className="hover:text-neutral-900">Products</Link>
-            <Link href="/blog" onClick={() => setOpen(false)} className="hover:text-neutral-900">Blog</Link>
-            <Link href="/referral" onClick={() => setOpen(false)} className="hover:text-neutral-900">Refer a Friend</Link>
-            <Link href="/auth/signin" onClick={() => setOpen(false)} className="hover:text-neutral-900">Log in</Link>
-            <a href="tel:09166680777" className="hover:text-neutral-900 font-bold text-blue-600">09166680777</a>
+          <nav className="mt-8 flex flex-col gap-5 text-lg">
+            <Link href="/search" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Search</Link>
+            <button onClick={() => { setIsLocationsModalOpen(true); setOpen(false); }} className="text-left text-neutral-800 hover:text-primary transition-colors">Locations</button>
+            <Link href="/sizing" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Sizing</Link>
+            <Link href="/products" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Products</Link>
+            <Link href="/blog" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Blog</Link>
+            <Link href="/referral" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Refer a Friend</Link>
+            <a href="tel:09166680777" className="hover:text-primary transition-colors font-bold text-blue-600">09166680777</a>
           </nav>
 
           <div className="mt-auto pt-6">
-            <Link href="/search" onClick={() => setOpen(false)}>
-              <PrimaryButton className="w-full py-3 bg-[#1642F0] text-white hover:bg-[#0f35d4]">Reserve Now</PrimaryButton>
-            </Link>
+            <PrimaryButton
+              className="w-full py-3 bg-[#1642F0] text-white hover:bg-[#0f35d4]"
+              onClick={(e) => {
+                setOpen(false);
+                handleReserveNow(e);
+              }}
+            >
+              Reserve Now
+            </PrimaryButton>
           </div>
         </div>
       </div>

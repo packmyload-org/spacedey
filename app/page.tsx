@@ -1,13 +1,13 @@
 'use client';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import HeroSection from "@/components/Home/HeroSection";
+import HeroSection from "@/components/home/HeroSection";
 // QuoteSection and InfoBlock imports removed because they are commented out in the render tree
-import WhyStoreWithUs from "@/components/Home/WhyStoreWithUs";
+import WhyStoreWithUs from "@/components/home/WhyStoreWithUs";
 import FinalCtaBlock from "@/components/ui/FinalCtaBlock";
 import NotAverageStorage from "@/components/ui/NotAverageStorage";
-import CitiesStatesNav from "@/components/Home/CitiesStatesNav";
-import FeatureList from "@/components/Home/FeatureList";
+import CitiesStatesNav from "@/components/home/CitiesStatesNav";
+import FeatureList from "@/components/home/FeatureList";
 
 export default function Home() {
   return (
@@ -16,7 +16,7 @@ export default function Home() {
       <main>
         <HeroSection />
         <FeatureList />
-         <FinalCtaBlock />
+        <FinalCtaBlock />
         {/* <QuoteSection /> */}
         {/* <InfoBlock /> */}
         <WhyStoreWithUs />

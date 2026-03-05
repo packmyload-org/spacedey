@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import PrimaryButton from "../../components/ui/PrimaryButton";
-import InputSearch from "../../components/ui/InputSearch";
+import PrimaryButton from "../ui/PrimaryButton";
+import InputSearch from "../ui/InputSearch";
 // Using public/ images served by Next.js
 
 function HeroSection() {
@@ -12,16 +12,16 @@ function HeroSection() {
   const [activeCity, setActiveCity] = useState("");
 
   const cities = [
-  'Lagos',
-  'Abuja',
-  'Kano',
-  'Ibadan',
-  'Port Harcourt',
-  'Benin City',
-  'Jos',
-  'Enugu',
-  'Kaduna',
-  'Abeokuta',
+    'Lagos',
+    'Abuja',
+    'Kano',
+    'Ibadan',
+    'Port Harcourt',
+    'Benin City',
+    'Jos',
+    'Enugu',
+    'Kaduna',
+    'Abeokuta',
   ];
 
   const handleCityClick = (city: string) => {
@@ -39,7 +39,7 @@ function HeroSection() {
   return (
     <section className="relative min-h-screen flex flex-col bg-[#1642F0] overflow-hidden">
       {/* Social Proof Badge */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -70,19 +70,19 @@ function HeroSection() {
       <div className="flex-1 flex flex-col items-center w-full justify-center mb-2 px-4">
         <div className="max-w-6xl mx-auto text-center items-center w-full">
           {/* Hero Heading */}
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8"
           >
             Self-Storage In Your
-            
+
             Neighborhood
           </motion.h1>
 
           {/* Subheading */}
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
@@ -92,7 +92,7 @@ function HeroSection() {
           </motion.p>
 
           {/* Search Card */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
@@ -104,11 +104,10 @@ function HeroSection() {
                 <button
                   key={city}
                   onClick={() => handleCityClick(city)}
-                  className={`text-sm sm:text-base font-medium transition-colors ${
-                    activeCity === city
+                  className={`text-sm sm:text-base font-medium transition-colors ${activeCity === city
                       ? "text-neutral-900"
                       : "text-neutral-600 hover:text-neutral-900"
-                  }`}
+                    }`}
                 >
                   {city}
                 </button>
@@ -124,7 +123,7 @@ function HeroSection() {
                 className="flex-1"
                 inputClassName="text-base border-neutral-300 focus:ring-orange-500"
               />
-              <PrimaryButton 
+              <PrimaryButton
                 onClick={handleReserve}
                 variant="primary"
                 className="bg-[#D96541] hover:bg-[#B85737] text-white px-8 py-4 whitespace-nowrap border-0 rounded-lg focus:ring-orange-500"
@@ -134,9 +133,9 @@ function HeroSection() {
             </div>
             {/* Thumbnails moved below the search card (rendered after this card) */}
           </motion.div>
-          
+
           {/* Thumbnails displayed under the search card */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
@@ -160,7 +159,7 @@ function HeroSection() {
       </div>
 
       {/* Support Link */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1 }}
@@ -172,7 +171,7 @@ function HeroSection() {
           </div>
           {/* <span className="font-medium">Support</span> */}
         </button>
-          {/* Support area only (images moved into search card) */}
+        {/* Support area only (images moved into search card) */}
       </motion.div>
       {/* <div className="mt-6">
       <Image 
