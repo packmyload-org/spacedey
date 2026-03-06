@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db';
+import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
     const users = await repo.find();
 
     const formattedUsers = users.map((user) => ({
@@ -70,8 +70,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
 
     const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
 

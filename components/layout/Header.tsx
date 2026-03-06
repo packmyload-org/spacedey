@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,9 +25,27 @@ import {
 export default function Header() {
   const [open, setOpen] = React.useState(false);
   const [isLocationsModalOpen, setIsLocationsModalOpen] = React.useState(false);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user, logout, isAdmin } = useAuthStore();
+
+  // Build user initials
+  const userInitials = user
+    ? `${user.firstName?.charAt(0) ?? ""}${user.lastName?.charAt(0) ?? ""}`.toUpperCase()
+    : "";
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const navLinkClass = "flex items-center border-b-2 border-transparent hover:text-gray-300 focus:text-gray-300 hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring transition-colors duration-200";
 
@@ -40,9 +58,9 @@ export default function Header() {
     }
   };
 
-  // Close modal when pathname changes (user navigates)
   useEffect(() => {
     setIsLocationsModalOpen(false);
+    setIsProfileOpen(false);
   }, [pathname]);
 
   return (
@@ -84,7 +102,6 @@ export default function Header() {
             <button
               onClick={() => setIsLocationsModalOpen(true)}
               className={navLinkClass}
-              style={{ color: 'white' }}
             >
               Locations
             </button>
@@ -107,10 +124,6 @@ export default function Header() {
 
           {/* Desktop Right Side Actions */}
           <div className="hidden lg:flex items-center justify-end lg:gap-6">
-
-            <div className="hidden lg:flex items-start justify-end">
-
-            </div>
             <div className="hidden lg:flex items-start justify-end">
               <button
                 onClick={handleReserveNow}
@@ -119,6 +132,60 @@ export default function Header() {
                 Reserve Now
               </button>
             </div>
+
+            {/* User Avatar / Sign In */}
+            {isAuthenticated && user ? (
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setIsProfileOpen((v) => !v)}
+                  className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 border-2 border-white/40 flex items-center justify-center text-white font-bold text-sm transition-all duration-200 hover:scale-105 cursor-pointer"
+                  aria-label="User menu"
+                  id="user-avatar-btn"
+                >
+                  {userInitials}
+                </button>
+
+                {/* Dropdown */}
+                {isProfileOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-neutral-100 py-2 animate-in fade-in slide-in-from-top-2 z-50">
+                    <div className="px-4 py-3 border-b border-neutral-100">
+                      <p className="text-sm font-semibold text-neutral-900 truncate">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                    </div>
+                    {isAdmin() && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
+                        Admin Dashboard
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setIsProfileOpen(false);
+                        router.push("/");
+                      }}
+                      className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="font-bold inline-flex text-center items-center bg-white/10 hover:bg-white/20 text-white rounded-full text-sm py-2.5 px-5 border border-white/20 transition-all duration-200"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
 
@@ -187,6 +254,19 @@ export default function Header() {
             ))}
           </nav>
 
+          {/* User Info (Mobile) */}
+          {isAuthenticated && user && (
+            <div className="flex items-center gap-3 mb-6 p-4 rounded-2xl bg-[#F0F4FF] border border-[#DCE4FF]">
+              <div className="w-12 h-12 rounded-full bg-[#1642F0] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
+                {userInitials}
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-neutral-900 truncate">{user.firstName} {user.lastName}</p>
+                <p className="text-sm text-neutral-500 truncate">{user.email}</p>
+              </div>
+            </div>
+          )}
+
           {/* Call Us & Actions */}
           <div className="mt-auto space-y-4">
             <a
@@ -206,6 +286,27 @@ export default function Header() {
             >
               Reserve Now
             </PrimaryButton>
+
+            {isAuthenticated ? (
+              <button
+                onClick={() => {
+                  logout();
+                  setOpen(false);
+                  router.push("/");
+                }}
+                className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl bg-red-50 text-red-600 font-bold border border-red-100 hover:bg-red-100 transition-all cursor-pointer"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/auth/signin"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl bg-neutral-100 text-neutral-900 font-bold border border-neutral-200 hover:bg-neutral-200 transition-all"
+              >
+                Sign In
+              </Link>
+            )}
 
             {/* Social Links */}
             <div className="flex justify-center gap-6 pt-8 pb-4">

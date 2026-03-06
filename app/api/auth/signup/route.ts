@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db';
+import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const body = await request.json();  
     const firstName = String(body?.firstName || '').trim();
     const lastName = String(body?.lastName || '').trim();
     const email = String(body?.email || '').trim().toLowerCase();
@@ -18,8 +18,8 @@ export async function POST(request: Request) {
       );
     }
 
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
 
     // Check if user already exists
     const existingUser = await repo.findOne({ where: { email } });
