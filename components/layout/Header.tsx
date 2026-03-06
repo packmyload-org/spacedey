@@ -7,6 +7,20 @@ import { usePathname, useRouter } from "next/navigation";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import {
+  Search,
+  MapPin,
+  Maximize,
+  ShoppingBag,
+  Newspaper,
+  UserPlus,
+  Phone,
+  Facebook,
+  Instagram,
+  Twitter,
+  Linkedin,
+  X
+} from "lucide-react";
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
@@ -15,7 +29,7 @@ export default function Header() {
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
 
-  const navLinkClass = "text-white flex items-center border-b-2 border-transparent hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring transition-colors duration-200";
+  const navLinkClass = "flex items-center border-b-2 border-transparent hover:text-gray-300 focus:text-gray-300 hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring transition-colors duration-200";
 
   const handleReserveNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,6 +49,21 @@ export default function Header() {
     <header className="fixed w-full top-0 z-40">
       <div className="bg-[#1642F0] transition-colors duration-300 border-b-2 border-[#1642F0]">
         <div className="flex flex-row px-3 lg:px-10 items-center justify-between h-20">
+          {/* Logo */}
+          <div className="flex items-center justify-start z-10">
+            <Link href="/">
+              <Image
+                src="/images/logo.png"
+                alt="Spacedey Logo"
+                width={107}
+                height={28}
+                style={{ height: 'auto' }}
+                className="rounded-xl"
+                priority
+              />
+            </Link>
+          </div>
+
           {/* Mobile Menu Toggle */}
           <div className="lg:hidden">
             <button
@@ -48,31 +77,6 @@ export default function Header() {
             </button>
           </div>
 
-          {/* Logo */}
-          <div className="flex items-center justify-start h-20 z-10">
-            <Link href="/">
-              <Image
-                src="/images/logo.png"
-                alt="Spacedey Logo"
-                width={107}
-                height={28}
-                style={{ height: 'auto' }}
-                className="rounded-xl"
-                priority
-              />
-              {/* <div className="flex items-center gap-1">
-                <Image 
-                  src="/images/logo.png" 
-                  alt="S" 
-                  width={24} 
-                  height={24}
-                  className="w-6 h-6"
-                />
-                <span className="text-2xl text-white font-bold">pacedey</span>
-              </div> */}
-            </Link>
-          </div>
-
           <nav className="space-x-10 hidden lg:flex mx-6 font-bold">
             <Link href="/search" className={navLinkClass}>
               Search
@@ -80,6 +84,7 @@ export default function Header() {
             <button
               onClick={() => setIsLocationsModalOpen(true)}
               className={navLinkClass}
+              style={{ color: 'white' }}
             >
               Locations
             </button>
@@ -116,65 +121,84 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Mobile Right Side Actions */}
-          <div className="flex flex-row gap-4 lg:hidden">
-            <a
-              href="tel:09166680777"
-              className="flex flex-row items-center gap-2"
-              title="Call Us"
-            >
-              <span className="text-white font-bold text-sm">Call Us</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256" className="my-auto text-white">
-                <path d="M222.37,158.46l-47.11-21.11-.13-.06a16,16,0,0,0-15.17,1.4,8.12,8.12,0,0,0-.75.56L134.87,160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16,16,0,0,0,1.32-15.06l0-.12L97.54,33.64a16,16,0,0,0-16.62-9.52A56.26,56.26,0,0,0,32,80c0,79.4,64.6,144,144,144a56.26,56.26,0,0,0,55.88-48.92A16,16,0,0,0,222.37,158.46ZM176,208A128.14,128.14,0,0,1,48,80,40.2,40.2,0,0,1,82.87,40a.61.61,0,0,0,0,.12l21,47L83.2,111.86a6.13,6.13,0,0,0-.57.77,16,16,0,0,0-1,15.7c9.06,18.53,27.73,37.06,46.46,46.11a16,16,0,0,0,15.75-1.14,8.44,8.44,0,0,0,.74-.56L168.89,152l47,21.05h0s.08,0,.11,0A40.21,40.21,0,0,1,176,208Z"></path>
-              </svg>
-            </a>
-          </div>
+
         </div>
       </div>
 
       {/* Mobile Menu Overlay */}
       <div
-        className={`md:hidden fixed inset-0 z-40 bg-white/95 backdrop-blur-sm border-t border-neutral-200 transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}
+        className={`lg:hidden fixed inset-0 z-50 bg-white transition-all duration-300 ease-in-out ${open ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"}`}
       >
-        <div className="h-full flex flex-col py-6 px-3">
-          <div className="flex items-center justify-between">
-            <div className="w-32 h-8  rounded-md" aria-label="Logo">
+        <div className="h-full flex flex-col p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {/* Header in Overlay */}
+          <div className="flex items-center justify-between mb-10">
+            <div className="w-32">
               <Image
-                src="/images/SpacedeyLogo.png"
+                src="/images/logo.png"
                 alt="Spacedey Logo"
-                width={128}
-                height={32}
-                style={{ height: 'auto' }}
-                className="object-contain h-full"
+                width={107}
+                height={28}
                 priority
               />
             </div>
             <button
-              className="inline-flex items-center justify-center w-10 h-10 rounded-md border border-neutral-300"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-900 hover:bg-neutral-200 transition-colors"
               aria-label="Close Menu"
               onClick={() => setOpen(false)}
             >
-              <span className="sr-only">Close menu</span>
-              <div className="relative w-5 h-5">
-                <span className="absolute inset-0 block h-0.5 w-5 bg-neutral-900 rotate-45 top-2.5"></span>
-                <span className="absolute inset-0 block h-0.5 w-5 bg-neutral-900 -rotate-45 top-2.5"></span>
-              </div>
+              <X className="w-6 h-6" />
             </button>
           </div>
 
-          <nav className="mt-8 flex flex-col gap-5 text-lg">
-            <Link href="/search" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Search</Link>
-            <button onClick={() => { setIsLocationsModalOpen(true); setOpen(false); }} className="text-left text-neutral-800 hover:text-primary transition-colors">Locations</button>
-            <Link href="/sizing" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Sizing</Link>
-            <Link href="/products" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Products</Link>
-            <Link href="/blog" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Blog</Link>
-            <Link href="/referral" onClick={() => setOpen(false)} className="text-neutral-800 hover:text-primary transition-colors">Refer a Friend</Link>
-            <a href="tel:09166680777" className="hover:text-primary transition-colors font-bold text-blue-600">09166680777</a>
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-2 mb-10">
+            {[
+              { href: "/search", label: "Search", icon: Search },
+              { label: "Locations", icon: MapPin, onClick: () => { setIsLocationsModalOpen(true); setOpen(false); } },
+              { href: "/sizing", label: "Sizing", icon: Maximize },
+              { href: "/products", label: "Products", icon: ShoppingBag },
+              { href: "/blog", label: "Blog", icon: Newspaper },
+              { href: "/referral", label: "Refer a Friend", icon: UserPlus },
+            ].map((item, idx) => (
+              item.href ? (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-4 py-4 px-4 rounded-2xl hover:bg-neutral-100 active:bg-neutral-200 transition-all text-neutral-900 font-medium"
+                >
+                  <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-100 shadow-sm">
+                    <item.icon className="w-5 h-5 text-neutral-600" />
+                  </div>
+                  <span className="text-lg">{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  key={idx}
+                  onClick={item.onClick}
+                  className="flex items-center gap-4 py-4 px-4 rounded-2xl hover:bg-neutral-100 active:bg-neutral-200 transition-all text-neutral-900 font-medium text-left"
+                >
+                  <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-100 shadow-sm">
+                    <item.icon className="w-5 h-5 text-neutral-600" />
+                  </div>
+                  <span className="text-lg">{item.label}</span>
+                </button>
+              )
+            ))}
           </nav>
 
-          <div className="mt-auto pt-6">
+          {/* Call Us & Actions */}
+          <div className="mt-auto space-y-4">
+            <a
+              href="tel:09166680777"
+              className="flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-[#F0F4FF] text-[#1642F0] font-bold border border-[#DCE4FF] hover:bg-[#1642F0] hover:text-white active:bg-[#1642F0] active:text-white focus:bg-[#1642F0] focus:text-white transition-all"
+            >
+              <Phone className="w-5 h-5" />
+              <span>Call Us: 09166680777</span>
+            </a>
+
             <PrimaryButton
-              className="w-full py-3 bg-[#1642F0] text-white hover:bg-[#0f35d4]"
+              className="w-full py-4 text-lg shadow-lg shadow-orange-600/20 bg-[#D96541] border-[#D96541] hover:bg-[#c45a3a]"
               onClick={(e) => {
                 setOpen(false);
                 handleReserveNow(e);
@@ -182,6 +206,22 @@ export default function Header() {
             >
               Reserve Now
             </PrimaryButton>
+
+            {/* Social Links */}
+            <div className="flex justify-center gap-6 pt-8 pb-4">
+              <a href="https://web.facebook.com/spacedeyng/?_rdc=1&_rdr#" target="_blank" className="p-3 rounded-full bg-neutral-50 text-neutral-400 hover:text-blue-600 transition-colors border border-neutral-100">
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a href="https://www.instagram.com/spacedey.ng/" target="_blank" className="p-3 rounded-full bg-neutral-50 text-neutral-400 hover:text-pink-600 transition-colors border border-neutral-100">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href="https://x.com/spacedeyng" target="_blank" className="p-3 rounded-full bg-neutral-50 text-neutral-400 hover:text-neutral-900 transition-colors border border-neutral-100">
+                <Twitter className="w-5 h-5" />
+              </a>
+              <a href="https://www.linkedin.com/company/spacedey/?originalSubdomain=ng" target="_blank" className="p-3 rounded-full bg-neutral-50 text-neutral-400 hover:text-blue-700 transition-colors border border-neutral-100">
+                <Linkedin className="w-5 h-5" />
+              </a>
+            </div>
           </div>
         </div>
       </div>

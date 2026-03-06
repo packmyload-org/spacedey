@@ -5,9 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
 import SupportModal from "@/components/ui/SupportModal";
+import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 
 export default function Footer() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [isLocationsModalOpen, setIsLocationsModalOpen] = useState(false);
 
   const handleSupportClick = () => {
     try {
@@ -30,6 +32,10 @@ export default function Footer() {
       <SupportModal
         isOpen={isSupportModalOpen}
         onClose={() => setIsSupportModalOpen(false)}
+      />
+      <ExploreLocationsModal
+        isOpen={isLocationsModalOpen}
+        onClose={() => setIsLocationsModalOpen(false)}
       />
       <footer className="bg-[#0d1d73] text-white ">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 flex flex-col md:flex-row items-start sm:justify-center lg:justify-center gap-12">
@@ -98,9 +104,13 @@ export default function Footer() {
           <div className="w-full md:w-1/5 text-left">
             <ul className="space-y-3">
               <li>
-                <Link href="/locations" className="hover:text-gray-300">
+                <button
+                  type="button"
+                  onClick={() => setIsLocationsModalOpen(true)}
+                  className="hover:text-gray-300"
+                >
                   Locations
-                </Link>
+                </button>
               </li>
               <li>
                 <Link href="/sizing" className="hover:text-gray-300">

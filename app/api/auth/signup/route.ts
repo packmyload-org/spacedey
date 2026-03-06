@@ -10,7 +10,6 @@ export async function POST(request: Request) {
     const lastName = String(body?.lastName || '').trim();
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '').trim();
-    const recaptchaToken = String(body?.recaptchaResponse || '').trim();
 
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
 
     await repo.save(newUser);
 
-    const accessToken = generateToken(newUser.id);
+    const accessToken = generateToken(`${newUser.id}:${newUser.email}`);
 
     const userResponse = {
       id: newUser.id,

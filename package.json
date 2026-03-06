@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "seed:typeorm": "tsx --tsconfig tsconfig.json scripts/seed-db-typeorm.ts" 
+    "seed:data": "tsx --tsconfig tsconfig.json scripts/seed-db-typeorm.ts" 
   },
   "dependencies": {
     "@vis.gl/react-google-maps": "^1.7.1",

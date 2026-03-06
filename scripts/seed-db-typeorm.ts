@@ -25,22 +25,22 @@ const DEFAULT_USERS = [
 async function seed() {
   try {
     await AppDataSource.initialize();
-    console.log('TypeORM initialized (synchronize:', AppDataSource.options.synchronize, ')');
+    console.debug('TypeORM initialized (synchronize:', AppDataSource.options.synchronize, ')');
     const repo = AppDataSource.getRepository(User);
 
     for (const u of DEFAULT_USERS) {
       const exists = await repo.findOne({ where: { email: u.email } });
       if (exists) {
-        console.log(`User ${u.email} already exists`);
+        console.debug(`User ${u.email} already exists`);
         continue;
       }
 
       const user = repo.create(u as any);
       await repo.save(user);
-      console.log(`Created ${u.email}`);
+      console.debug(`Created ${u.email}`);
     }
 
-    console.log('Seeding complete');
+    console.debug('Seeding complete');
     await AppDataSource.destroy();
     process.exit(0);
   } catch (err) {
