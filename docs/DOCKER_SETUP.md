@@ -15,6 +15,7 @@ This application uses a Postgres database with TypeORM for server-side data acce
 ### Quick Start
 
 1. **Clone and install dependencies:**
+
    ```bash
    git clone <repository>
    cd spacedey
@@ -22,12 +23,14 @@ This application uses a Postgres database with TypeORM for server-side data acce
    ```
 
 2. **Set up environment variables:**
+
    ```bash
    cp .env.example .env.local
    # Edit .env.local with your configuration
    ```
 
 3. **Start with Docker Compose:**
+
    ```bash
    docker-compose up -d
    ```
@@ -64,16 +67,19 @@ SKIP_RECAPTCHA_VERIFICATION=false
 ### Without Docker
 
 1. **Install Postgres locally** or run Postgres in Docker:
+
    ```bash
    docker run -d -p 5432:5432 -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=password -e POSTGRES_DB=spacedey postgres:15
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
 
 3. **Run development server:**
+
    ```bash
    pnpm dev
    ```
@@ -81,12 +87,13 @@ SKIP_RECAPTCHA_VERIFICATION=false
 ### With Docker Compose
 
 1. **Start services:**
+
    ```bash
    docker-compose up
    ```
 
 2. **Access the app:**
-   - Application: http://localhost:3000
+   - Application: <http://localhost:3000>
    - Postgres: localhost:5432
    - Credentials: admin / password
 
@@ -97,12 +104,14 @@ The project defines TypeORM entities for `User`, `Site`, and `UnitType` with col
 ## API Routes
 
 ### Authentication
+
 - `POST /api/auth/login` - User login
 - `POST /api/auth/signup` - User registration
 - `POST /api/auth/reset-password` - Reset password
 - `POST /api/auth/forgot-password` - Request password reset
 
 ### Storage Locations
+
 - `GET /api/sites` - Get all storage sites with unit types
 
 ## Security Considerations
@@ -116,27 +125,32 @@ The project defines TypeORM entities for `User`, `Site`, and `UnitType` with col
 ## Docker Commands
 
 ### Build
+
 ```bash
 docker-compose build
 ```
 
 ### Start
+
 ```bash
 docker-compose up -d
 ```
 
 ### Stop
+
 ```bash
 docker-compose down
 ```
 
 ### View Logs
+
 ```bash
 docker-compose logs -f app
 docker-compose logs -f postgres
 ```
 
 ### Access Postgres Shell
+
 ```bash
 docker-compose exec postgres psql -U admin -d spacedey
 ```
@@ -144,6 +158,7 @@ docker-compose exec postgres psql -U admin -d spacedey
 ## Deployment
 
 ### Docker Image
+
 ```bash
 # Build image
 docker build -t spacedey:latest .
@@ -161,7 +176,9 @@ docker run -d \
 ```
 
 ### Environment Setup for Production
+
 Ensure these are set as environment variables:
+
 - `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 - `JWT_SECRET` - Secure random string
 - `NODE_ENV=production`
@@ -175,8 +192,8 @@ Ensure these are set as environment variables:
 ## Support
 
 For local development issues, check:
+
 1. Postgres is running: `docker ps`
 2. Environment variables are set correctly
 3. Ports 3000 and 5432 are not in use
 4. Node version is 18+
-

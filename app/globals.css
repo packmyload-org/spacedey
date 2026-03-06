@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #111827;
   --foreground: #111827;
   color-scheme: light;
 }
@@ -35,9 +35,11 @@ body.lock-scroll {
     left: -100%;
     box-shadow: -20px 0 40px 20px rgba(255, 255, 255, 0.6);
   }
+
   50% {
     box-shadow: 0 0 40px 30px rgba(255, 255, 255, 0.4);
   }
+
   100% {
     left: 100%;
     box-shadow: 20px 0 40px 20px rgba(255, 255, 255, 0.6);
@@ -56,12 +58,10 @@ body.lock-scroll {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.5) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%);
   filter: blur(15px);
   animation: torchSweep 6s ease-in-out infinite;
   pointer-events: none;
@@ -79,7 +79,11 @@ a {
 
 
 @layer base {
-  h1, h2, h3, h4 {
+
+  h1,
+  h2,
+  h3,
+  h4 {
     color: #0f172a;
     letter-spacing: -0.01em;
   }
