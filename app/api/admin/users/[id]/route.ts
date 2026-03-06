@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db';
+import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
@@ -27,8 +27,8 @@ export async function GET(
       );
     }
 
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
     const user = await repo.findOne({ where: { id } });
 
     if (!user) {
@@ -89,8 +89,8 @@ export async function PATCH(
       );
     }
 
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
     const user = await repo.findOne({ where: { id } });
 
     if (!user) {
@@ -161,8 +161,8 @@ export async function DELETE(
       );
     }
 
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
 
     // Prevent deleting the admin user (optional, adjust as needed)
     const user = await repo.findOne({ where: { id } });

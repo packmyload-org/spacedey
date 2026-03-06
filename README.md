@@ -100,7 +100,7 @@ This starts a PostgreSQL instance on `localhost:5432`.
 ### 5. Seed default users
 
 ```bash
-pnpm run seed:typeorm
+pnpm run seed:data
 ```
 
 This creates two default accounts:
@@ -130,7 +130,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `pnpm build` | Production build |
 | `pnpm start` | Start the production server |
 | `pnpm lint` | Run ESLint |
-| `pnpm seed:typeorm` | Seed the database with default users |
+| `pnpm seed:data` | Seed the database with default users |
 
 ---
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM, AppDataSource } from '@/lib/db';
+import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { verifyToken } from '@/lib/auth/jwt';
 import { UserRole } from '@/lib/types/roles';
@@ -26,8 +26,8 @@ export async function requireAdmin(request: NextRequest) {
       };
     }
 
-    await connectTypeORM();
-    const repo = AppDataSource.getRepository(User);
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(User);
     const user = await repo.findOne({ where: { id: decoded.userId } });
 
     if (!user) {
