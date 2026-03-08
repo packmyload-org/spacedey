@@ -45,14 +45,17 @@ export default function CityList({
   const citiesData = useMemo(() => {
     const map = new Map<string, ApiSite[]>();
     sites.forEach((site) => {
-      const code = site.code;
-      if (!map.has(code)) {
-        map.set(code, []);
+      // Extract city from address: "Street, City, State" -> "City"
+      const parts = site.address.split(',').map(p => p.trim());
+      const city = parts.length >= 2 ? parts[parts.length - 2] : (parts[0] || 'Unknown');
+
+      if (!map.has(city)) {
+        map.set(city, []);
       }
-      map.get(code)?.push(site);
+      map.get(city)?.push(site);
     });
-    return Array.from(map.entries()).map(([code, citySites]) => ({
-      name: code,
+    return Array.from(map.entries()).map(([cityName, citySites]) => ({
+      name: cityName,
       sites: citySites,
     }));
   }, [sites]);
@@ -114,7 +117,7 @@ export default function CityList({
               <LocationCard
                 key={site.id}
                 {...getSiteProps(site)}
-                onBook={() => console.log(`Booking at ${site.code}`)}
+                onBook={() => console.log(`Booking at ${site.name}`)}
               />
             ))}
           </div>

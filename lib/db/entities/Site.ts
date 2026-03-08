@@ -1,57 +1,52 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  CreateDateColumn,
-  UpdateDateColumn,
-  BaseEntity,
-} from 'typeorm';
-import UnitType from './UnitType';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import UnitType from "./UnitType";
 
-@Entity({ name: 'sites' })
-export class Site extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+@Entity("sites")
+export class Site {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column({ type: 'varchar' })
-  name!: string;
+  @Column()
+  name: string;
 
-  @Column({ type: 'varchar', unique: true })
-  code!: string;
+  @Column()
+  address: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  image?: string;
+  @Column({ nullable: true })
+  image: string;
 
-  @Column({ type: 'varchar' })
-  address!: string;
+  @Column({ type: "float", nullable: true })
+  latitude: number;
 
-  @Column({ type: 'varchar' })
-  contactPhone!: string;
+  @Column({ type: "float", nullable: true })
+  longitude: number;
 
-  @Column({ type: 'varchar' })
-  contactEmail!: string;
+  @Column({ default: "Lagos" })
+  city: string;
 
-  @Column({ type: 'float' })
-  lat!: number;
+  @Column({ default: "Lagos" })
+  state: string;
 
-  @Column({ type: 'float' })
-  lng!: number;
+  @Column({ type: "jsonb", nullable: true })
+  features: string[];
 
-  @OneToMany(() => UnitType, (unit) => unit.site, { cascade: true })
-  unitTypes!: UnitType[];
+  @Column({ type: "varchar", nullable: true })
+  siteMapUrl: string;
 
-  @Column({ type: 'varchar', default: 'ft' })
-  measuringUnit!: string;
+  @Column({ type: "decimal", precision: 12, scale: 2, default: 30000 })
+  registrationFee: number; // One-time joining fee
 
-  @Column({ type: 'varchar', nullable: true })
-  siteMapUrl?: string;
+  @Column({ type: "decimal", precision: 12, scale: 2, default: 35000 })
+  annualDues: number; // Yearly maintenance fee
+
+  @OneToMany(() => UnitType, (unitType) => unitType.site, { cascade: true })
+  unitTypes: UnitType[];
 
   @CreateDateColumn()
-  createdAt!: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  updatedAt!: Date;
+  updatedAt: Date;
 }
 
 export default Site;

@@ -10,19 +10,37 @@ function HeroSection() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeCity, setActiveCity] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const [loadingCities, setLoadingCities] = useState(true);
 
-  const cities = [
-    'Lagos',
-    'Abuja',
-    'Kano',
-    'Ibadan',
-    'Port Harcourt',
-    'Benin City',
-    'Jos',
-    'Enugu',
-    'Kaduna',
-    'Abeokuta',
-  ];
+  React.useEffect(() => {
+    async function fetchCities() {
+      try {
+        const res = await fetch('/api/sites');
+        const data = await res.json();
+        if (data.ok && data.sites) {
+          // Extract unique cities from addresses
+          const uniqueCities = Array.from(new Set(data.sites.map((site: any) => {
+            const parts = site.address.split(',');
+            return parts[parts.length - 1].trim(); // Assuming address is "Street, City" or "Street, City, State"
+          }))) as string[];
+
+          if (uniqueCities.length > 0) {
+            setCities(uniqueCities);
+          } else {
+            // Fallback if no sites in DB
+            setCities(['Lagos', 'Abuja', 'Port Harcourt']);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch cities', err);
+        setCities(['Lagos', 'Abuja', 'Port Harcourt']);
+      } finally {
+        setLoadingCities(false);
+      }
+    }
+    fetchCities();
+  }, []);
 
   const handleCityClick = (city: string) => {
     setActiveCity(city);
@@ -99,19 +117,27 @@ function HeroSection() {
             className="bg-white rounded-2xl shadow-2xl max-w-none sm:max-w-6xl mx-2 py-4"
           >
             {/* City Navigation */}
-            <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-2 sm:gap-10 mb-5 px-2 sm:px-0">
-              {cities.map((city) => (
-                <button
-                  key={city}
-                  onClick={() => handleCityClick(city)}
-                  className={`text-sm sm:text-base font-medium transition-colors ${activeCity === city
-                      ? "text-neutral-900"
+            <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-2 sm:gap-10 mb-5 px-2 sm:px-0 min-h-[44px] items-center">
+              {loadingCities ? (
+                <div className="flex gap-4 items-center">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-4 w-16 bg-gray-100 animate-pulse rounded"></div>
+                  ))}
+                </div>
+              ) : (
+                cities.map((city) => (
+                  <button
+                    key={city}
+                    onClick={() => handleCityClick(city)}
+                    className={`text-sm sm:text-base font-medium transition-colors ${activeCity === city
+                      ? "text-neutral-900 border-b-2 border-[#1642F0]"
                       : "text-neutral-600 hover:text-neutral-900"
-                    }`}
-                >
-                  {city}
-                </button>
-              ))}
+                      }`}
+                  >
+                    {city}
+                  </button>
+                ))
+              )}
             </div>
 
             {/* Search Input */}

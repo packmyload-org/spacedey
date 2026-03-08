@@ -5,6 +5,10 @@ import { env } from '@/config/env';
 import User from './entities/User';
 import UnitType from './entities/UnitType';
 import Site from './entities/Site';
+import Booking from './entities/Booking';
+import SubscriptionPlan from './entities/SubscriptionPlan';
+import Payment from './entities/Payment';
+import Invoice from './entities/Invoice';
 import { PostgresConnectionOptions } from 'typeorm/browser/driver/postgres/PostgresConnectionOptions.js';
 
 
@@ -17,7 +21,7 @@ export const AppDataSource = new DataSource({
   database: env.postgres.database,
   synchronize: true,
   logging: env.app.isDevelopment,
-  entities: [User, UnitType, Site],
+  entities: [User, UnitType, Site, Booking, SubscriptionPlan, Payment, Invoice],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 

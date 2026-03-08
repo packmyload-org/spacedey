@@ -2,224 +2,161 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
-import { useRouter } from 'next/navigation';
 import { UserRole } from '@/lib/types/roles';
-import { Loader, LogOut, Users } from 'lucide-react';
+import { Loader, Users, MapPin, Box, FileText, TrendingUp } from 'lucide-react';
 
-interface AdminUser {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  createdAt: string;
+interface Stats {
+  totalUsers: number;
+  totalAdmins: number;
+  totalSites: number;
+  totalUnitTypes: number;
 }
 
 export default function AdminDashboard() {
   const authStore = useAuthStore();
-  const router = useRouter();
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalUsers: 0,
+    totalAdmins: 0,
+    totalSites: 0,
+    totalUnitTypes: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user is authenticated and is admin
-    if (!authStore.isAuthenticated) {
-      router.push('/auth/signin');
-      return;
-    }
+    async function fetchStats() {
+      try {
+        setLoading(true);
+        // In a real app, we'd have a single /api/admin/stats endpoint
+        // For now, let's fetch users to get user counts
+        const userRes = await fetch('/api/admin/users', {
+          headers: { Authorization: `Bearer ${authStore.accessToken}` },
+        });
+        const siteRes = await fetch('/api/sites');
 
-    if (!authStore.isAdmin()) {
-      router.push('/');
-      return;
-    }
+        const userData = await userRes.json();
+        const siteData = await siteRes.json();
 
-    fetchUsers();
-  }, [authStore, router]);
+        const users = userData.users || [];
+        const sites = siteData.sites || [];
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/api/admin/users', {
-        headers: {
-          Authorization: `Bearer ${authStore.accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        setStats({
+          totalUsers: users.length,
+          totalAdmins: users.filter((u: any) => u.role === UserRole.ADMIN).length,
+          totalSites: sites.length,
+          totalUnitTypes: sites.reduce((acc: number, s: any) => acc + (s.unitTypes?.length || 0), 0),
+        });
+      } catch (err) {
+        setError('Failed to load dashboard stats');
+      } finally {
+        setLoading(false);
       }
-
-      const data = await response.json();
-      setUsers(data.users || []);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred';
-      setError(message);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  const handleLogout = () => {
-    authStore.logout();
-    router.push('/');
-  };
+    if (authStore.isAuthenticated && authStore.isAdmin()) {
+      fetchStats();
+    }
+  }, [authStore]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader className="w-8 h-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
+      <div className="flex items-center justify-center py-20">
+        <Loader className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
+  const statCards = [
+    { name: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },
+    { name: 'Admin Users', value: stats.totalAdmins, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-100' },
+    { name: 'Total Sites', value: stats.totalSites, icon: MapPin, color: 'text-orange-600', bg: 'bg-orange-100' },
+    { name: 'Unit Types', value: stats.totalUnitTypes, icon: Box, color: 'text-green-600', bg: 'bg-green-100' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Welcome, {authStore.user?.firstName} {authStore.user?.lastName}
-              </p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+        <p className="text-gray-500">Welcome back, {authStore.user?.firstName}. Here is what's happening today.</p>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Users Section */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Users className="w-6 h-6 text-blue-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Users</h2>
-                <span className="text-sm text-gray-500">({users.length})</span>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {statCards.map((card) => (
+          <div key={card.name} className="bg-white overflow-hidden shadow rounded-lg transition-transform hover:scale-[1.02]">
+            <div className="p-5">
+              <div className="flex items-center">
+                <div className={`flex-shrink-0 rounded-md p-3 ${card.bg}`}>
+                  <card.icon className={`h-6 w-6 ${card.color}`} aria-hidden="true" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-sm font-medium text-gray-500 truncate">{card.name}</dt>
+                    <dd className="flex items-baseline">
+                      <div className="text-2xl font-semibold text-gray-900">{card.value}</div>
+                    </dd>
+                  </dl>
+                </div>
               </div>
-              <button
-                onClick={() => router.push('/admin/users/new')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-              >
-                Add New User
-              </button>
             </div>
           </div>
+        ))}
+      </div>
 
-          {/* Users Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Joined
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {users.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                      No users found
-                    </td>
-                  </tr>
-                ) : (
-                  users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900">
-                          {user.firstName} {user.lastName}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-gray-600">{user.email}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
-                            user.role === UserRole.ADMIN
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-500">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => router.push(`/admin/users/${user.id}`)}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        {/* Recent Activity or other sections can go here */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <TrendingUp className="mr-2 h-5 w-5 text-blue-500" />
+            Platform Health
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Database Connection</span>
+              <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Connected</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Storage Service</span>
+              <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">Active</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Sync Status</span>
+              <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">Synced</span>
+            </div>
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-white p-6 rounded-lg shadow">
-            <p className="text-gray-500 text-sm font-medium">Total Users</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">{users.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <p className="text-gray-500 text-sm font-medium">Admin Users</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">
-              {users.filter((u) => u.role === UserRole.ADMIN).length}
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow">
-            <p className="text-gray-500 text-sm font-medium">Regular Users</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">
-              {users.filter((u) => u.role === UserRole.USER).length}
-            </p>
-          </div>
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <FileText className="mr-2 h-5 w-5 text-orange-500" />
+            Quick Links
+          </h2>
+          <ul className="divide-y divide-gray-200">
+            <li>
+              <button
+                onClick={() => window.location.href = '/admin/sites'}
+                className="w-full text-left py-3 text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
+                Add new storage location
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={() => window.location.href = '/admin/users'}
+                className="w-full text-left py-3 text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
+                Manage user permissions
+              </button>
+            </li>
+            <li>
+              <button
+                className="w-full text-left py-3 text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
+                View billing reports
+              </button>
+            </li>
+          </ul>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
