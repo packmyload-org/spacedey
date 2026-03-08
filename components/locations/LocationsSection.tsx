@@ -1,48 +1,72 @@
-"use client";
-
+import React, { useState } from 'react';
 import Link from "next/link";
 
 const LocationsSection = () => {
-  const locations = [
-  'Lagos',
-  'Abuja',
-  'Kano',
-  'Ibadan',
-  'Port Harcourt',
-  'Benin City',
-  ];
+  const [locations, setLocations] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    async function fetchSites() {
+      try {
+        const res = await fetch('/api/sites');
+        const data = await res.json();
+        if (data.ok && data.sites) {
+          const uniqueCities = Array.from(new Set(data.sites.map((site: any) => {
+            const parts = site.address.split(',').map((p: string) => p.trim());
+            return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+          }))) as string[];
+          setLocations(uniqueCities);
+        }
+      } catch (err) {
+        console.error('Failed to fetch sites', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSites();
+  }, []);
 
   return (
     <div className="py-12 px-6 lg:px-20">
       <h2 className="text-center capitalize text-blue-900 text-3xl lg:text-4xl font-bold">
         Discover Our Locations
       </h2>
-      
+
       <hr className="h-[3px] w-[50px] mt-6 mb-10 lg:mb-[72px] mx-auto bg-orange-500 border-0 " />
-      
-      <div className="flex gap-6 lg:flex-wrap lg:justify-center overflow-scroll lg:overflow-hidden">
-        {locations.map((location) => (
-          <Link
-            key={location}
-            href={`/search?city=${encodeURIComponent(location)}`}
-            className="flex items-center justify-between gap-6 p-10 border border-blue-600 bg-gray-50 text-2xl font-semibold cursor-pointer rounded-2xl w-full lg:w-[31%] min-w-[280px] hover:bg-gray-100 transition-colors"
-          >
-            <span>{location}</span>
-            <div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 256 256"
-              >
-                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path>
-              </svg>
-            </div>
-          </Link>
-        ))}
+
+      <div className="flex gap-6 lg:flex-wrap lg:justify-center overflow-scroll lg:overflow-hidden min-h-[200px]">
+        {loading ? (
+          <div className="flex gap-6 w-full justify-center">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-[200px] w-full lg:w-[31%] min-w-[280px] bg-gray-100 animate-pulse rounded-2xl" />
+            ))}
+          </div>
+        ) : locations.length === 0 ? (
+          <p className="text-gray-400 italic">No locations available yet.</p>
+        ) : (
+          locations.map((location) => (
+            <Link
+              key={location}
+              href={`/search?city=${encodeURIComponent(location)}`}
+              className="flex items-center justify-between gap-6 p-10 border border-blue-600 bg-gray-50 text-2xl font-semibold cursor-pointer rounded-2xl w-full lg:w-[31%] min-w-[280px] hover:bg-gray-100 transition-colors"
+            >
+              <span>{location}</span>
+              <div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  fill="currentColor"
+                  viewBox="0 0 256 256"
+                >
+                  <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path>
+                </svg>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
-      
+
       <div className="flex justify-center mt-10">
         <Link href="/search">
           <button

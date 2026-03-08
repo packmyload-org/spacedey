@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { env } from '@/config';
 import Link from "next/link";
 import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
@@ -39,9 +39,12 @@ function MapHandler({ locations }: { locations: MapLocation[] }) {
 }
 
 const StorageMapSection: React.FC<StorageMapSectionProps> = ({
-  locations = [],
+  locations: propLocations = [],
   mapHeight = '600px'
 }) => {
+  const [apiLocations, setApiLocations] = useState<MapLocation[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const defaultLocations: MapLocation[] = useMemo(() => [
     { lat: 6.5244, lng: 3.3792, name: 'Lagos' },
     { lat: 9.0765, lng: 7.3986, name: 'Abuja' },
@@ -55,7 +58,31 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
     { lat: 6.5897, lng: 3.3474, name: 'Abeokuta' }
   ], []);
 
-  const displayLocations = locations.length > 0 ? locations : defaultLocations;
+  useEffect(() => {
+    async function fetchSites() {
+      try {
+        const res = await fetch('/api/sites');
+        const data = await res.json();
+        if (data.ok && data.sites && data.sites.length > 0) {
+          setApiLocations(data.sites.map((s: any) => ({
+            lat: s.lat,
+            lng: s.lng,
+            name: s.name
+          })));
+        } else {
+          setApiLocations(defaultLocations);
+        }
+      } catch (err) {
+        console.error('Failed to fetch map sites', err);
+        setApiLocations(defaultLocations);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSites();
+  }, [defaultLocations]);
+
+  const displayLocations = propLocations.length > 0 ? propLocations : apiLocations;
   const apiKey = env.googleMaps.apiKey;
 
   return (
@@ -63,9 +90,9 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
       <h2 className="text-center capitalize text-blue-900 text-3xl lg:text-4xl font-bold">
         Storage in your neighborhood
       </h2>
-      
+
       <hr className="h-[3px] w-[50px] mt-6 mb-10 lg:mb-[72px] mx-auto bg-orange-500 border-0" />
-      
+
       <div className="w-full lg:px-20" style={{ height: mapHeight }}>
         <div className="h-full relative overflow-hidden bg-gray-200 rounded-lg">
           {/* If API key not present, keep the placeholder */}
@@ -123,7 +150,7 @@ const StorageMapSection: React.FC<StorageMapSectionProps> = ({
 
         </div>
       </div>
-      
+
       <div className="flex justify-center my-10">
         <Link href="/search">
           <button

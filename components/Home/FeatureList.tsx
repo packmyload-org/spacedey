@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import FadeIn from "@/components/ui/FadeIn";
 
 type Location = {
@@ -12,84 +12,109 @@ type Location = {
   image: string;
 };
 
-const LOCATIONS: Location[] = [
-  { city: "Lagos", image: "/images/Lagos.jpg" },
-  { city: "Abuja", image: "/images/Abuja.jpeg" },
-  { city: "Kano", image: "/images/Kano.png" },
-  { city: "Ibadan", image: "/images/Ibadan.jpg" },
-  { city: "Port Harcourt", image: "/images/ph.jpg" },
-];
-
-const VISIBLE_SLIDES = 3;
-const CLONE_COUNT = 3; // Clone all slides to ensure continuous sliding without blanks
+const DEFAULT_IMAGE = "/images/Lagos.jpg";
 
 export default function FeatureList() {
   const router = useRouter();
-  const realLength = LOCATIONS.length;
-  const [visibleSlides, setVisibleSlides] = React.useState(VISIBLE_SLIDES);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleSlides, setVisibleSlides] = useState(3);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const [transitionDisabled, setTransitionDisabled] = useState(false);
 
-  // Handle responsive visible slides
-  React.useEffect(() => {
-    const handleResize = () => {
-      if (typeof window !== "undefined") {
-        const width = window.innerWidth;
-        if (width < 768) {
-          setVisibleSlides(1); // sm: 1 slide
-        } else if (width < 1024) {
-          setVisibleSlides(2); // md: 2 slides
+  // 1. Fetch data
+  useEffect(() => {
+    async function fetchLocations() {
+      try {
+        const res = await fetch('/api/sites');
+        const data = await res.json();
+        if (data.ok && data.sites && data.sites.length > 0) {
+          const uniqueCities = new Map<string, string>();
+          data.sites.forEach((site: any) => {
+            const parts = site.address.split(',').map((p: string) => p.trim());
+            const city = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+            if (!uniqueCities.has(city)) {
+              uniqueCities.set(city, site.image || DEFAULT_IMAGE);
+            }
+          });
+
+          const locArray = Array.from(uniqueCities.entries()).map(([city, image]) => ({ city, image }));
+          setLocations(locArray);
+          setCurrentIndex(Math.min(3, locArray.length)); // Start at first real slide
         } else {
-          setVisibleSlides(3); // lg: 3 slides
+          const fallback = [
+            { city: "Lagos", image: "/images/Lagos.jpg" },
+            { city: "Abuja", image: "/images/Abuja.jpeg" },
+            { city: "Kano", image: "/images/Kano.png" },
+          ];
+          setLocations(fallback);
+          setCurrentIndex(3);
         }
+      } catch (err) {
+        setLocations([
+          { city: "Lagos", image: "/images/Lagos.jpg" },
+          { city: "Abuja", image: "/images/Abuja.jpeg" },
+        ]);
+        setCurrentIndex(2);
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+    fetchLocations();
+  }, []);
 
+  // 2. Responsive slides
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 768) setVisibleSlides(1);
+      else if (width < 1024) setVisibleSlides(2);
+      else setVisibleSlides(3);
+    };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const extendedSlides = React.useMemo(
-    () => [
-      ...LOCATIONS.slice(-CLONE_COUNT),
-      ...LOCATIONS,
-      ...LOCATIONS.slice(0, CLONE_COUNT),
-    ],
-    []
-  );
+  // 3. Carousel logic helpers
+  const realLength = locations.length;
+  const cloneCount = Math.min(3, realLength);
 
-  const startIndex = CLONE_COUNT;
-  const [currentIndex, setCurrentIndex] = React.useState(startIndex);
-  const [isAutoPlay, setIsAutoPlay] = React.useState(true);
-  const [transitionDisabled, setTransitionDisabled] = React.useState(false);
+  const extendedSlides = useMemo(() => {
+    if (realLength === 0) return [];
+    return [
+      ...locations.slice(-cloneCount),
+      ...locations,
+      ...locations.slice(0, cloneCount),
+    ];
+  }, [locations, cloneCount, realLength]);
 
-  const nextSlide = React.useCallback(() => {
+  const startIndex = cloneCount;
+
+  const nextSlide = useCallback(() => {
     setCurrentIndex((prev) => prev + 1);
   }, []);
 
-  const prevSlide = React.useCallback(() => {
+  const prevSlide = useCallback(() => {
     setCurrentIndex((prev) => prev - 1);
   }, []);
 
-  const goToSlide = React.useCallback(
-    (realIdx: number) => {
-      setCurrentIndex(startIndex + ((realIdx % realLength) + realLength) % realLength);
-    },
-    [startIndex, realLength]
-  );
+  const goToSlide = useCallback((idx: number) => {
+    setCurrentIndex(startIndex + idx);
+  }, [startIndex]);
 
-  const normalizedIndex =
-    ((currentIndex - startIndex) % realLength + realLength) % realLength;
+  const normalizedIndex = realLength > 0 ? ((currentIndex - startIndex) % realLength + realLength) % realLength : 0;
 
-  React.useEffect(() => {
-    const interval = isAutoPlay
-      ? setInterval(() => setCurrentIndex((prev) => prev + 1), 4000)
+  // 4. Autoplay and Keyboard
+  useEffect(() => {
+    const interval = isAutoPlay && realLength > 0
+      ? setInterval(nextSlide, 4000)
       : null;
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isAutoPlay]);
+    return () => { if (interval) clearInterval(interval); };
+  }, [isAutoPlay, realLength, nextSlide]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") nextSlide();
       if (e.key === "ArrowLeft") prevSlide();
@@ -99,125 +124,83 @@ export default function FeatureList() {
   }, [nextSlide, prevSlide]);
 
   const handleTransitionEnd = () => {
-    // jumped into appended clone after last real slide
     if (currentIndex >= startIndex + realLength) {
       setTransitionDisabled(true);
-      setCurrentIndex((idx) => idx - realLength);
-      requestAnimationFrame(() => requestAnimationFrame(() => setTransitionDisabled(false)));
-      return;
-    }
-    // jumped into prepended clone before first real slide
-    if (currentIndex < startIndex) {
+      setCurrentIndex(currentIndex - realLength);
+      setTimeout(() => setTransitionDisabled(false), 20);
+    } else if (currentIndex < startIndex) {
       setTransitionDisabled(true);
-      setCurrentIndex((idx) => idx + realLength);
-      requestAnimationFrame(() => requestAnimationFrame(() => setTransitionDisabled(false)));
+      setCurrentIndex(currentIndex + realLength);
+      setTimeout(() => setTransitionDisabled(false), 20);
     }
   };
 
-  const handleViewFacilities = (city: string) => {
-    router.push(`/search?city=${encodeURIComponent(city)}`);
-  };
+  if (loading) {
+    return (
+      <div className="py-20 flex justify-center items-center">
+        <Loader className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <section
-      className="py-8 sm:py-12 md:py-14 lg:py-16 px-2 sm:px-4 bg-white"
+      className="py-12 px-4 bg-white"
       onMouseEnter={() => setIsAutoPlay(false)}
       onMouseLeave={() => setIsAutoPlay(true)}
-      aria-label="Featured locations carousel"
     >
       <div className="max-w-7xl mx-auto">
-        <FadeIn direction="up" className="flex items-center justify-between mb-8 sm:mb-10 md:mb-12">
-           <div className="flex-1" />
-           <div className="text-center">
-            <Link href="/locations">
-              <button className="text-center text-lg sm:text-xl p-2 sm:p-3 font-bold pt-4 sm:pt-5 text-[#1642F0] hover:bg-[#f0f1f6] rounded-3xl transition-colors">
-                Explore All Locations
-              </button>
-            </Link>
-            <div className="w-12 sm:w-16 h-1 bg-[#D96541] mx-auto mt-2 sm:mt-3" />
-          </div>
-          <div className="flex-1" />
+        <FadeIn direction="up" className="text-center mb-12">
+          <Link href="/locations">
+            <button className="text-xl font-bold text-[#1642F0] hover:bg-blue-50 px-6 py-3 rounded-full transition-colors">
+              Explore All Locations
+            </button>
+          </Link>
+          <div className="w-16 h-1 bg-[#D96541] mx-auto mt-4" />
         </FadeIn>
 
-        <FadeIn direction="up" delay={0.2} className="relative overflow-hidden">
-          <div className="p-0">
-            <div
-              className={`flex ${transitionDisabled ? "transition-none" : "transition-transform duration-500 ease-in-out"}`}
-              style={{
-                transform: `translateX(-${(currentIndex * 100) / visibleSlides}%)`,
-              }}
-              role="region"
-              aria-label="Carousel slides"
-              onTransitionEnd={handleTransitionEnd}
-            >
-              {extendedSlides.map((location, idx) => (
-                <div
-                  key={idx}
-                  className="w-full sm:w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-1.5 sm:px-2 md:px-3"
-                  role="group"
-                  aria-label={`${location.city} slide`}
-                >
-                  <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden h-full border border-gray-200 hover:shadow-xl hover:border-blue-200 transition-all duration-300">
-                    <div className="relative overflow-hidden mb-0">
-                      <Image
-                        src={location.image}
-                        alt={`${location.city} skyline`}
-                        width={600}
-                        height={256}
-                        style={{ height: "12rem", width: "100%" }}
-                        className="object-cover rounded-t-2xl sm:rounded-t-3xl w-full"
-                      />
-                    </div>
-                    <div className="items-center p-3 sm:p-4 md:p-5">
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#0A1E5E]">
-                        Storage in {location.city}
-                      </h3>
-                      <button
-                        onClick={() => handleViewFacilities(location.city)}
-                        className="w-full my-4 sm:my-6 md:my-8 py-2 px-4 border border-[#1642F0] text-[#2B5CE7] rounded-full font-semibold hover:bg-[#2B5CE7] hover:text-white transition-colors text-sm sm:text-base"
-                      >
-                        View All Facilities
-                      </button>
-                    </div>
+        <div className="relative overflow-hidden">
+          <div
+            className={`flex ${transitionDisabled ? "" : "transition-transform duration-500 ease-in-out"}`}
+            style={{ transform: `translateX(-${(currentIndex * 100) / visibleSlides}%)` }}
+            onTransitionEnd={handleTransitionEnd}
+          >
+            {extendedSlides.map((loc, idx) => (
+              <div key={idx} className="w-full sm:w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
+                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:border-blue-200 transition-all">
+                  <div className="relative h-48 sm:h-56">
+                    <Image src={loc.image} alt={loc.city} fill className="object-cover" />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-blue-900 mb-4">Storage in {loc.city}</h3>
+                    <button
+                      onClick={() => router.push(`/search?city=${encodeURIComponent(loc.city)}`)}
+                      className="w-full py-3 border-2 border-blue-600 text-blue-600 rounded-full font-bold hover:bg-blue-600 hover:text-white transition-all"
+                    >
+                      View All Facilities
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </FadeIn>
+        </div>
 
-        <div className="flex justify-center items-center gap-2 sm:gap-3 mt-6 sm:mt-8">
-          <button
-            onClick={prevSlide}
-            className="w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
-            aria-label="Previous locations"
-          >
-            <ChevronLeft className="w-5 sm:w-6 h-5 sm:h-6 text-gray-600" />
+        <div className="flex justify-center items-center gap-4 mt-10">
+          <button onClick={prevSlide} className="p-3 rounded-full border border-gray-200 shadow-md hover:bg-gray-50 transition-colors">
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
           </button>
-
-          <div className="flex gap-1.5 sm:gap-2" role="tablist" aria-label="Slide indicators">
-            {LOCATIONS.map((_, idx) => (
+          <div className="flex gap-2">
+            {locations.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => goToSlide(idx)}
-                className={`rounded-full transition-all duration-300 ${
-                  normalizedIndex === idx
-                    ? "bg-[#1642F0] w-6 sm:w-8 h-2 sm:h-2.5"
-                    : "bg-gray-300 hover:bg-gray-400 w-2 sm:w-2.5 h-2 sm:h-2.5"
-                }`}
-                role="tab"
-                aria-selected={normalizedIndex === idx}
-                aria-label={`Go to slide ${idx + 1}`}
+                className={`h-2.5 rounded-full transition-all ${normalizedIndex === idx ? "bg-blue-600 w-8" : "bg-gray-200 w-2.5"}`}
               />
             ))}
           </div>
-
-          <button
-            onClick={nextSlide}
-            className="w-10 sm:w-12 h-10 sm:h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-colors border border-gray-200"
-            aria-label="Next locations"
-          >
-            <ChevronRight className="w-5 sm:w-6 h-5 sm:h-6 text-gray-600" />
+          <button onClick={nextSlide} className="p-3 rounded-full border border-gray-200 shadow-md hover:bg-gray-50 transition-colors">
+            <ChevronRight className="w-6 h-6 text-gray-600" />
           </button>
         </div>
       </div>
