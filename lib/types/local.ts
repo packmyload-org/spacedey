@@ -108,11 +108,8 @@ export interface ApiSite {
   id: string;
   name: string;
   code: string;
-<<<<<<< HEAD
-=======
   city?: string;
   state?: string;
->>>>>>> feat/custom-integration
   about?: string;
   image: string;
   address: string;

@@ -66,13 +66,6 @@ export async function PATCH(
         // Update fields if provided
         if (body.name !== undefined) site.name = body.name;
         if (body.code !== undefined) site.code = body.code;
-<<<<<<< HEAD
-        if (body.address !== undefined) site.address = body.address;
-        if (body.contactPhone !== undefined) site.contactPhone = body.contactPhone;
-        if (body.contactEmail !== undefined) site.contactEmail = body.contactEmail;
-        if (body.lat !== undefined) site.lat = body.lat;
-        if (body.lng !== undefined) site.lng = body.lng;
-=======
         if (body.city !== undefined) site.city = body.city;
         if (body.state !== undefined) site.state = body.state;
         if (body.address !== undefined) site.address = body.address;
@@ -86,13 +79,10 @@ export async function PATCH(
             site.lng = body.lng;
             site.longitude = body.lng;
         }
->>>>>>> feat/custom-integration
         if (body.measuringUnit !== undefined) site.measuringUnit = body.measuringUnit;
         if (body.image !== undefined) site.image = body.image;
         if (body.about !== undefined) site.about = body.about;
         if (body.siteMapUrl !== undefined) site.siteMapUrl = body.siteMapUrl;
-<<<<<<< HEAD
-=======
         if (body.registrationFee !== undefined) site.registrationFee = body.registrationFee;
         if (body.annualDues !== undefined) site.annualDues = body.annualDues;
         if (body.latitude !== undefined) {
@@ -107,7 +97,6 @@ export async function PATCH(
                 site.lng = body.longitude;
             }
         }
->>>>>>> feat/custom-integration
 
         await repo.save(site);
 

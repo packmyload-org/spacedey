@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
-<<<<<<< HEAD
-=======
 import UnitType from '@/lib/db/entities/UnitType';
 import StorageUnit, { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
->>>>>>> feat/custom-integration
 import { requireAdmin } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
@@ -54,11 +51,8 @@ export async function POST(request: NextRequest) {
         const {
             name,
             code,
-<<<<<<< HEAD
-=======
             city,
             state,
->>>>>>> feat/custom-integration
             address,
             contactPhone,
             contactEmail,
@@ -67,14 +61,6 @@ export async function POST(request: NextRequest) {
             measuringUnit,
             image,
             about,
-<<<<<<< HEAD
-            siteMapUrl
-        } = body;
-
-        if (!name || !code || !address || !contactPhone || !contactEmail || lat === undefined || lng === undefined) {
-            return NextResponse.json(
-                { ok: false, error: 'Name, code, address, contact phone/email, and coordinates are required.' },
-=======
             siteMapUrl,
             registrationFee,
             annualDues,
@@ -84,18 +70,14 @@ export async function POST(request: NextRequest) {
         if (!name || !code || !city || !state || !address || !contactPhone || !contactEmail || lat === undefined || lng === undefined) {
             return NextResponse.json(
                 { ok: false, error: 'Name, code, city, state, address, contact phone/email, and coordinates are required.' },
->>>>>>> feat/custom-integration
                 { status: 400 }
             );
         }
 
         const appDataSource = await connectTypeORM();
         const repo = appDataSource.getRepository(Site);
-<<<<<<< HEAD
-=======
         const unitTypeRepo = appDataSource.getRepository(UnitType);
         const storageUnitRepo = appDataSource.getRepository(StorageUnit);
->>>>>>> feat/custom-integration
 
         // Check if code exists
         const existing = await repo.findOne({ where: { code } });
@@ -109,22 +91,13 @@ export async function POST(request: NextRequest) {
         const newSite = repo.create({
             name,
             code,
-<<<<<<< HEAD
-=======
             city,
             state,
->>>>>>> feat/custom-integration
             address,
             contactPhone,
             contactEmail,
             lat,
             lng,
-<<<<<<< HEAD
-            measuringUnit: measuringUnit || 'ft',
-            image,
-            about,
-            siteMapUrl
-=======
             latitude: lat,
             longitude: lng,
             measuringUnit: measuringUnit || 'ft',
@@ -133,13 +106,10 @@ export async function POST(request: NextRequest) {
             siteMapUrl,
             registrationFee,
             annualDues,
->>>>>>> feat/custom-integration
         });
 
         await repo.save(newSite);
 
-<<<<<<< HEAD
-=======
         if (Array.isArray(unitTypes) && unitTypes.length > 0) {
             const sitePrefix = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4) || 'UNIT';
 
@@ -177,7 +147,6 @@ export async function POST(request: NextRequest) {
             }
         }
 
->>>>>>> feat/custom-integration
         return NextResponse.json(
             { ok: true, site: newSite },
             { status: 201 }
