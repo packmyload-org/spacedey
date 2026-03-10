@@ -108,6 +108,8 @@ export interface ApiSite {
   id: string;
   name: string;
   code: string;
+  city?: string;
+  state?: string;
   about?: string;
   image: string;
   address: string;

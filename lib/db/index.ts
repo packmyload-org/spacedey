@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import path from 'path';
 import { DataSource } from 'typeorm';
 import { env } from '@/config/env';
 import User from './entities/User';
@@ -32,7 +31,6 @@ export const AppDataSource = new DataSource({
   synchronize: env.postgres.synchronize,
   logging: env.postgres.logging,
   entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
-  migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 
 export async function connectTypeORM(): Promise<DataSource> {

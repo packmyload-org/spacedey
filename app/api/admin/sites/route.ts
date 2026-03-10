@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
+import UnitType from '@/lib/db/entities/UnitType';
+import StorageUnit, { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 import { requireAdmin } from '@/lib/auth/admin';
 
 export async function GET(request: NextRequest) {
@@ -49,6 +51,8 @@ export async function POST(request: NextRequest) {
         const {
             name,
             code,
+            city,
+            state,
             address,
             contactPhone,
             contactEmail,
@@ -57,18 +61,23 @@ export async function POST(request: NextRequest) {
             measuringUnit,
             image,
             about,
-            siteMapUrl
+            siteMapUrl,
+            registrationFee,
+            annualDues,
+            unitTypes = []
         } = body;
 
-        if (!name || !code || !address || !contactPhone || !contactEmail || lat === undefined || lng === undefined) {
+        if (!name || !code || !city || !state || !address || !contactPhone || !contactEmail || lat === undefined || lng === undefined) {
             return NextResponse.json(
-                { ok: false, error: 'Name, code, address, contact phone/email, and coordinates are required.' },
+                { ok: false, error: 'Name, code, city, state, address, contact phone/email, and coordinates are required.' },
                 { status: 400 }
             );
         }
 
         const appDataSource = await connectTypeORM();
         const repo = appDataSource.getRepository(Site);
+        const unitTypeRepo = appDataSource.getRepository(UnitType);
+        const storageUnitRepo = appDataSource.getRepository(StorageUnit);
 
         // Check if code exists
         const existing = await repo.findOne({ where: { code } });
@@ -82,18 +91,61 @@ export async function POST(request: NextRequest) {
         const newSite = repo.create({
             name,
             code,
+            city,
+            state,
             address,
             contactPhone,
             contactEmail,
             lat,
             lng,
+            latitude: lat,
+            longitude: lng,
             measuringUnit: measuringUnit || 'ft',
             image,
             about,
-            siteMapUrl
+            siteMapUrl,
+            registrationFee,
+            annualDues,
         });
 
         await repo.save(newSite);
+
+        if (Array.isArray(unitTypes) && unitTypes.length > 0) {
+            const sitePrefix = code.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 4) || 'UNIT';
+
+            for (const [index, unitType] of unitTypes.entries()) {
+                if (!unitType?.name || unitType.width === undefined || unitType.depth === undefined || unitType.priceAmount === undefined) {
+                    continue;
+                }
+
+                const savedUnitType = await unitTypeRepo.save(unitTypeRepo.create({
+                    name: unitType.name,
+                    width: unitType.width,
+                    depth: unitType.depth,
+                    unit: unitType.unit || 'ft',
+                    priceAmount: unitType.priceAmount,
+                    priceCurrency: unitType.priceCurrency || 'NGN',
+                    priceOriginalAmount: unitType.priceOriginalAmount,
+                    description: unitType.description,
+                    availableCount: unitType.availableCount || 0,
+                    site: newSite,
+                }));
+
+                const blockStart = index * 100 + 1;
+                const storageUnits = Array.from({ length: unitType.availableCount || 0 }, (_, unitIndex) => (
+                    storageUnitRepo.create({
+                        unitNumber: `${sitePrefix}${String(blockStart + unitIndex).padStart(3, '0')}`,
+                        status: StorageUnitStatus.AVAILABLE,
+                        site: newSite,
+                        unitType: savedUnitType,
+                    })
+                ));
+
+                if (storageUnits.length > 0) {
+                    await storageUnitRepo.save(storageUnits);
+                }
+            }
+        }
 
         return NextResponse.json(
             { ok: true, site: newSite },

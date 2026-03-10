@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState, use } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useRouter } from 'next/navigation';
+import { STORAGE_UNIT_TYPES } from '@/lib/data/storageCatalog';
+import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
 import {
     Loader,
     ArrowLeft,
@@ -49,18 +51,39 @@ interface Site {
     id?: string;
     name: string;
     code: string;
+    city: string;
+    state: string;
     address: string;
     about: string;
     contactPhone: string;
     contactEmail: string;
     lat: number;
     lng: number;
+    registrationFee: number;
+    annualDues: number;
     measuringUnit: string;
     image?: string;
     siteMapUrl?: string;
     unitTypes: UnitType[];
     units: StorageUnit[];
 }
+
+const locationOptions = Object.values(LOCATION_DETAILS).map((detail) => ({
+    code: detail.code,
+    city: detail.city,
+    state: detail.state,
+    address: detail.address,
+    lat: detail.coordinates?.lat ?? 0,
+    lng: detail.coordinates?.lng ?? 0,
+    about: detail.about,
+    image: detail.image,
+    name: detail.name,
+}));
+
+const presetUnitTypes: UnitType[] = STORAGE_UNIT_TYPES.map((unitType) => ({
+    ...unitType,
+    priceCurrency: 'NGN',
+}));
 
 export default function SiteEditorPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -77,12 +100,16 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
     const [site, setSite] = useState<Site>({
         name: '',
         code: '',
+        city: '',
+        state: '',
         address: '',
         about: '',
         contactPhone: '',
         contactEmail: '',
         lat: 6.5244,
         lng: 3.3792, // Default Lagos
+        registrationFee: 30000,
+        annualDues: 35000,
         measuringUnit: 'ft',
         unitTypes: [],
         units: [],
@@ -128,6 +155,52 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             fetchSite();
         }
     }, [fetchSite, isNew]);
+
+    const handleCityChange = (city: string) => {
+        const locationPreset = locationOptions.find((location) => location.city === city);
+
+        setSite((current) => ({
+            ...current,
+            city,
+            state: locationPreset?.state || current.state,
+            ...(isNew && locationPreset ? {
+                name: current.name || locationPreset.name,
+                code: current.code || locationPreset.code,
+                address: current.address || locationPreset.address,
+                about: current.about || locationPreset.about,
+                image: current.image || locationPreset.image,
+                lat: locationPreset.lat,
+                lng: locationPreset.lng,
+            } : {}),
+        }));
+    };
+
+    const addPresetUnitTypeToDraft = (preset: UnitType) => {
+        setSite((current) => {
+            const exists = current.unitTypes.some((unit) => (
+                unit.name === preset.name &&
+                unit.width === preset.width &&
+                unit.depth === preset.depth &&
+                unit.unit === preset.unit
+            ));
+
+            if (exists) {
+                return current;
+            }
+
+            return {
+                ...current,
+                unitTypes: [...current.unitTypes, { ...preset }],
+            };
+        });
+    };
+
+    const removeDraftUnitType = (name: string) => {
+        setSite((current) => ({
+            ...current,
+            unitTypes: current.unitTypes.filter((unit) => unit.name !== name),
+        }));
+    };
 
     const handleSaveSite = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -390,14 +463,44 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                     />
                                 </div>
                                 <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Unique Code (Uppercase)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Site Code</label>
                                     <input
                                         required
                                         type="text"
                                         value={site.code}
-                                        onChange={e => setSite({ ...site, code: e.target.value.toUpperCase() })}
+                                        onChange={e => setSite({ ...site, code: e.target.value })}
                                         className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                        placeholder="e.g. LAG-001"
+                                        placeholder="e.g. lekki"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <select
+                                        required
+                                        value={site.city}
+                                        onChange={(e) => handleCityChange(e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    >
+                                        <option value="">Select city</option>
+                                        {locationOptions.map((location) => (
+                                            <option key={location.code} value={location.city}>
+                                                {location.city}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="col-span-2 sm:col-span-1">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={site.state}
+                                        onChange={e => setSite({ ...site, state: e.target.value })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                        placeholder="e.g. Lagos"
                                     />
                                 </div>
                             </div>
@@ -412,6 +515,29 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                     placeholder="Street, City, State"
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Registration Fee</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={site.registrationFee}
+                                        onChange={e => setSite({ ...site, registrationFee: parseFloat(e.target.value) || 0 })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Annual Dues</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={site.annualDues}
+                                        onChange={e => setSite({ ...site, annualDues: parseFloat(e.target.value) || 0 })}
+                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    />
+                                </div>
                             </div>
 
                             <div>
@@ -490,113 +616,175 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                         </form>
                     </section>
 
-                    {/* Unit Types Section - Only available for existing sites */}
-                    {!isNew && (
-                        <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-gray-900 flex items-center">
-                                    <Box className="w-5 h-5 mr-2 text-blue-600" />
-                                    Unit Types
-                                </h2>
-                                <span className="text-sm font-medium text-gray-500">{site.unitTypes.length} types</span>
-                            </div>
+                    <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                                <Box className="w-5 h-5 mr-2 text-blue-600" />
+                                Unit Types
+                            </h2>
+                            <span className="text-sm font-medium text-gray-500">{site.unitTypes.length} types</span>
+                        </div>
 
-                            <div className="p-6 space-y-6">
-                                {/* Add Unit Form */}
-                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-4">
-                                    <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider">Add New Unit Type</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Size Name</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Large"
-                                                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                                value={unitForm.name}
-                                                onChange={e => setUnitForm({ ...unitForm, name: e.target.value })}
-                                            />
+                        <div className="p-6 space-y-6">
+                            {isNew ? (
+                                <>
+                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-4">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider">Select Standard Unit Types</h3>
+                                            <button
+                                                type="button"
+                                                onClick={() => presetUnitTypes.forEach(addPresetUnitTypeToDraft)}
+                                                className="text-sm font-semibold text-blue-700 hover:text-blue-900"
+                                            >
+                                                Use complete list
+                                            </button>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Dimensions (W x D)</label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="number"
-                                                    placeholder="W"
-                                                    className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                                    value={unitForm.width || ''}
-                                                    onChange={e => setUnitForm({ ...unitForm, width: parseFloat(e.target.value) })}
-                                                />
-                                                <input
-                                                    type="number"
-                                                    placeholder="D"
-                                                    className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                                    value={unitForm.depth || ''}
-                                                    onChange={e => setUnitForm({ ...unitForm, depth: parseFloat(e.target.value) })}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Price (₦/mo)</label>
-                                            <input
-                                                type="number"
-                                                placeholder="Amount"
-                                                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                                value={unitForm.priceAmount || ''}
-                                                onChange={e => setUnitForm({ ...unitForm, priceAmount: parseFloat(e.target.value) })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Available</label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="number"
-                                                    placeholder="Qty"
-                                                    className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                                    value={unitForm.availableCount || ''}
-                                                    onChange={e => setUnitForm({ ...unitForm, availableCount: parseInt(e.target.value) || 0 })}
-                                                />
-                                                <button
-                                                    onClick={handleAddUnit}
-                                                    className="px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                                                >
-                                                    <Plus className="w-5 h-5" />
-                                                </button>
-                                            </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {presetUnitTypes.map((preset) => {
+                                                const isSelected = site.unitTypes.some((unit) => unit.name === preset.name);
+
+                                                return (
+                                                    <button
+                                                        key={preset.name}
+                                                        type="button"
+                                                        onClick={() => addPresetUnitTypeToDraft(preset)}
+                                                        disabled={isSelected}
+                                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                                                            isSelected
+                                                                ? 'border-green-200 bg-green-50 text-green-700'
+                                                                : 'border-blue-200 bg-white hover:border-blue-400 hover:bg-blue-50'
+                                                        }`}
+                                                    >
+                                                        <p className="font-semibold text-gray-900">{preset.name}</p>
+                                                        <p className="mt-1 text-sm text-gray-500">
+                                                            {preset.width} x {preset.depth} {preset.unit} | ₦{preset.priceAmount.toLocaleString()} / mo
+                                                        </p>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Units List */}
-                                <div className="space-y-3">
-                                    {site.unitTypes.length === 0 ? (
-                                        <p className="text-center text-gray-500 py-8 italic">No unit types added yet.</p>
-                                    ) : (
-                                        site.unitTypes.map((unit) => (
-                                            <div key={unit.id} className="flex items-center justify-between p-4 border rounded-xl hover:border-blue-200 transition-colors">
-                                                <div>
-                                                    <p className="font-bold text-gray-900">{unit.name}</p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {unit.width} x {unit.depth} {unit.unit} | ₦{unit.priceAmount.toLocaleString()} / mo
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-4 text-sm">
-                                                    <span className={`px-3 py-1 rounded-full font-medium ${unit.availableCount > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                        {unit.availableCount} available
-                                                    </span>
+                                    <div className="space-y-3">
+                                        {site.unitTypes.length === 0 ? (
+                                            <p className="text-center text-gray-500 py-8 italic">No unit types selected yet.</p>
+                                        ) : (
+                                            site.unitTypes.map((unit) => (
+                                                <div key={unit.name} className="flex items-center justify-between p-4 border rounded-xl hover:border-blue-200 transition-colors">
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{unit.name}</p>
+                                                        <p className="text-sm text-gray-500">
+                                                            {unit.width} x {unit.depth} {unit.unit} | ₦{unit.priceAmount.toLocaleString()} / mo
+                                                        </p>
+                                                    </div>
                                                     <button
-                                                        onClick={() => handleDeleteUnit(unit.id!)}
+                                                        type="button"
+                                                        onClick={() => removeDraftUnitType(unit.name)}
                                                         className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-4">
+                                        <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider">Add New Unit Type</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Size Name</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="e.g. Large"
+                                                    className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    value={unitForm.name}
+                                                    onChange={e => setUnitForm({ ...unitForm, name: e.target.value })}
+                                                />
                                             </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        </section>
-                    )}
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Dimensions (W x D)</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="number"
+                                                        placeholder="W"
+                                                        className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        value={unitForm.width || ''}
+                                                        onChange={e => setUnitForm({ ...unitForm, width: parseFloat(e.target.value) })}
+                                                    />
+                                                    <input
+                                                        type="number"
+                                                        placeholder="D"
+                                                        className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        value={unitForm.depth || ''}
+                                                        onChange={e => setUnitForm({ ...unitForm, depth: parseFloat(e.target.value) })}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Price (₦/mo)</label>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Amount"
+                                                    className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                    value={unitForm.priceAmount || ''}
+                                                    onChange={e => setUnitForm({ ...unitForm, priceAmount: parseFloat(e.target.value) })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Available</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Qty"
+                                                        className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        value={unitForm.availableCount || ''}
+                                                        onChange={e => setUnitForm({ ...unitForm, availableCount: parseInt(e.target.value) || 0 })}
+                                                    />
+                                                    <button
+                                                        onClick={handleAddUnit}
+                                                        className="px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                                    >
+                                                        <Plus className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        {site.unitTypes.length === 0 ? (
+                                            <p className="text-center text-gray-500 py-8 italic">No unit types added yet.</p>
+                                        ) : (
+                                            site.unitTypes.map((unit) => (
+                                                <div key={unit.id} className="flex items-center justify-between p-4 border rounded-xl hover:border-blue-200 transition-colors">
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{unit.name}</p>
+                                                        <p className="text-sm text-gray-500">
+                                                            {unit.width} x {unit.depth} {unit.unit} | ₦{unit.priceAmount.toLocaleString()} / mo
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4 text-sm">
+                                                        <span className={`px-3 py-1 rounded-full font-medium ${unit.availableCount > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                            {unit.availableCount} available
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleDeleteUnit(unit.id!)}
+                                                            className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </section>
 
                     {!isNew && (
                         <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
