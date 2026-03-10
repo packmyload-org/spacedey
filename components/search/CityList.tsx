@@ -1,20 +1,26 @@
 'use client';
 
-import { ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo } from 'react';
 import LocationCard from '@/components/home/LocationCard';
 import { ApiSite } from '@/lib/types/local';
-import { useMemo } from 'react';
-import { extractCityFromAddress, formatUnitDimensions } from '@/lib/utils/siteLocations';
+import {
+  formatSiteCount,
+  formatUnitDimensions,
+  getSiteCity,
+  getSiteState,
+} from '@/lib/utils/siteLocations';
 
 interface CityListProps {
   searchQuery: string;
+  selectedState: string;
   selectedCity: string;
-  onSelectCity: (city: string) => void;
+  onSelectState: (state: string) => void;
+  onSelectCity: (state: string, city: string) => void;
+  onClearSelection: () => void;
   sites: ApiSite[];
 }
 
-// Helper to map site to LocationCard props
-// Moved outside component to avoid recreation on re-renders
 const getSiteProps = (site: ApiSite) => {
   return {
     name: site.name,
@@ -25,96 +31,156 @@ const getSiteProps = (site: ApiSite) => {
       const nextAvailableUnit = ut.units?.find((unit) => unit.status === 'available');
 
       return {
-      id: nextAvailableUnit?.id || ut.id,
-      name: ut.name,
-      dimensionsLabel: formatUnitDimensions(ut.dimensions),
-      originalPrice: (
-        ut.price.originalAmount || ut.price.amount * 1.2
-      ).toFixed(0),
-      currentPrice: ut.price.amount.toFixed(0),
-      maxQuantity: ut.availableCount,
-      availableCount: ut.availableCount,
-    }}),
+        id: nextAvailableUnit?.id || ut.id,
+        name: ut.name,
+        dimensionsLabel: formatUnitDimensions(ut.dimensions),
+        originalPrice: (ut.price.originalAmount || ut.price.amount * 1.2).toFixed(0),
+        currentPrice: ut.price.amount.toFixed(0),
+        maxQuantity: ut.availableCount,
+        availableCount: ut.availableCount,
+      };
+    }),
     detailsLink: `/locations/${site.id}`,
   };
 };
 
 export default function CityList({
   searchQuery,
+  selectedState,
   selectedCity,
+  onSelectState,
   onSelectCity,
+  onClearSelection,
   sites,
 }: Readonly<CityListProps>) {
-  const citiesData = useMemo(() => {
-    const map = new Map<string, ApiSite[]>();
-    sites.forEach((site) => {
-      const city = extractCityFromAddress(site.address) || 'Unknown';
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
-      if (!map.has(city)) {
-        map.set(city, []);
+  const stateGroups = useMemo(() => {
+    const stateMap = new Map<string, Map<string, ApiSite[]>>();
+
+    sites.forEach((site) => {
+      const stateName = getSiteState(site) || 'Unknown state';
+      const cityName = getSiteCity(site) || 'Unknown city';
+
+      if (!stateMap.has(stateName)) {
+        stateMap.set(stateName, new Map<string, ApiSite[]>());
       }
-      map.get(city)?.push(site);
+
+      const cityMap = stateMap.get(stateName)!;
+
+      if (!cityMap.has(cityName)) {
+        cityMap.set(cityName, []);
+      }
+
+      cityMap.get(cityName)?.push(site);
     });
-    return Array.from(map.entries()).map(([cityName, citySites]) => ({
-      name: cityName,
-      sites: citySites,
-    }));
+
+    return Array.from(stateMap.entries())
+      .map(([stateName, cityMap]) => {
+        const cities = Array.from(cityMap.entries())
+          .map(([cityName, citySites]) => ({
+            name: cityName,
+            sites: citySites,
+          }))
+          .sort((left, right) => left.name.localeCompare(right.name));
+
+        return {
+          name: stateName,
+          cities,
+          siteCount: cities.reduce((total, city) => total + city.sites.length, 0),
+        };
+      })
+      .sort((left, right) => left.name.localeCompare(right.name));
   }, [sites]);
 
-  const filteredCities = useMemo(() => {
-    if (!searchQuery) return citiesData;
-    const lowerQuery = searchQuery.toLowerCase();
-    return citiesData.filter(
-      (c) =>
-        c.name.toLowerCase().includes(lowerQuery) ||
-        c.sites.some((s) => s.name.toLowerCase().includes(lowerQuery))
-    );
-  }, [citiesData, searchQuery]);
+  const filteredStates = useMemo(() => {
+    if (!normalizedQuery) {
+      return stateGroups;
+    }
 
-  const activeCityData = useMemo(() => {
-    if (selectedCity) {
-      return citiesData.find((city) => city.name === selectedCity);
+    return stateGroups.filter((state) => {
+      return (
+        state.name.toLowerCase().includes(normalizedQuery) ||
+        state.cities.some((city) => {
+          return (
+            city.name.toLowerCase().includes(normalizedQuery) ||
+            city.sites.some((site) => site.name.toLowerCase().includes(normalizedQuery))
+          );
+        })
+      );
+    });
+  }, [normalizedQuery, stateGroups]);
+
+  const activeState = useMemo(() => {
+    if (selectedState) {
+      return stateGroups.find((state) => state.name === selectedState) || null;
     }
-    if (
-      searchQuery &&
-      filteredCities.length === 1 &&
-      filteredCities[0].sites.length <= 1
-    ) {
-      return filteredCities[0];
+
+    if (normalizedQuery && filteredStates.length === 1) {
+      return filteredStates[0];
     }
+
     return null;
-  }, [selectedCity, citiesData, searchQuery, filteredCities]);
+  }, [filteredStates, normalizedQuery, selectedState, stateGroups]);
 
-  // If we have active data but no manual selection, it's auto-selected
-  const isAutoSelected = !selectedCity && !!activeCityData;
+  const activeStateName = activeState?.name ?? '';
+
+  const visibleCities = useMemo(() => {
+    if (!activeState) {
+      return [];
+    }
+
+    if (!normalizedQuery || normalizedQuery === activeState.name.toLowerCase()) {
+      return activeState.cities;
+    }
+
+    return activeState.cities.filter((city) => {
+      return (
+        city.name.toLowerCase().includes(normalizedQuery) ||
+        city.sites.some((site) => site.name.toLowerCase().includes(normalizedQuery))
+      );
+    });
+  }, [activeState, normalizedQuery]);
+
+  const activeCity = useMemo(() => {
+    if (!activeState || !selectedCity) {
+      return null;
+    }
+
+    return activeState.cities.find((city) => city.name === selectedCity) || null;
+  }, [activeState, selectedCity]);
 
   return (
     <div className="z-10 bg-brand-page-bg p-6 pt-20">
       <h1 className="font-semibold text-2xl mb-3 capitalize">
-        Explore self storage facilities
+        Explore self storage sites
       </h1>
 
-      {/* If a city is selected (manually or auto), show sites in that city */}
-      {activeCityData ? (
+      {activeCity ? (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 -y-2">
-            {!isAutoSelected && (
-              <button
-                onClick={() => onSelectCity(activeCityData.name)}
-                className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
-              >
-
-                <span className="flex-1 font-medium">{activeCityData.name}</span>
-                <span className="text-sm text-gray-500 mr-2">
-                  {activeCityData.sites.length} locations
-                </span>
-                <ChevronRight className="w-6 h-6 flex-shrink-0" />
-              </button>
-            )}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectState(activeStateName)}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              {activeStateName}
+            </button>
+            <div className="rounded-lg border border-brand-blue bg-blue-50 px-4 py-2 text-sm font-semibold text-brand-blue">
+              {activeCity.name}
+            </div>
           </div>
 
           <div className="space-y-6">
-            {activeCityData.sites.map((site) => (
+            {activeCity.sites.map((site) => (
               <LocationCard
                 key={site.id}
                 {...getSiteProps(site)}
@@ -123,27 +189,63 @@ export default function CityList({
             ))}
           </div>
         </div>
-      ) : (
-        /* No city selected: show list of cities */
+      ) : activeState ? (
         <div className="space-y-4">
-          {filteredCities.length > 0 ? (
-            filteredCities.map((city) => (
-              <div key={city.name} className="space-y-2">
-                <button
-                  onClick={() => onSelectCity(city.name)}
-                  className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
-                >
-                  <span className="flex-1 font-medium">{city.name}</span>
-                  <span className="text-sm text-gray-500 mr-2">
-                    {city.sites.length} locations
-                  </span>
-                  <ChevronRight className="w-6 h-6 flex-shrink-0" />
-                </button>
-              </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              All
+            </button>
+            <div className="rounded-lg border border-brand-blue bg-blue-50 px-4 py-2 text-sm font-semibold text-brand-blue">
+              {activeStateName}
+            </div>
+          </div>
+
+          {visibleCities.length > 0 ? (
+            visibleCities.map((city) => (
+              <button
+                key={`${activeStateName}-${city.name}`}
+                type="button"
+                onClick={() => onSelectCity(activeStateName, city.name)}
+                className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
+              >
+                <span className="flex-1 font-medium">{city.name}</span>
+                <span className="text-sm text-gray-500 mr-2">
+                  {formatSiteCount(city.sites.length)}
+                </span>
+                <ChevronRight className="w-6 h-6 flex-shrink-0" />
+              </button>
             ))
           ) : (
             <div className="text-center py-8 text-gray-500 px-6 border border-gray-300 rounded-lg">
-              <p className="mb-2">No available cities found.</p>
+              <p className="mb-2">No cities found in {activeStateName}.</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredStates.length > 0 ? (
+            filteredStates.map((state) => (
+              <button
+                key={state.name}
+                type="button"
+                onClick={() => onSelectState(state.name)}
+                className="w-full flex gap-2 items-center px-6 py-4 cursor-pointer border rounded-lg text-left hover:bg-gray-50 text-gray-700 border-gray-300 transition-colors"
+              >
+                <span className="flex-1 font-medium">{state.name}</span>
+                <span className="text-sm text-gray-500 mr-2">
+                  {formatSiteCount(state.siteCount)}
+                </span>
+                <ChevronRight className="w-6 h-6 flex-shrink-0" />
+              </button>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500 px-6 border border-gray-300 rounded-lg">
+              <p className="mb-2">No states or sites found.</p>
             </div>
           )}
         </div>

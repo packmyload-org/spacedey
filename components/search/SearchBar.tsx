@@ -20,7 +20,7 @@ export default function SearchBar({ value, onChange, onSearch }: Readonly<Search
         <input
           id="search-bar"
           type="text"
-          placeholder="Search any city or location"
+          placeholder="Search any state, city, or site"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}

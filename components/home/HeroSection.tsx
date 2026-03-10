@@ -5,62 +5,58 @@ import { motion } from "framer-motion";
 import PrimaryButton from "../ui/PrimaryButton";
 import InputSearch from "../ui/InputSearch";
 import type { ApiSite } from "@/lib/types/local";
-// Using public/ images served by Next.js
+import { getSiteState, resolveStateFromQuery, sortAlphabetically } from "@/lib/utils/siteLocations";
 
 function HeroSection() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [activeCity, setActiveCity] = useState("");
-  const [cities, setCities] = useState<string[]>([]);
-  const [loadingCities, setLoadingCities] = useState(true);
+  const [activeState, setActiveState] = useState("");
+  const [states, setStates] = useState<string[]>([]);
+  const [sites, setSites] = useState<ApiSite[]>([]);
+  const [loadingStates, setLoadingStates] = useState(true);
 
   React.useEffect(() => {
-    async function fetchCities() {
+    async function fetchStates() {
       try {
         const res = await fetch('/api/sites');
         const data: { ok?: boolean; sites?: ApiSite[] } = await res.json();
+
         if (data.ok && data.sites) {
-          const uniqueCities = Array.from(new Set(data.sites.map((site) => {
-            if (site.city) {
-              return site.city.trim();
-            }
+          setSites(data.sites);
 
-            const parts = site.address.split(',');
-            return parts[parts.length - 1]?.trim() || '';
-          }).filter(Boolean)));
+          const uniqueStates = sortAlphabetically(
+            Array.from(new Set(data.sites.map((site) => getSiteState(site)).filter(Boolean)))
+          );
 
-          if (uniqueCities.length > 0) {
-            setCities(uniqueCities);
-          } else {
-            // Fallback if no sites in DB
-            setCities(['Lagos', 'Abuja', 'Port Harcourt']);
+          if (uniqueStates.length > 0) {
+            setStates(uniqueStates);
           }
         }
-      } catch (err) {
-        console.error('Failed to fetch cities', err);
-        setCities(['Lagos', 'Abuja', 'Port Harcourt']);
+      } catch {
+        setStates(['Abuja', 'Lagos', 'Rivers']);
       } finally {
-        setLoadingCities(false);
+        setLoadingStates(false);
       }
     }
-    fetchCities();
+
+    fetchStates();
   }, []);
 
-  const handleCityClick = (city: string) => {
-    setActiveCity(city);
-    setQuery(city);
+  const handleStateClick = (state: string) => {
+    setActiveState(state);
+    setQuery(state);
   };
 
   const handleReserve = () => {
-    const searchCity = query || activeCity;
-    if (searchCity) {
-      router.push(`/search?city=${encodeURIComponent(searchCity)}`);
+    const resolvedState = resolveStateFromQuery(query || activeState, sites);
+
+    if (resolvedState) {
+      router.push(`/search?state=${encodeURIComponent(resolvedState)}`);
     }
   };
 
   return (
     <section className="relative min-h-screen flex flex-col bg-[#1642F0] overflow-hidden">
-      {/* Social Proof Badge */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -88,10 +84,8 @@ function HeroSection() {
         </div>
       </motion.div>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col items-center w-full justify-center mb-2 px-4">
         <div className="max-w-6xl mx-auto text-center items-center w-full">
-          {/* Hero Heading */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -103,7 +97,6 @@ function HeroSection() {
             Neighborhood
           </motion.h1>
 
-          {/* Subheading */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,43 +106,40 @@ function HeroSection() {
             No hidden fees. Fast booking. A smarter way to store.
           </motion.p>
 
-          {/* Search Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
             className="bg-white rounded-2xl shadow-2xl max-w-none sm:max-w-6xl mx-2 py-4"
           >
-            {/* City Navigation */}
             <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-2 sm:gap-10 mb-5 px-2 sm:px-0 min-h-[44px] items-center">
-              {loadingCities ? (
+              {loadingStates ? (
                 <div className="flex gap-4 items-center">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="h-4 w-16 bg-gray-100 animate-pulse rounded"></div>
                   ))}
                 </div>
               ) : (
-                cities.map((city) => (
+                states.map((state) => (
                   <button
-                    key={city}
-                    onClick={() => handleCityClick(city)}
-                    className={`text-sm sm:text-base font-medium transition-colors ${activeCity === city
+                    key={state}
+                    onClick={() => handleStateClick(state)}
+                    className={`text-sm sm:text-base font-medium transition-colors ${activeState === state
                       ? "text-neutral-900 border-b-2 border-[#1642F0]"
                       : "text-neutral-600 hover:text-neutral-900"
                       }`}
                   >
-                    {city}
+                    {state}
                   </button>
                 ))
               )}
             </div>
 
-            {/* Search Input */}
             <div className="flex flex-col sm:flex-row py-2 mx-4 gap-3">
               <InputSearch
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter your city or location"
+                placeholder="Enter your state, city, or site"
                 className="flex-1"
                 inputClassName="text-base border-neutral-300 focus:ring-orange-500"
               />
@@ -161,17 +151,14 @@ function HeroSection() {
                 Reserve now
               </PrimaryButton>
             </div>
-            {/* Thumbnails moved below the search card (rendered after this card) */}
           </motion.div>
 
-          {/* Thumbnails displayed under the search card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
             className="mt-6 flex items-center justify-center gap-1 sm:gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto px-2"
           >
-            {/* Responsive image tiles: full width on small screens, fixed size on larger screens */}
             <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
               <Image src="/images/hero2.jpg" alt="hero 2" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
@@ -188,7 +175,6 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Support Link */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -199,20 +185,8 @@ function HeroSection() {
           <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
             <span className="text-xs font-bold">?</span>
           </div>
-          {/* <span className="font-medium">Support</span> */}
         </button>
-        {/* Support area only (images moved into search card) */}
       </motion.div>
-      {/* <div className="mt-6">
-      <Image 
-        src="/images/HeroM.jpg"
-        alt="Hero image"
-        width={800}
-        height={400}
-        className="w-full h-auto"
-      />
-      </div>
-       */}
     </section>
   );
 }
