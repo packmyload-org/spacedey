@@ -112,9 +112,9 @@ export default function UserBookingsPage() {
                             return (
                                 <div key={booking.id} className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-xl shadow-blue-900/5 group hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-500 flex flex-col md:flex-row gap-8">
                                     <div className="md:w-48 flex-shrink-0">
-                                        <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-gray-100 mb-4 shadow-inner">
+                                            <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-gray-100 mb-4 shadow-inner">
                                             {booking.site?.image ? (
-                                                <Image src={booking.site.image} alt={booking.site.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                                                <Image src={booking.site.image} alt={booking.site.name || 'Storage site'} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-blue-200"><MapPin className="w-12 h-12" /></div>
                                             )}
@@ -188,17 +188,5 @@ export default function UserBookingsPage() {
 function Box({ className }: { className?: string }) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg>
-    )
-}
-
-function MapPin({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" /><circle cx="12" cy="10" r="3" /></svg>
-    )
-}
-
-function Loader2({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4" /><path d="m16.2 7.8 2.9-2.9" /><path d="M18 12h4" /><path d="m16.2 16.2 2.9 2.9" /><path d="M12 18v4" /><path d="m4.9 19.1 2.9-2.9" /><path d="M2 12h4" /><path d="m4.9 4.9 2.9 2.9" /></svg>
     )
 }

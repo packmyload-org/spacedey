@@ -6,6 +6,7 @@ import Site from '../lib/db/entities/Site.js';
 import UnitType from '../lib/db/entities/UnitType.js';
 import StorageUnit, { StorageUnitStatus } from '../lib/db/entities/StorageUnit.js';
 import { STORAGE_SITES, STORAGE_UNIT_TYPES, getStorageUnitSeedKey } from '../lib/data/storageCatalog.js';
+import { UserRole } from '../lib/types/roles.js';
 
 dotenv.config();
 
@@ -15,14 +16,14 @@ const DEFAULT_USERS = [
     password: 'admin123456',
     firstName: 'Admin',
     lastName: 'User',
-    role: 'admin',
+    role: UserRole.ADMIN,
   },
   {
     email: 'user@spacedey.com',
     password: 'user123456',
     firstName: 'Test',
     lastName: 'User',
-    role: 'user',
+    role: UserRole.USER,
   },
 ];
 

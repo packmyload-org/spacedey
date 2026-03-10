@@ -104,6 +104,10 @@ function LocationCard({
     ];
   }, [pricing, units]);
 
+  const getAvailableCount = (
+    unit: (typeof displayUnits)[number]
+  ) => ('availableCount' in unit ? unit.availableCount : undefined);
+
   return (
     <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue transition-all duration-200 hover:shadow-lg group">
       <div className="lg:flex flex-1">
@@ -173,7 +177,8 @@ function LocationCard({
               <div className="space-y-2 lg:hidden mt-3">
                 {displayUnits.slice(0, 2).map((unit) => {
                   const unitLabel = 'size' in unit ? unit.size : unit.name;
-                  const unitUnavailable = typeof unit.availableCount === 'number' && unit.availableCount < 1;
+                  const availableCount = getAvailableCount(unit);
+                  const unitUnavailable = typeof availableCount === 'number' && availableCount < 1;
 
                   return (
                     <div
@@ -248,11 +253,12 @@ function LocationCard({
                 <div className="space-y-2">
                   {displayUnits.map((unit, index) => {
                     const unitLabel = 'size' in unit ? unit.size : unit.name;
-                    const unitUnavailable = typeof unit.availableCount === 'number' && unit.availableCount < 1;
+                    const availableCount = getAvailableCount(unit);
+                    const unitUnavailable = typeof availableCount === 'number' && availableCount < 1;
 
                     return (
                     <div 
-                      key={index + unit.id} 
+                      key={`${index}-${unit.id}`} 
                       className="flex justify-between items-center p-3 rounded-lg bg-gray-50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-sm transition-all duration-200 group"
                     >
                       <div>
