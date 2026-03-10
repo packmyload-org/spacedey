@@ -5,17 +5,29 @@ import Header from "@/components/layout/Header";
 import { FileText, Download, Eye, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 
+interface UserInvoice {
+    id: string;
+    invoiceNumber: string;
+    total: number | string;
+    createdAt: string;
+    booking?: {
+        site?: {
+            name?: string;
+        };
+    };
+}
+
 export default function UserInvoicesPage() {
-    const [invoices, setInvoices] = useState<any[]>([]);
+    const [invoices, setInvoices] = useState<UserInvoice[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchInvoices() {
             try {
                 const res = await fetch('/api/invoices');
-                const data = await res.json();
+                const data: { ok?: boolean; invoices?: UserInvoice[] } = await res.json();
                 if (data.ok) {
-                    setInvoices(data.invoices);
+                    setInvoices(data.invoices || []);
                 }
             } catch (err) {
                 console.error("Fetch invoices error", err);

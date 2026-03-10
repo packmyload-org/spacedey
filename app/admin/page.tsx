@@ -5,6 +5,14 @@ import { useAuthStore } from '@/lib/store/useAuthStore';
 import { UserRole } from '@/lib/types/roles';
 import { Loader, Users, MapPin, Box, FileText, TrendingUp } from 'lucide-react';
 
+interface DashboardUser {
+  role: UserRole;
+}
+
+interface DashboardSite {
+  unitTypes?: unknown[];
+}
+
 interface Stats {
   totalUsers: number;
   totalAdmins: number;
@@ -34,19 +42,19 @@ export default function AdminDashboard() {
         });
         const siteRes = await fetch('/api/sites');
 
-        const userData = await userRes.json();
-        const siteData = await siteRes.json();
+        const userData: { users?: DashboardUser[] } = await userRes.json();
+        const siteData: { sites?: DashboardSite[] } = await siteRes.json();
 
         const users = userData.users || [];
         const sites = siteData.sites || [];
 
         setStats({
           totalUsers: users.length,
-          totalAdmins: users.filter((u: any) => u.role === UserRole.ADMIN).length,
+          totalAdmins: users.filter((user) => user.role === UserRole.ADMIN).length,
           totalSites: sites.length,
-          totalUnitTypes: sites.reduce((acc: number, s: any) => acc + (s.unitTypes?.length || 0), 0),
+          totalUnitTypes: sites.reduce((acc, site) => acc + (site.unitTypes?.length || 0), 0),
         });
-      } catch (err) {
+      } catch {
         setError('Failed to load dashboard stats');
       } finally {
         setLoading(false);
@@ -77,8 +85,14 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-        <p className="text-gray-500">Welcome back, {authStore.user?.firstName}. Here is what's happening today.</p>
+        <p className="text-gray-500">Welcome back, {authStore.user?.firstName}. Here is what&apos;s happening today.</p>
       </div>
+
+      {error ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      ) : null}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((card) => (

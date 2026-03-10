@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/lib/types/roles';
@@ -23,11 +23,7 @@ export default function AdminUsersPage() {
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        fetchUsers();
-    }, [authStore.accessToken]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -49,7 +45,11 @@ export default function AdminUsersPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [authStore.accessToken]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
 
     const filteredUsers = users.filter(user =>
         `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,6 +79,12 @@ export default function AdminUsersPage() {
                     Add New User
                 </button>
             </div>
+
+            {error ? (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                </div>
+            ) : null}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="p-4 border-b border-gray-200 bg-gray-50/50 flex items-center">

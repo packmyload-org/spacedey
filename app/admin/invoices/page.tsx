@@ -1,12 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FileText, Search, Filter, Eye, Download, ChevronRight } from "lucide-react";
-import Image from "next/image";
+import { FileText, Search, Filter, Eye, Download } from "lucide-react";
 import Link from "next/link";
 
+interface AdminInvoice {
+    id: string;
+    invoiceNumber: string;
+    total: number | string;
+    createdAt: string;
+    status?: string;
+    user?: {
+        email?: string;
+        firstName?: string;
+        lastName?: string;
+    };
+    booking?: {
+        site?: {
+            name?: string;
+        };
+    };
+}
+
 export default function AdminInvoicesPage() {
-    const [invoices, setInvoices] = useState<any[]>([]);
+    const [invoices, setInvoices] = useState<AdminInvoice[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -14,9 +31,9 @@ export default function AdminInvoicesPage() {
         async function fetchInvoices() {
             try {
                 const res = await fetch('/api/invoices');
-                const data = await res.json();
+                const data: { ok?: boolean; invoices?: AdminInvoice[] } = await res.json();
                 if (data.ok) {
-                    setInvoices(data.invoices);
+                    setInvoices(data.invoices || []);
                 }
             } catch (err) {
                 console.error("Fetch invoices error", err);
@@ -27,10 +44,11 @@ export default function AdminInvoicesPage() {
         fetchInvoices();
     }, []);
 
-    const filteredInvoices = invoices.filter(inv =>
-        inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inv.user?.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        inv.user?.firstName.toLowerCase().includes(searchQuery.toLowerCase())
+    const normalizedQuery = searchQuery.toLowerCase();
+    const filteredInvoices = invoices.filter((invoice) =>
+        invoice.invoiceNumber.toLowerCase().includes(normalizedQuery) ||
+        (invoice.user?.email || "").toLowerCase().includes(normalizedQuery) ||
+        (invoice.user?.firstName || "").toLowerCase().includes(normalizedQuery)
     );
 
     return (

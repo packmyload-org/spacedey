@@ -33,7 +33,9 @@ export function generateAccessToken(userId: string): string {
 /**
  * Convert User to UserResponse (excludes sensitive data)
  */
-export function userToResponse(user: any): UserResponse {
+export function userToResponse(
+  user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'role'>
+): UserResponse {
   return {
     id: user.id?.toString?.() || String(user.id),
     email: user.email,

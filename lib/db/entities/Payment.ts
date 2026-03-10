@@ -5,6 +5,15 @@ import type { Booking as BookingModel } from "./Booking";
 import UserEntity from "./User";
 import type { User as UserModel } from "./User";
 
+export interface PaymentMetadata {
+    data?: {
+        id?: string | number;
+        [key: string]: unknown;
+    };
+    verification?: unknown;
+    [key: string]: unknown;
+}
+
 export enum PaymentStatus {
     PENDING = "pending",
     SUCCESS = "success",
@@ -50,7 +59,7 @@ export class Payment {
     status!: PaymentStatus;
 
     @Column({ type: "jsonb", nullable: true })
-    metadata!: any; // Store provider raw response
+    metadata!: PaymentMetadata | null;
 
     @CreateDateColumn()
     createdAt!: Date;

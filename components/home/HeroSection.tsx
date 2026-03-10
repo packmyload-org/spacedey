@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import PrimaryButton from "../ui/PrimaryButton";
 import InputSearch from "../ui/InputSearch";
+import type { ApiSite } from "@/lib/types/local";
 // Using public/ images served by Next.js
 
 function HeroSection() {
@@ -17,13 +18,16 @@ function HeroSection() {
     async function fetchCities() {
       try {
         const res = await fetch('/api/sites');
-        const data = await res.json();
+        const data: { ok?: boolean; sites?: ApiSite[] } = await res.json();
         if (data.ok && data.sites) {
-          // Extract unique cities from addresses
-          const uniqueCities = Array.from(new Set(data.sites.map((site: any) => {
+          const uniqueCities = Array.from(new Set(data.sites.map((site) => {
+            if (site.city) {
+              return site.city.trim();
+            }
+
             const parts = site.address.split(',');
-            return parts[parts.length - 1].trim(); // Assuming address is "Street, City" or "Street, City, State"
-          }))) as string[];
+            return parts[parts.length - 1]?.trim() || '';
+          }).filter(Boolean)));
 
           if (uniqueCities.length > 0) {
             setCities(uniqueCities);

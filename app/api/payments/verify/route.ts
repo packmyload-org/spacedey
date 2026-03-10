@@ -8,7 +8,7 @@ import { generateInvoice } from '@/lib/services/invoicing';
 
 export async function POST(req: Request) {
     try {
-        const { reference, provider, transactionId } = await req.json();
+        const { reference, transactionId } = await req.json();
 
         const dataSource = await connectTypeORM();
         const bookingRepo = dataSource.getRepository(Booking);
@@ -36,7 +36,8 @@ export async function POST(req: Request) {
             providerData = await paystack.verifyPayment(reference);
             isSuccessful = providerData.data.status === 'success';
         } else if (payment.provider === PaymentProvider.FLUTTERWAVE) {
-            providerData = await flutterwave.verifyPayment(transactionId || payment.metadata?.data?.id);
+            const providerTransactionId = transactionId || String(payment.metadata?.data?.id || '');
+            providerData = await flutterwave.verifyPayment(providerTransactionId);
             isSuccessful = providerData.data.status === 'successful';
         }
 
@@ -81,8 +82,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ ok: false, message: 'Payment verification failed' });
         }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Verify payment error:', error);
-        return NextResponse.json({ ok: false, message: error.message || 'Internal server error' }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'Internal server error';
+        return NextResponse.json({ ok: false, message }, { status: 500 });
     }
 }

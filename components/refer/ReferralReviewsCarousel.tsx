@@ -114,13 +114,14 @@ export default function ReferralReviewsCarousel() {
   }, []);
 
   const totalSlides = Math.max(1, Math.ceil(reviews.length / itemsPerSlide));
+  const safeCurrentSlide = Math.min(currentSlide, totalSlides - 1);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    setCurrentSlide((prev) => Math.min(prev + 1, totalSlides - 1));
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+    setCurrentSlide((prev) => Math.max(prev - 1, 0));
   };
 
   const toggleExpanded = (id: number) => {
@@ -131,16 +132,9 @@ export default function ReferralReviewsCarousel() {
   };
 
   const getVisibleReviews = () => {
-    const start = currentSlide * itemsPerSlide;
+    const start = safeCurrentSlide * itemsPerSlide;
     return reviews.slice(start, start + itemsPerSlide);
   };
-
-  // Ensure currentSlide is within bounds when itemsPerSlide / totalSlides change
-  useEffect(() => {
-    if (currentSlide >= totalSlides) {
-      setCurrentSlide(totalSlides - 1);
-    }
-  }, [itemsPerSlide, totalSlides, currentSlide]);
 
   return (
     <div className="w-full py-12 px-4 bg-white">
@@ -151,7 +145,7 @@ export default function ReferralReviewsCarousel() {
           {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
-            disabled={currentSlide === 0}
+            disabled={safeCurrentSlide === 0}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all -ml-4"
             aria-label="Previous"
           >
@@ -160,7 +154,7 @@ export default function ReferralReviewsCarousel() {
 
           <button
             onClick={nextSlide}
-            disabled={currentSlide === totalSlides - 1}
+            disabled={safeCurrentSlide === totalSlides - 1}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all -mr-4"
             aria-label="Next"
           >
@@ -258,7 +252,7 @@ export default function ReferralReviewsCarousel() {
                 key={index}
                 onClick={() => setCurrentSlide(index)}
                 className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentSlide ? 'bg-gray-800 w-6' : 'bg-gray-300'
+                  index === safeCurrentSlide ? 'bg-gray-800 w-6' : 'bg-gray-300'
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />

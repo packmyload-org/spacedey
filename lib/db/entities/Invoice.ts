@@ -7,6 +7,13 @@ import type { User as UserModel } from "./User";
 import PaymentEntity from "./Payment";
 import type { Payment as PaymentModel } from "./Payment";
 
+export interface InvoiceLineItem {
+    description: string;
+    qty: number;
+    unitPrice: number;
+    total: number;
+}
+
 export enum InvoiceStatus {
     DRAFT = "draft",
     SENT = "sent",
@@ -34,7 +41,7 @@ export class Invoice {
     payment!: Relation<PaymentModel>;
 
     @Column({ type: "jsonb" })
-    items!: any[]; // Line items: { description, qty, unitPrice, total }
+    items!: InvoiceLineItem[];
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
     subtotal!: number;

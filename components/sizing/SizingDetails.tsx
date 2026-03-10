@@ -125,11 +125,6 @@ const SizingDetails = () => {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const activeContent = storageData[activeTab];
 
-  // Calculate indicator position
-  const activeTabIndex = tabKeys.indexOf(activeTab);
-  const indicatorWidthPercent = 100 / tabKeys.length;
-  const indicatorLeftPercent = activeTabIndex * indicatorWidthPercent;
-
   // Keyboard navigation handler
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
     let nextIndex = currentIndex;

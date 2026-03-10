@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
+import type { FindManyOptions, FindOptionsWhere } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import Invoice from '@/lib/db/entities/Invoice';
 import { cookies } from 'next/headers';
 import * as jwt from 'jsonwebtoken';
 import { env } from '@/config/env';
 
-export async function GET(req: Request) {
+type InvoiceTokenPayload = jwt.JwtPayload & {
+    userId?: string;
+    role?: string;
+};
+
+export async function GET() {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('auth-token')?.value;
@@ -13,21 +19,25 @@ export async function GET(req: Request) {
             return NextResponse.json({ ok: false, message: 'Authentication required' }, { status: 401 });
         }
 
-        const decoded = jwt.verify(token, env.jwt.secret) as any;
+        const decoded = jwt.verify(token, env.jwt.secret) as InvoiceTokenPayload;
         const userId = decoded.userId;
         const userRole = decoded.role;
+
+        if (!userId) {
+            return NextResponse.json({ ok: false, message: 'Invalid authentication token' }, { status: 401 });
+        }
 
         const dataSource = await connectTypeORM();
         const invoiceRepo = dataSource.getRepository(Invoice);
 
         // If admin, show all. If user, show only theirs.
-        const query: any = {
+        const query: FindManyOptions<Invoice> = {
             relations: ['user', 'booking', 'booking.site'],
             order: { createdAt: 'DESC' }
         };
 
         if (userRole !== 'admin') {
-            query.where = { user: { id: userId } };
+            query.where = { user: { id: userId } } as FindOptionsWhere<Invoice>;
         }
 
         const invoices = await invoiceRepo.find(query);

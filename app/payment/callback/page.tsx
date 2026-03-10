@@ -44,7 +44,7 @@ function PaymentCallbackContent() {
                     setStatus('failed');
                     setMessage(data.message || "Payment verification failed.");
                 }
-            } catch (err) {
+            } catch {
                 setStatus('failed');
                 setMessage("An error occurred during verification.");
             }
