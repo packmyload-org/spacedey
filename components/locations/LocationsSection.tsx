@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState } from 'react';
 import Link from "next/link";
+import { getAvailableCities } from '@/lib/utils/cities';
 
 const LocationsSection = () => {
   const [locations, setLocations] = useState<string[]>([]);
@@ -10,15 +13,26 @@ const LocationsSection = () => {
       try {
         const res = await fetch('/api/sites');
         const data = await res.json();
+        const seededCities = getAvailableCities().map((city) => city.name);
+
         if (data.ok && data.sites) {
-          const uniqueCities = Array.from(new Set(data.sites.map((site: any) => {
+          const apiCities = Array.from(new Set(data.sites.map((site: { address: string }) => {
             const parts = site.address.split(',').map((p: string) => p.trim());
             return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
           }))) as string[];
-          setLocations(uniqueCities);
+
+          const mergedCities = [...seededCities, ...apiCities].filter(
+            (city, index, allCities) => city && allCities.indexOf(city) === index
+          );
+
+          setLocations(mergedCities);
+          return;
         }
+
+        setLocations(seededCities);
       } catch (err) {
         console.error('Failed to fetch sites', err);
+        setLocations(getAvailableCities().map((city) => city.name));
       } finally {
         setLoading(false);
       }

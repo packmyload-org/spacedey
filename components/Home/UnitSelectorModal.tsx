@@ -28,7 +28,7 @@ export default function UnitSelectorModal({
   onBook,
 }: UnitSelectorModalProps) {
   useScrollLock(isOpen);
-  const { openCart } = useStorageCart();
+  const { addToCart } = useStorageCart();
 
   if (!isOpen) return null;
 
@@ -59,7 +59,12 @@ export default function UnitSelectorModal({
                 <li key={unit.id}>
                   <button
                     onClick={() => {
-                      openCart(unit, locationName, locationAddress);
+                      addToCart({
+                        ...unit,
+                        locationName,
+                        locationAddress,
+                        quantity: 1,
+                      });
                       onBook(unit);
                       onClose();
                     }}

@@ -32,7 +32,7 @@ Regular users have access to:
 After setting up Postgres and the application, seed the database with default users:
 
 ```bash
-pnpm run seed:typeorm
+pnpm run seed:data
 ```
 
 This creates two default users:

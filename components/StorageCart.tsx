@@ -5,7 +5,7 @@ import { useStorageCart } from "@/contexts/StorageCartContext";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 
 export default function StorageCart() {
-  const { isOpen, closeCart, selectedUnit, cartItems, addToCart, removeFromCart } = useStorageCart();
+  const { isOpen, closeCart, cartItems, removeFromCart } = useStorageCart();
   const { isAuthenticated } = useAuthStore();
 
   if (!isOpen) return null;
@@ -33,31 +33,6 @@ export default function StorageCart() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
-          {selectedUnit ? (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="font-semibold text-sm mb-2">{selectedUnit.locationName}</h3>
-              <p className="text-xs text-gray-600 mb-3">{selectedUnit.locationAddress}</p>
-              
-              <div className="text-sm mb-3">
-                <div className="font-medium">{selectedUnit.size}</div>
-                <div className="flex gap-2 text-xs mt-1">
-                  <span className="text-gray-400 line-through">₦{selectedUnit.originalPrice}</span>
-                  <span className="font-bold text-blue-600">₦{selectedUnit.currentPrice}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  addToCart(selectedUnit);
-                  // Optionally close or show feedback
-                }}
-                className="w-full bg-blue-600 text-white py-2 rounded text-xs font-medium hover:bg-blue-700"
-              >
-                Add to Cart
-              </button>
-            </div>
-          ) : null}
-
           {/* Cart Items List */}
           {cartItems.length > 0 && (
             <div>
@@ -68,6 +43,7 @@ export default function StorageCart() {
                     <div>
                       <div className="font-medium">{item.size}</div>
                       <div className="text-gray-600">{item.locationName}</div>
+                      <div className="text-gray-500">Qty: {item.quantity}</div>
                     </div>
                     <button
                       onClick={() => removeFromCart(idx)}
@@ -81,7 +57,7 @@ export default function StorageCart() {
             </div>
           )}
 
-          {cartItems.length === 0 && !selectedUnit && (
+          {cartItems.length === 0 && (
             <p className="text-gray-500 text-sm text-center py-8">Select a unit to get started</p>
           )}
         </div>
@@ -91,7 +67,7 @@ export default function StorageCart() {
           <div className="border-t p-4 space-y-3">
             <div className="flex justify-between text-sm font-semibold">
               <span>Total:</span>
-              <span>₦{cartItems.reduce((sum, item) => sum + parseFloat(item.currentPrice), 0).toFixed(2)}</span>
+              <span>₦{cartItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0).toFixed(2)}</span>
             </div>
             <button className={`w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!isAuthenticated}>
               Proceed to Checkout

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Card from "../ui/Card";
 import { useStorageCart } from "../../contexts/StorageCartContext";
 import { getLocationDetails } from "../../lib/utils/sampleLocations";
-import UnitSelectorModal from "./UnitSelectorModal";
 
 interface LocationCardProps {
   name: string;
@@ -15,9 +14,46 @@ interface LocationCardProps {
   image: string;
   promo?: string;
   pricing?: Array<{ size: string; originalPrice: string; currentPrice: string }>;
+  units?: Array<{
+    id: string | number;
+    name: string;
+    dimensionsLabel?: string;
+    originalPrice: string;
+    currentPrice: string;
+    maxQuantity?: number;
+    availableCount?: number;
+  }>;
   onBook?: (unit?: { size: string; originalPrice: string; currentPrice: string }) => void;
   onViewDetails?: () => void;
   detailsLink?: string;
+}
+
+interface CardActionWrapperProps {
+  children: React.ReactNode;
+  className?: string;
+  detailsLink?: string;
+  onViewDetails: () => void;
+}
+
+function CardActionWrapper({
+  children,
+  className,
+  detailsLink = "#",
+  onViewDetails,
+}: CardActionWrapperProps) {
+  if (detailsLink && detailsLink !== "#") {
+    return <Link href={detailsLink} className={className}>{children}</Link>;
+  }
+
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={onViewDetails}
+    >
+      {children}
+    </button>
+  );
 }
 
 function LocationCard({
@@ -27,12 +63,12 @@ function LocationCard({
   image,
   promo,
   pricing,
+  units,
   onBook = () => {},
   onViewDetails = () => {},
   detailsLink = "#",
 }: LocationCardProps) {
-  const [showUnitSelector, setShowUnitSelector] = useState(false);
-  const { openCart } = useStorageCart();
+  const { addToCart } = useStorageCart();
   
   // Get complete location details from centralized data if name matches known city
   const locationDetails = useMemo(() => getLocationDetails(name), [name]);
@@ -52,31 +88,21 @@ function LocationCard({
   }, [image, locationDetails.image]);
 
   // Fallback mock units if pricing not provided
-  const units = useMemo(() => {
+  const displayUnits = useMemo(() => {
+    if (units?.length) {
+      return units;
+    }
+
     if (pricing?.length) {
       return pricing.map((p, idx) => ({ id: idx + 1, size: p.size, originalPrice: p.originalPrice, currentPrice: p.currentPrice }));
     }
+
     return [
         { id: 1, size: "Small (6×8)", originalPrice: "7200", currentPrice: "5004.00" },
         { id: 2, size: "Medium (5×9)", originalPrice: "6800", currentPrice: "4706.00" },
         { id: 3, size: "Large (18×9)", originalPrice: "24300", currentPrice: "17001.00" },
     ];
-  }, [pricing]);
-
-  const MainWrapper = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-    if (detailsLink && detailsLink !== "#") {
-      return <Link href={detailsLink} className={className}>{children}</Link>;
-    }
-    return (
-      <button
-        type="button"
-        className={className}
-        onClick={onViewDetails}
-      >
-        {children}
-      </button>
-    );
-  };
+  }, [pricing, units]);
 
   return (
     <Card className="relative shadow rounded-xl mb-6 lg:p-4 bg-white lg:border-2 min-h-[330px] flex flex-col border-brand-blue hover:border-brand-blue transition-all duration-200 hover:shadow-lg group">
@@ -85,7 +111,11 @@ function LocationCard({
         <div
           className="lg:w-2/5 lg:flex lg:flex-col lg:border-r lg:pr-4"
         >
-          <MainWrapper className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
+          <CardActionWrapper
+            className="w-full text-left hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent"
+            detailsLink={detailsLink}
+            onViewDetails={onViewDetails}
+          >
              <div className="w-full h-[170px] lg:h-[220px] relative rounded-t-xl lg:rounded-xl overflow-hidden bg-gray-100">
               {displayImage && (
                 <Image
@@ -97,10 +127,14 @@ function LocationCard({
                 />
               )}
             </div>
-          </MainWrapper>
+          </CardActionWrapper>
          
           <div className="p-4 lg:px-0">
-            <MainWrapper className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent">
+            <CardActionWrapper
+              className="w-full text-left focus:outline-none focus:ring-2 focus:ring-brand-blue/40 cursor-pointer p-0 border-none bg-transparent"
+              detailsLink={detailsLink}
+              onViewDetails={onViewDetails}
+            >
                 <h3 className="text-xl font-semibold text-neutral-900 mb-1 group-hover:text-blue-700 transition-colors">{finalName}</h3>
                 <div className="font-serif text-brand-graphite mb-2 text-sm">{finalAddress}</div>
 
@@ -118,38 +152,77 @@ function LocationCard({
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256">
                     <path d="M243.31,136,144,36.69A15.86,15.86,0,0,0,132.69,32H40a8,8,0,0,0-8,8v92.69A15.86,15.86,0,0,0,36.69,144L136,243.31a16,16,0,0,0,22.63,0l84.68-84.68a16,16,0,0,0,0-22.63ZM84,96A12,12,0,1,1,96,84,12,12,0,0,1,84,96Z"></path>
                     </svg>
-                    <div className="text-xs">{promo}</div>
+                <div className="text-xs">{promo}</div>
                 </div>
                 )}
-            </MainWrapper>
+            </CardActionWrapper>
 
             {/* Mobile-only CTA */}
-            <div className="flex gap-2 mt-3 lg:hidden">
+            <div className="mt-3 lg:hidden">
               {detailsLink && detailsLink !== "#" ? (
-                 <Link href={detailsLink} className="flex-1">
-                    <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
+                 <Link href={detailsLink} className="block w-full">
+                    <button className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">View More</button>
                  </Link>
               ) : (
-                <button onClick={onViewDetails} className="flex-1 w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">Details</button>
+                <button onClick={onViewDetails} className="w-full px-3 py-2 text-blue-600 font-medium text-xs border border-blue-600 rounded hover:bg-blue-50">View More</button>
               )}
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowUnitSelector(true);
-                }} 
-                className="flex-1 bg-blue-600 text-white px-3 py-2 rounded font-medium text-xs hover:bg-blue-700"
-              >
-                Select a Unit
-              </button>
             </div>
 
             {/* Mobile Pricing Summary */}
-            {units && units.length > 0 && (
-              <div className="flex gap-2 font-serif items-center lg:hidden mt-3 p-2 bg-gray-50 rounded text-xs border border-gray-100">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#1642F0" viewBox="0 0 256 256" className="flex-shrink-0">
-                  <path d="M223.68,66.15,135.68,18a15.88,15.88,0,0,0-15.36,0l-88,48.17a16,16,0,0,0-8.32,14v95.64a16,16,0,0,0,8.32,14l88,48.17a15.88,15.88,0,0,0,15.36,0l88-48.17a16,16,0,0,0,8.32-14V80.18A16,16,0,0,0,223.68,66.15ZM128,120,47.65,76,128,32l80.35,44Zm8,99.64V133.83l80-43.78v85.76Z"></path>
-                </svg>
-                <span className="text-gray-700">Starting at: {units.slice(0, 3).map(u => `${u.size.split(' ')[0]} ₦${u.currentPrice}`).join(' • ')}</span>
+            {displayUnits.length > 0 && (
+              <div className="space-y-2 lg:hidden mt-3">
+                {displayUnits.slice(0, 2).map((unit) => {
+                  const unitLabel = 'size' in unit ? unit.size : unit.name;
+                  const unitUnavailable = typeof unit.availableCount === 'number' && unit.availableCount < 1;
+
+                  return (
+                    <div
+                      key={unit.id}
+                      className="rounded-lg border border-gray-100 bg-gray-50 p-3"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-neutral-900">{unitLabel}</p>
+                          {'dimensionsLabel' in unit && unit.dimensionsLabel ? (
+                            <p className="text-xs text-neutral-500">{unit.dimensionsLabel}</p>
+                          ) : null}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-blue-600">₦{unit.currentPrice}</p>
+                          <p className="text-[11px] text-neutral-400 line-through">₦{unit.originalPrice}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={unitUnavailable}
+                        onClick={() => {
+                          addToCart({
+                            unitId: unit.id,
+                            size: unitLabel,
+                            originalPrice: unit.originalPrice,
+                            currentPrice: unit.currentPrice,
+                            maxQuantity: 'maxQuantity' in unit ? unit.maxQuantity : undefined,
+                            locationName: finalName,
+                            locationAddress: finalAddress,
+                            quantity: 1,
+                          });
+                          onBook({
+                            size: unitLabel,
+                            originalPrice: unit.originalPrice,
+                            currentPrice: unit.currentPrice,
+                          });
+                        }}
+                        className={`mt-3 w-full rounded-md border px-3 py-2 text-xs font-semibold transition-colors ${
+                          unitUnavailable
+                            ? 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
+                            : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+                        }`}
+                      >
+                        {unitUnavailable ? 'Unavailable' : 'Select Unit'}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -169,52 +242,70 @@ function LocationCard({
             )}
 
             {/* Desktop Pricing Table */}
-            {units && units.length > 0 && (
+            {displayUnits.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs font-semibold text-neutral-600 uppercase mb-3">Available Units</p>
                 <div className="space-y-2">
-                  {units.map((unit, index) => (
+                  {displayUnits.map((unit, index) => {
+                    const unitLabel = 'size' in unit ? unit.size : unit.name;
+                    const unitUnavailable = typeof unit.availableCount === 'number' && unit.availableCount < 1;
+
+                    return (
                     <div 
                       key={index + unit.id} 
                       className="flex justify-between items-center p-3 rounded-lg bg-gray-50 border border-transparent hover:border-blue-100 hover:bg-white hover:shadow-sm transition-all duration-200 group"
                     >
                       <div>
-                        <div className="text-sm font-semibold text-neutral-900 group-hover:text-blue-700 transition-colors">{unit.size}</div>
+                        <div className="text-sm font-semibold text-neutral-900 group-hover:text-blue-700 transition-colors">{unitLabel}</div>
+                        {'dimensionsLabel' in unit && unit.dimensionsLabel ? (
+                          <div className="text-xs text-neutral-500 mt-0.5">{unit.dimensionsLabel}</div>
+                        ) : null}
                         <div className="flex items-center gap-2 text-xs mt-0.5">
                            <span className="text-neutral-400 line-through">₦{unit.originalPrice}</span>
                            <strong className="text-blue-600 text-sm">₦{unit.currentPrice}</strong>
                         </div>
                       </div>
-                      <button onClick={() => { openCart(unit, finalName, finalAddress); onBook(unit); }} className="text-blue-600 underline text-xs font-medium hover:text-blue-700">Reserve</button>
+                      <button
+                        onClick={() => {
+                          addToCart({
+                            unitId: unit.id,
+                            size: unitLabel,
+                            originalPrice: unit.originalPrice,
+                            currentPrice: unit.currentPrice,
+                            maxQuantity: 'maxQuantity' in unit ? unit.maxQuantity : undefined,
+                            locationName: finalName,
+                            locationAddress: finalAddress,
+                            quantity: 1,
+                          });
+                          onBook({
+                            size: unitLabel,
+                            originalPrice: unit.originalPrice,
+                            currentPrice: unit.currentPrice,
+                          });
+                        }}
+                        disabled={unitUnavailable}
+                        className={`text-xs font-medium ${
+                          unitUnavailable
+                            ? "cursor-not-allowed text-gray-400"
+                            : "text-blue-600 underline hover:text-blue-700"
+                        }`}
+                      >
+                        {unitUnavailable ? 'Unavailable' : 'Select Unit'}
+                      </button>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex gap-3">
-            <a href={detailsLink} className="flex-1">
-              <button className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded font-semibold uppercase text-sm hover:bg-blue-50 transition-colors">View Details</button>
+          <div>
+            <a href={detailsLink} className="block w-full">
+              <button className="w-full border-2 border-blue-600 text-blue-600 py-3 rounded font-semibold uppercase text-sm hover:bg-blue-50 transition-colors">View More</button>
             </a>
-            <button 
-              onClick={() => setShowUnitSelector(true)} 
-              className="flex-1 bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Book Now
-            </button>
           </div>
         </div>
       </div>
-
-      <UnitSelectorModal
-        isOpen={showUnitSelector}
-        onClose={() => setShowUnitSelector(false)}
-        units={units}
-        locationName={finalName}
-        locationAddress={finalAddress}
-        onBook={onBook}
-      />
     </Card>
   );
 }

@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
 import { Site } from '@/lib/types/local';
 import SiteMapViewer from '@/components/locations/SiteMapViewer';
+import { useStorageCart } from '@/contexts/StorageCartContext';
+import { getLocationDetails } from '@/lib/utils/sampleLocations';
 
 interface SiteDetailsProps {
     site: Site;
@@ -22,6 +24,7 @@ const getStr = (obj: unknown) => {
 };
 
 export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
+    const { addToCart, cartItems } = useStorageCart();
     const title = site.name || site.code;
 
     const addressStr = React.useMemo(() => {
@@ -32,6 +35,18 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
     }, [site.address]);
 
     const unitTypes = site.unitTypes || [];
+    const inferredCity = React.useMemo(() => {
+        if (site.address?.city) return site.address.city;
+
+        const parts = addressStr
+            .split(',')
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        return parts.length > 1 ? parts[parts.length - 1] : title;
+    }, [addressStr, site.address?.city, title]);
+
+    const locationContent = React.useMemo(() => getLocationDetails(inferredCity), [inferredCity]);
 
     const displayImage = React.useMemo(() => {
         if (!site.image) return '/images/hero1.jpg'; // Default fallback
@@ -79,20 +94,15 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                             </div>
                         </div>
 
-                        {/* Description (if any) */}
-                        {/*
-                        {site.subtitle && (
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                    <span className="w-1 h-6 bg-blue-600 rounded-full"></span>
-                                    About this Location
-                                </h2>
-                                <p className="text-gray-600 leading-relaxed">
-                                    {getStr(site.subtitle)}
-                                </p>
-                            </div>
-                        )}
-                        */}
+                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <span className="w-1 h-6 bg-blue-600 rounded-full"></span>
+                                About this Location
+                            </h2>
+                            <p className="text-gray-600 leading-relaxed">
+                                {site.about || locationContent.about}
+                            </p>
+                        </div>
                     </div>
 
                     {/* Right Column: Key Info & Actions */}
@@ -147,9 +157,6 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                             </div>
 
                             <div className="mt-8 pt-6 border-t border-gray-100">
-                                <button className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 active:scale-[0.98]">
-                                    Book a Unit Now
-                                </button>
                                 <div className="flex justify-center gap-4 mt-4 text-xs text-gray-400">
                                     <span className="flex items-center gap-1"><Check className="w-3 h-3" /> No hidden fees</span>
                                     <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Instant access</span>
@@ -174,7 +181,13 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                     {unitTypes.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                             {unitTypes.map((unit) => {
+                                const availableUnits = (unit.units || []).filter((entry) => entry.status === 'available');
+                                const nextAvailableUnit = availableUnits[0];
+                                const effectiveUnitId = nextAvailableUnit?.id || unit.id;
                                 const isLowStock = unit.availableCount && unit.availableCount < 3;
+                                const cartItem = cartItems.find((item) => item.unitId === effectiveUnitId);
+                                const selectedQuantity = cartItem?.quantity || 0;
+                                const hasAvailableSlots = unit.availableCount > selectedQuantity;
                                 return (
                                     <div key={unit.id} className="group bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl hover:border-blue-400 transition-all duration-300 flex flex-col relative">
                                         {/* Header */}
@@ -192,12 +205,17 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{getStr(unit.name)}</h3>
                                             <div className="flex flex-col gap-2 mt-2">
                                                 <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                                                    <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                    <span>{unit.dimensions.width} x {unit.dimensions.depth} {unit.dimensions.unit}</span>
                                                 </div>
                                                     <div className="flex flex-wrap gap-1">
                                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                                                                 {unit.code || 'Storage Unit'}
                                                             </span>
+                                                            {nextAvailableUnit ? (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white text-gray-700 border border-gray-200">
+                                                                    Next unit: {nextAvailableUnit.unitNumber}
+                                                                </span>
+                                                            ) : null}
                                                     </div>
                                             </div>
                                         </div>
@@ -230,11 +248,38 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                             </div>
 
                                             {/* CTA */}
-                                            <button className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95 active:translate-y-0">
-                                                Reserve Now
+                                            <button
+                                                onClick={() => {
+                                                    if (!hasAvailableSlots) {
+                                                        return;
+                                                    }
+
+                                                    addToCart({
+                                                        unitId: effectiveUnitId,
+                                                        size: getStr(unit.name),
+                                                        originalPrice: String(unit.price),
+                                                        currentPrice: String(unit.price),
+                                                        maxQuantity: unit.availableCount,
+                                                        locationName: site.name,
+                                                        locationAddress: addressStr,
+                                                        quantity: 1,
+                                                    });
+                                                }}
+                                                disabled={!hasAvailableSlots}
+                                                className={`w-full py-4 font-bold rounded-xl transition-all duration-200 ${
+                                                    hasAvailableSlots
+                                                        ? "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:-translate-y-0.5 active:scale-95 active:translate-y-0"
+                                                        : "bg-blue-600 text-white opacity-45 cursor-not-allowed"
+                                                }`}
+                                            >
+                                                Select Unit
                                             </button>
                                             <p className="text-center text-[10px] text-gray-400 mt-3 uppercase tracking-wide font-medium">
-                                                No payment needed today
+                                                {!hasAvailableSlots
+                                                    ? "No available slots"
+                                                    : selectedQuantity > 0
+                                                        ? `${unit.availableCount - selectedQuantity} left for this location`
+                                                        : "No payment needed today"}
                                             </p>
                                         </div>
                                     </div>
@@ -256,7 +301,6 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                     )}
                 </div>
 
-                {/* Sitemap Section */}
                 <div className="mt-20">
                     <SiteMapViewer svgContent={typeof sitemap?.svg === 'string' ? sitemap.svg : undefined} />
                 </div>

@@ -54,8 +54,7 @@ export async function POST(req: Request) {
             if (booking) {
                 booking.amountPaid = Number(booking.amountPaid) + Number(payment.amount);
 
-                // iFitness activation logic:
-                // Needs Joining Fee + First Month to be Active
+                // A booking becomes active once the joining fee and first month are covered.
                 const activationThreshold = Number(booking.registrationFee) + Number(booking.monthlyRate);
 
                 if (booking.amountPaid >= activationThreshold) {

@@ -1,6 +1,6 @@
 /**
  * Local types for storage application
- * These replace the storeganise-specific types
+ * Shared frontend API types for the current relational data model
  */
 import { UserRole } from '@/lib/types/roles';
 
@@ -30,12 +30,31 @@ export interface UnitType {
   description?: string;
   availableCount: number;
   siteId: string;
+  units?: StorageUnit[];
+}
+
+export type StorageUnitStatus =
+  | 'available'
+  | 'reserved'
+  | 'occupied'
+  | 'blocked'
+  | 'maintenance';
+
+export interface StorageUnit {
+  id: string;
+  unitNumber: string;
+  status: StorageUnitStatus;
+  label?: string;
+  note?: string;
+  unitTypeId: string;
+  siteId: string;
 }
 
 export interface Site {
   id: string;
   name: string;
   code: string;
+  about?: string;
   image?: string;
   address: {
     street?: string;
@@ -53,6 +72,7 @@ export interface Site {
     lng: number;
   };
   unitTypes?: UnitType[];
+  units?: StorageUnit[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -72,12 +92,23 @@ export interface ApiUnitType {
   };
   description?: string;
   availableCount: number;
+  units?: ApiStorageUnit[];
+}
+
+export interface ApiStorageUnit {
+  id: string;
+  unitNumber: string;
+  status: StorageUnitStatus;
+  label?: string;
+  note?: string;
+  unitTypeId: string;
 }
 
 export interface ApiSite {
   id: string;
   name: string;
   code: string;
+  about?: string;
   image: string;
   address: string;
   contact: {
@@ -89,6 +120,7 @@ export interface ApiSite {
     lng: number;
   };
   unitTypes: ApiUnitType[];
+  units?: ApiStorageUnit[];
 }
 
 export interface ApiSitesResponse {

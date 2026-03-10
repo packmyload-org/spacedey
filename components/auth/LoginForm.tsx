@@ -59,12 +59,7 @@ export default function LoginForm() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Login with your email
           </h1>
-          <p className="text-gray-600">
-            Don&apos;t have an Account? 
-            <Link href="/auth/signup" className="text-[#1642F0] font-semibold hover:underline">
-              Create Account
-            </Link>
-          </p>
+          <p className="text-gray-600">Continue to reserve storage or manage your account.</p>
         </div>
 
         <hr className="border-gray-200 mb-6" />

@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react';
 import LocationCard from '@/components/home/LocationCard';
 import { ApiSite } from '@/lib/types/local';
 import { useMemo } from 'react';
+import { extractCityFromAddress, formatUnitDimensions } from '@/lib/utils/siteLocations';
 
 interface CityListProps {
   searchQuery: string;
@@ -15,23 +16,25 @@ interface CityListProps {
 // Helper to map site to LocationCard props
 // Moved outside component to avoid recreation on re-renders
 const getSiteProps = (site: ApiSite) => {
-  // Map unit types to pricing format
-  const pricing = (site.unitTypes || [])
-    .slice(0, 3)
-    .map((ut) => ({
-      size: ut.name, // e.g. "10x10 ft"
-      originalPrice: (
-        ut.price.originalAmount || ut.price.amount * 1.2
-      ).toFixed(0),
-      currentPrice: ut.price.amount.toFixed(0),
-    }));
-
   return {
     name: site.name,
     address: site.address,
     hours: '8am - 6pm',
     image: site.image,
-    pricing,
+    units: (site.unitTypes || []).slice(0, 3).map((ut) => {
+      const nextAvailableUnit = ut.units?.find((unit) => unit.status === 'available');
+
+      return {
+      id: nextAvailableUnit?.id || ut.id,
+      name: ut.name,
+      dimensionsLabel: formatUnitDimensions(ut.dimensions),
+      originalPrice: (
+        ut.price.originalAmount || ut.price.amount * 1.2
+      ).toFixed(0),
+      currentPrice: ut.price.amount.toFixed(0),
+      maxQuantity: ut.availableCount,
+      availableCount: ut.availableCount,
+    }}),
     detailsLink: `/locations/${site.id}`,
   };
 };
@@ -45,9 +48,7 @@ export default function CityList({
   const citiesData = useMemo(() => {
     const map = new Map<string, ApiSite[]>();
     sites.forEach((site) => {
-      // Extract city from address: "Street, City, State" -> "City"
-      const parts = site.address.split(',').map(p => p.trim());
-      const city = parts.length >= 2 ? parts[parts.length - 2] : (parts[0] || 'Unknown');
+      const city = extractCityFromAddress(site.address) || 'Unknown';
 
       if (!map.has(city)) {
         map.set(city, []);

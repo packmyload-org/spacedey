@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import FadeIn from "@/components/ui/FadeIn";
+import { getAvailableCities } from "@/lib/utils/cities";
+import { getLocationDetails } from "@/lib/utils/sampleLocations";
 
 type Location = {
   city: string;
@@ -13,6 +15,13 @@ type Location = {
 };
 
 const DEFAULT_IMAGE = "/images/Lagos.jpg";
+
+function buildKnownLocations(): Location[] {
+  return getAvailableCities().map(({ name }) => ({
+    city: name,
+    image: getLocationDetails(name).image || DEFAULT_IMAGE,
+  }));
+}
 
 export default function FeatureList() {
   const router = useRouter();
@@ -31,11 +40,17 @@ export default function FeatureList() {
         const data = await res.json();
         if (data.ok && data.sites && data.sites.length > 0) {
           const uniqueCities = new Map<string, string>();
-          data.sites.forEach((site: any) => {
+          data.sites.forEach((site: { address: string; image?: string }) => {
             const parts = site.address.split(',').map((p: string) => p.trim());
             const city = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
             if (!uniqueCities.has(city)) {
-              uniqueCities.set(city, site.image || DEFAULT_IMAGE);
+              uniqueCities.set(city, site.image || getLocationDetails(city).image || DEFAULT_IMAGE);
+            }
+          });
+
+          buildKnownLocations().forEach(({ city, image }) => {
+            if (!uniqueCities.has(city)) {
+              uniqueCities.set(city, image);
             }
           });
 
@@ -43,20 +58,14 @@ export default function FeatureList() {
           setLocations(locArray);
           setCurrentIndex(Math.min(3, locArray.length)); // Start at first real slide
         } else {
-          const fallback = [
-            { city: "Lagos", image: "/images/Lagos.jpg" },
-            { city: "Abuja", image: "/images/Abuja.jpeg" },
-            { city: "Kano", image: "/images/Kano.png" },
-          ];
+          const fallback = buildKnownLocations();
           setLocations(fallback);
-          setCurrentIndex(3);
+          setCurrentIndex(Math.min(3, fallback.length));
         }
-      } catch (err) {
-        setLocations([
-          { city: "Lagos", image: "/images/Lagos.jpg" },
-          { city: "Abuja", image: "/images/Abuja.jpeg" },
-        ]);
-        setCurrentIndex(2);
+      } catch {
+        const fallback = buildKnownLocations();
+        setLocations(fallback);
+        setCurrentIndex(Math.min(3, fallback.length));
       } finally {
         setLoading(false);
       }

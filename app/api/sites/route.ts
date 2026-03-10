@@ -2,45 +2,73 @@
 import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
-import UnitType from '@/lib/db/entities/UnitType';
 import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
+import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 
 export async function GET() {
   try {
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(Site);
-    const sites = await repo.find({ relations: ['unitTypes'] });
-    const apiSites: ApiSite[] = sites.map((site) => ({
-      id: site.id.toString(),
-      name: site.name,
-      code: site.code,
-      image: site.image || '',
-      address: site.address,
-      contact: {
-        phone: site.contactPhone,
-        email: site.contactEmail,
-      },
-      coordinates: {
-        lat: site.lat,
-        lng: site.lng,
-      },
-      unitTypes: (site.unitTypes || []).map((ut: any) => ({
-        id: ut.id,
-        name: ut.name,
-        dimensions: {
-          width: ut.width,
-          depth: ut.depth,
-          unit: ut.unit,
+    const sites = await repo.find({ relations: ['unitTypes', 'units', 'units.unitType'] });
+    const apiSites: ApiSite[] = sites.map((site) => {
+      const siteUnits = site.units || [];
+
+      return {
+        id: site.id.toString(),
+        name: site.name,
+        code: site.code,
+        about: site.about || '',
+        image: site.image || '',
+        address: site.address,
+        contact: {
+          phone: site.contactPhone || '',
+          email: site.contactEmail || '',
         },
-        price: {
-          amount: ut.priceAmount,
-          currency: ut.priceCurrency,
-          originalAmount: ut.priceOriginalAmount,
+        coordinates: {
+          lat: site.lat ?? site.latitude ?? 0,
+          lng: site.lng ?? site.longitude ?? 0,
         },
-        description: ut.description,
-        availableCount: ut.availableCount,
-      })),
-    }));
+        unitTypes: (site.unitTypes || []).map((ut) => {
+          const unitsForType = siteUnits.filter((unit) => unit.unitType?.id === ut.id);
+          const availableCount = unitsForType.length > 0
+            ? unitsForType.filter((unit) => unit.status === StorageUnitStatus.AVAILABLE).length
+            : ut.availableCount;
+
+          return {
+            id: ut.id,
+            name: ut.name,
+            dimensions: {
+              width: ut.width,
+              depth: ut.depth,
+              unit: ut.unit,
+            },
+            price: {
+              amount: ut.priceAmount,
+              currency: ut.priceCurrency,
+              originalAmount: ut.priceOriginalAmount,
+            },
+            description: ut.description,
+            availableCount,
+            units: unitsForType.map((unit) => ({
+              id: unit.id,
+              unitNumber: unit.unitNumber,
+              status: unit.status,
+              label: unit.label || undefined,
+              note: unit.note || undefined,
+              unitTypeId: ut.id,
+            })),
+          };
+        }),
+        units: siteUnits.map((unit) => ({
+          id: unit.id,
+          unitNumber: unit.unitNumber,
+          status: unit.status,
+          label: unit.label || undefined,
+          note: unit.note || undefined,
+          unitTypeId: unit.unitType?.id || '',
+        })),
+      };
+    });
 
     const response: ApiSitesResponse & { ok: true } = { ok: true, sites: apiSites };
     return NextResponse.json(response);

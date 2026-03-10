@@ -4,10 +4,36 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSearchStore } from "@/lib/store/useSearchStore";
-import { ChevronLeft, Info, CheckCircle2, CreditCard, Wallet, Loader2, PartyPopper } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { ChevronLeft, Info, CheckCircle2, Loader2, PartyPopper, X } from "lucide-react";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
+import type { ApiSite, ApiStorageUnit, ApiUnitType } from "@/lib/types/local";
+
+interface CheckoutSite extends ApiSite {
+    registrationFee?: number;
+    annualDues?: number;
+}
+
+interface CheckoutUnit extends ApiUnitType {
+    priceAmount?: number;
+}
+
+interface CheckoutSitesResponse {
+    ok?: boolean;
+    sites?: CheckoutSite[];
+}
+
+const paymentProviders = [
+    {
+        value: PaymentProvider.PAYSTACK,
+        label: "Paystack",
+        description: "Card, bank transfer, USSD, and other local payment methods.",
+    },
+    {
+        value: PaymentProvider.FLUTTERWAVE,
+        label: "Flutterwave",
+        description: "Card and bank payments with Flutterwave checkout.",
+    },
+] as const;
 
 export default function CheckoutPage() {
     const searchParams = useSearchParams();
@@ -16,34 +42,43 @@ export default function CheckoutPage() {
 
     const siteId = searchParams.get("siteId");
     const unitTypeId = searchParams.get("unitTypeId");
+    const storageUnitId = searchParams.get("storageUnitId");
 
-    const [selectedSite, setSelectedSite] = useState<any>(null);
-    const [selectedUnit, setSelectedUnit] = useState<any>(null);
+    const [selectedSite, setSelectedSite] = useState<CheckoutSite | null>(null);
+    const [selectedUnit, setSelectedUnit] = useState<CheckoutUnit | null>(null);
+    const [selectedStorageUnit, setSelectedStorageUnit] = useState<ApiStorageUnit | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
 
-    // iFitness Model State
+    // Booking payment state
     const [paymentMode, setPaymentMode] = useState<'full' | 'incremental'>('full');
     const [customAmount, setCustomAmount] = useState<string>("");
-    const [selectedProvider, setSelectedProvider] = useState<PaymentProvider>(PaymentProvider.PAYSTACK);
+    const [selectedProvider, setSelectedProvider] = useState<PaymentProvider | null>(null);
 
     useEffect(() => {
         async function loadData() {
             try {
-                let site = sites.find(s => s.id === siteId);
+                let site = sites.find((entry) => entry.id === siteId) as CheckoutSite | undefined;
                 if (!site && siteId) {
                     const res = await fetch(`/api/sites`);
-                    const data = await res.json();
-                    site = data.sites?.find((s: any) => s.id === siteId);
+                    const data: CheckoutSitesResponse = await res.json();
+                    site = data.sites?.find((entry) => entry.id === siteId);
                 }
 
                 if (site) {
                     setSelectedSite(site);
-                    const unit = site.unitTypes?.find((u: any) => u.id === unitTypeId);
+                    const unit = site.unitTypes?.find((entry) => entry.id === unitTypeId) ?? null;
                     setSelectedUnit(unit);
+                    const storageUnit = unit?.units?.find((entry) => entry.id === storageUnitId)
+                        ?? unit?.units?.find((entry) => entry.status === 'available')
+                        ?? null;
+                    setSelectedStorageUnit(storageUnit);
+                } else {
+                    setError("Storage location not found.");
                 }
-            } catch (err) {
+            } catch (err: unknown) {
                 console.error("Load checkout data error", err);
                 setError("Failed to load checkout details.");
             } finally {
@@ -51,10 +86,10 @@ export default function CheckoutPage() {
             }
         }
         loadData();
-    }, [siteId, unitTypeId, sites]);
+    }, [siteId, storageUnitId, unitTypeId, sites]);
 
     const registrationFee = Number(selectedSite?.registrationFee || 30000);
-    const monthlyRate = Number(selectedUnit?.priceAmount || 0);
+    const monthlyRate = Number(selectedUnit?.priceAmount ?? selectedUnit?.price.amount ?? 0);
     const annualDues = Number(selectedSite?.annualDues || 35000);
 
     // 5% Discount on joining fee for online payment
@@ -64,7 +99,12 @@ export default function CheckoutPage() {
     const totalDue = discountedReg + monthlyRate + annualDues;
     const finalAmount = paymentMode === 'full' ? totalDue : (Number(customAmount) || 5000);
 
-    const handleCheckout = async () => {
+    const handleCheckout = async (provider: PaymentProvider) => {
+        if (!selectedSite || !selectedUnit || !siteId || !unitTypeId) {
+            setError("Checkout details are incomplete. Please choose a site and unit again.");
+            return;
+        }
+
         if (paymentMode === 'incremental' && (Number(customAmount) < 5000)) {
             setError("Minimum incremental payment is ₦5,000");
             return;
@@ -80,6 +120,7 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     siteId,
                     unitTypeId,
+                    storageUnitId: selectedStorageUnit?.id,
                     startDate: new Date().toISOString()
                 })
             });
@@ -97,7 +138,7 @@ export default function CheckoutPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     bookingId: bookingData.bookingId,
-                    provider: selectedProvider,
+                    provider,
                     amount: finalAmount
                 })
             });
@@ -109,10 +150,25 @@ export default function CheckoutPage() {
                 setError(payData.message || "Failed to initialize payment");
                 setSubmitting(false);
             }
-        } catch (err) {
+        } catch {
             setError("An unexpected error occurred.");
             setSubmitting(false);
         }
+    };
+
+    const handleBeginCheckout = () => {
+        if (!selectedSite || !selectedUnit) {
+            setError("Select a storage unit before continuing.");
+            return;
+        }
+
+        if (paymentMode === 'incremental' && Number(customAmount) < 5000) {
+            setError("Minimum incremental payment is ₦5,000");
+            return;
+        }
+
+        setError(null);
+        setIsProviderModalOpen(true);
     };
 
     if (loading) {
@@ -136,12 +192,21 @@ export default function CheckoutPage() {
                     Back
                 </button>
 
+                {!selectedSite || !selectedUnit ? (
+                    <div className="rounded-[2rem] border border-red-100 bg-white p-10 text-center shadow-xl shadow-blue-900/5">
+                        <h1 className="text-3xl font-black text-blue-900">Checkout unavailable</h1>
+                        <p className="mt-3 text-gray-500">We couldn&apos;t find the selected storage unit. Please go back and choose a unit again.</p>
+                    </div>
+                ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     <div className="lg:col-span-8 space-y-12">
-                        {/* Membership Header */}
+                        {/* Booking Header */}
                         <div>
-                            <h1 className="text-4xl font-black text-blue-900 mb-4">Membership Checkout</h1>
-                            <p className="text-gray-500 max-w-xl text-lg">Secure your unit at {selectedSite.name}. Pay full now or start incrementally.</p>
+                            <h1 className="text-4xl font-black text-blue-900 mb-4">Booking Checkout</h1>
+                           <p className="text-gray-500 max-w-xl text-lg">Secure your unit at {selectedSite.name}. Pay full now or start incrementally.</p>
+                            {selectedStorageUnit?.unitNumber ? (
+                                <p className="mt-2 text-sm font-semibold text-blue-600">Assigned unit: {selectedStorageUnit.unitNumber}</p>
+                            ) : null}
                         </div>
 
                         {/* Breakdown Section */}
@@ -262,35 +327,29 @@ export default function CheckoutPage() {
                             </div>
                             <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-10">Nigerian Naira (NGN)</p>
 
-                            <div className="space-y-3 mb-10">
-                                <button
-                                    onClick={() => setSelectedProvider(PaymentProvider.PAYSTACK)}
-                                    className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${selectedProvider === PaymentProvider.PAYSTACK ? 'border-blue-600 bg-blue-50/50' : 'border-gray-50 hover:bg-gray-50'}`}
-                                >
-                                    <span className="font-black text-blue-900">Paystack</span>
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedProvider === PaymentProvider.PAYSTACK ? 'border-blue-600' : 'border-gray-200'}`}>
-                                        {selectedProvider === PaymentProvider.PAYSTACK && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
-                                    </div>
-                                </button>
-                                <button
-                                    onClick={() => setSelectedProvider(PaymentProvider.FLUTTERWAVE)}
-                                    className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${selectedProvider === PaymentProvider.FLUTTERWAVE ? 'border-blue-600 bg-blue-50/50' : 'border-gray-50 hover:bg-gray-50'}`}
-                                >
-                                    <span className="font-black text-blue-900">Flutterwave</span>
-                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedProvider === PaymentProvider.FLUTTERWAVE ? 'border-blue-600' : 'border-gray-200'}`}>
-                                        {selectedProvider === PaymentProvider.FLUTTERWAVE && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
-                                    </div>
-                                </button>
+                            <div className="mb-10 rounded-[2rem] border border-blue-100 bg-blue-50/50 p-6 text-left">
+                                <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-500">Payment service</p>
+                                <h2 className="mt-3 text-xl font-black text-blue-900">
+                                    Choose your payment provider at checkout
+                                </h2>
+                                <p className="mt-2 text-sm leading-6 text-gray-500">
+                                    When you continue, you&apos;ll pick either Paystack or Flutterwave before we initialize the payment.
+                                </p>
+                                {selectedProvider && (
+                                    <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-blue-700">
+                                        Last selected: {selectedProvider}
+                                    </p>
+                                )}
                             </div>
 
                             {error && <p className="text-red-500 text-xs font-bold mb-6 bg-red-50 py-3 px-4 rounded-xl">{error}</p>}
 
                             <button
-                                onClick={handleCheckout}
+                                onClick={handleBeginCheckout}
                                 disabled={submitting}
                                 className="w-full bg-[#1642F0] text-white py-6 rounded-2xl font-black text-lg shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                             >
-                                {submitting ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "SECURE MEMBERSHIP"}
+                                {submitting ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "CONTINUE TO CHECKOUT"}
                             </button>
 
                             <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest">
@@ -300,7 +359,84 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 </div>
+                )}
             </main>
+
+            {isProviderModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                    <div className="w-full max-w-2xl rounded-[2rem] bg-white p-8 shadow-2xl shadow-blue-900/20">
+                        <div className="flex items-start justify-between gap-6">
+                            <div>
+                                <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-500">Select payment service</p>
+                                <h2 className="mt-3 text-3xl font-black text-blue-900">Choose how you want to pay</h2>
+                                <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
+                                    We&apos;ll create your booking first, then redirect you to your selected payment provider.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsProviderModalOpen(false)}
+                                className="rounded-full border border-gray-100 p-2 text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="mt-8 grid gap-4 md:grid-cols-2">
+                            {paymentProviders.map((provider) => {
+                                const isActive = selectedProvider === provider.value;
+
+                                return (
+                                    <button
+                                        key={provider.value}
+                                        type="button"
+                                        onClick={() => setSelectedProvider(provider.value)}
+                                        className={`rounded-[2rem] border-2 p-6 text-left transition-all ${
+                                            isActive
+                                                ? "border-blue-600 bg-blue-50"
+                                                : "border-gray-100 bg-white hover:border-blue-200 hover:bg-blue-50/40"
+                                        }`}
+                                    >
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <p className="text-xl font-black text-blue-900">{provider.label}</p>
+                                                <p className="mt-2 text-sm leading-6 text-gray-500">{provider.description}</p>
+                                            </div>
+                                            <div className={`mt-1 flex h-6 w-6 items-center justify-center rounded-full border-2 ${isActive ? "border-blue-600" : "border-gray-200"}`}>
+                                                {isActive && <div className="h-3 w-3 rounded-full bg-blue-600" />}
+                                            </div>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setIsProviderModalOpen(false)}
+                                className="rounded-full border border-gray-200 px-6 py-3 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!selectedProvider || submitting}
+                                onClick={() => {
+                                    if (!selectedProvider) {
+                                        return;
+                                    }
+                                    setIsProviderModalOpen(false);
+                                    void handleCheckout(selectedProvider);
+                                }}
+                                className="rounded-full bg-[#1642F0] px-6 py-3 text-sm font-black text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {submitting ? "Starting payment..." : "Continue with selected provider"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

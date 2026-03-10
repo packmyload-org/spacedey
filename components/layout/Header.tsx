@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useEffectEvent, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useStorageCart } from "@/contexts/StorageCartContext";
 import {
   Search,
   MapPin,
@@ -30,6 +31,7 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, user, logout, isAdmin } = useAuthStore();
+  const { cartCount, openCart } = useStorageCart();
 
   // Build user initials
   const userInitials = user
@@ -47,7 +49,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const navLinkClass = "flex items-center border-b-2 border-transparent hover:text-gray-300 focus:text-gray-300 hover:border-gray-300 focus:border-gray-300 py-1 focus:outline-none focus:ring transition-colors duration-200";
+  const navLinkClass = "flex items-center py-1 text-white border-b-2 border-transparent hover:text-gray-300 focus:text-gray-300 hover:border-gray-300 focus:border-gray-300 focus:outline-none focus:ring transition-colors duration-200";
 
   const handleReserveNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -58,10 +60,20 @@ export default function Header() {
     }
   };
 
-  useEffect(() => {
+  const closeMenus = useEffectEvent(() => {
     setIsLocationsModalOpen(false);
     setIsProfileOpen(false);
+  });
+
+  useEffect(() => {
+    closeMenus();
   }, [pathname]);
+
+  const profileLinks = [
+    ...(isAdmin() ? [{ href: "/admin", label: "Admin Dashboard" }] : []),
+    { href: "/bookings", label: "My Bookings" },
+    { href: "/invoices", label: "My Invoices" },
+  ];
 
   return (
     <header className="fixed w-full top-0 z-40">
@@ -95,7 +107,7 @@ export default function Header() {
             </button>
           </div>
 
-          <nav className="space-x-10 hidden lg:flex mx-6 font-bold">
+          <nav className="space-x-10 hidden lg:flex mx-6 font-bold text-white">
             <Link href="/search" className={navLinkClass}>
               Search
             </Link>
@@ -133,16 +145,21 @@ export default function Header() {
               </button>
             </div>
 
-            {/* User Avatar / Sign In */}
+            {/* User Avatar */}
             {isAuthenticated && user ? (
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen((v) => !v)}
-                  className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 border-2 border-white/40 flex items-center justify-center text-white font-bold text-sm transition-all duration-200 hover:scale-105 cursor-pointer"
+                  className="relative w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 border-2 border-white/40 flex items-center justify-center text-white font-bold text-sm transition-all duration-200 hover:scale-105 cursor-pointer"
                   aria-label="User menu"
                   id="user-avatar-btn"
                 >
                   {userInitials}
+                  {!isProfileOpen && cartCount > 1 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D96541] px-1 text-[10px] font-black text-white">
+                      {cartCount}
+                    </span>
+                  )}
                 </button>
 
                 {/* Dropdown */}
@@ -154,6 +171,21 @@ export default function Header() {
                       </p>
                       <p className="text-xs text-neutral-500 truncate">{user.email}</p>
                     </div>
+                    <button
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        openCart();
+                      }}
+                      className="flex items-center justify-between w-full px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-2">
+                        <ShoppingBag className="w-4 h-4" />
+                        Storage Cart
+                      </span>
+                      <span className="rounded-full bg-[#F0F4FF] px-2 py-0.5 text-[10px] font-black text-[#1642F0]">
+                        {cartCount}
+                      </span>
+                    </button>
                     {isAdmin() && (
                       <Link
                         href="/admin"
@@ -194,14 +226,7 @@ export default function Header() {
                   </div>
                 )}
               </div>
-            ) : (
-              <Link
-                href="/auth/signin"
-                className="font-bold inline-flex text-center items-center bg-white/10 hover:bg-white/20 text-white rounded-full text-sm py-2.5 px-5 border border-white/20 transition-all duration-200"
-              >
-                Sign In
-              </Link>
-            )}
+            ) : null}
           </div>
 
 
@@ -272,13 +297,46 @@ export default function Header() {
 
           {/* User Info (Mobile) */}
           {isAuthenticated && user && (
-            <div className="flex items-center gap-3 mb-6 p-4 rounded-2xl bg-[#F0F4FF] border border-[#DCE4FF]">
-              <div className="w-12 h-12 rounded-full bg-[#1642F0] flex items-center justify-center text-white font-bold text-base flex-shrink-0">
-                {userInitials}
+            <div className="mb-6 rounded-2xl bg-[#F0F4FF] border border-[#DCE4FF] p-4">
+              <div className="flex items-center gap-3">
+                <div className="relative flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full bg-[#1642F0] flex items-center justify-center text-white font-bold text-base">
+                    {userInitials}
+                  </div>
+                  {cartCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D96541] px-1 text-[10px] font-black text-white">
+                      {cartCount}
+                    </span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-neutral-900 truncate">{user.firstName} {user.lastName}</p>
+                  <p className="text-sm text-neutral-500 truncate">{user.email}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-neutral-900 truncate">{user.firstName} {user.lastName}</p>
-                <p className="text-sm text-neutral-500 truncate">{user.email}</p>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  openCart();
+                }}
+                className="mt-4 flex w-full items-center justify-between rounded-xl border border-[#DCE4FF] bg-white px-4 py-3 text-sm font-semibold text-[#1642F0] transition-colors hover:bg-[#1642F0] hover:text-white"
+              >
+                <span>Storage Cart</span>
+                <span className="rounded-full bg-[#F0F4FF] px-2 py-0.5 text-xs font-black text-[#1642F0]">
+                  {cartCount}
+                </span>
+              </button>
+              <div className="mt-4 grid gap-2">
+                {profileLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl border border-[#DCE4FF] bg-white px-4 py-3 text-sm font-semibold text-[#1642F0] transition-colors hover:bg-[#1642F0] hover:text-white"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </div>
             </div>
           )}
@@ -314,15 +372,7 @@ export default function Header() {
               >
                 Sign Out
               </button>
-            ) : (
-              <Link
-                href="/auth/signin"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl bg-neutral-100 text-neutral-900 font-bold border border-neutral-200 hover:bg-neutral-200 transition-all"
-              >
-                Sign In
-              </Link>
-            )}
+            ) : null}
 
             {/* Social Links */}
             <div className="flex justify-center gap-6 pt-8 pb-4">
