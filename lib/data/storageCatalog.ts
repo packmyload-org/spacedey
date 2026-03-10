@@ -1,4 +1,5 @@
 import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
+import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
 
 export interface SeedUnitType {
   name: string;
@@ -49,7 +50,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 3,
     depth: 5,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 5004,
+    priceAmount: calculateMonthlyStorageRate({ width: 3, depth: 5, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 7200,
     description: SMALL_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,
@@ -59,7 +60,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 5,
     depth: 5,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 5004,
+    priceAmount: calculateMonthlyStorageRate({ width: 5, depth: 5, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 7200,
     description: SMALL_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,
@@ -69,7 +70,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 5,
     depth: 10,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 5004,
+    priceAmount: calculateMonthlyStorageRate({ width: 5, depth: 10, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 7200,
     description: SMALL_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,
@@ -79,7 +80,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 6,
     depth: 10,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 4706,
+    priceAmount: calculateMonthlyStorageRate({ width: 6, depth: 10, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 6800,
     description: MEDIUM_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,
@@ -89,7 +90,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 10,
     depth: 10,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 4706,
+    priceAmount: calculateMonthlyStorageRate({ width: 10, depth: 10, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 6800,
     description: MEDIUM_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,
@@ -99,7 +100,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 10,
     depth: 15,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 17001,
+    priceAmount: calculateMonthlyStorageRate({ width: 10, depth: 15, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 24300,
     description: LARGE_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,
@@ -109,7 +110,7 @@ export const STORAGE_UNIT_TYPES: SeedUnitType[] = [
     width: 10,
     depth: 20,
     unit: DEFAULT_MEASURING_UNIT,
-    priceAmount: 17001,
+    priceAmount: calculateMonthlyStorageRate({ width: 10, depth: 20, unit: DEFAULT_MEASURING_UNIT }),
     priceOriginalAmount: 24300,
     description: LARGE_DESCRIPTION,
     availableCount: DEFAULT_AVAILABLE_COUNT,

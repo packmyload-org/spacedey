@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
 import { Site } from '@/lib/types/local';
 import SiteMapViewer from '@/components/locations/SiteMapViewer';
+import ProductsSpacedeyAddOns from '@/components/products/ProductsStufAddOns';
 import { useStorageCart } from '@/contexts/StorageCartContext';
 import { getLocationDetails } from '@/lib/utils/sampleLocations';
 
@@ -24,7 +25,7 @@ const getStr = (obj: unknown) => {
 };
 
 export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
-    const { addToCart, cartItems } = useStorageCart();
+    const { addToCart, cartItems, openCart } = useStorageCart();
     const title = site.name || site.code;
 
     const addressStr = React.useMemo(() => {
@@ -53,6 +54,26 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
         if (site.image.startsWith('http') || site.image.startsWith('/')) return site.image;
         return `/images/${site.image}`;
     }, [site.image]);
+
+
+    const handleAddAddOnToCart = React.useCallback((addOn: { id: string; name: string; price?: number }) => {
+        addToCart({
+            unitId: `addon-${addOn.id}`,
+            itemType: 'addon',
+            size: addOn.name,
+            originalPrice: String(addOn.price ?? 15000),
+            currentPrice: String(addOn.price ?? 15000),
+            maxQuantity: 20,
+            locationName: site.name,
+            locationAddress: addressStr,
+            quantity: 1,
+        });
+        openCart();
+    }, [addToCart, addressStr, openCart, site.name]);
+
+    const getAddOnQuantity = React.useCallback((addOnId: string) => (
+        cartItems.find((item) => item.itemType === 'addon' && item.unitId === `addon-${addOnId}`)?.quantity ?? 0
+    ), [cartItems]);
 
     return (
         <div className="pb-20">
@@ -305,6 +326,16 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                     <SiteMapViewer svgContent={typeof sitemap?.svg === 'string' ? sitemap.svg : undefined} />
                 </div>
 
+            </div>
+
+            <div className="mt-16">
+                <ProductsSpacedeyAddOns
+                    title="Products & Add-ons"
+                    subtitle="Moving supplies and extra services"
+                    variant="compact"
+                    onAddToCart={handleAddAddOnToCart}
+                    getItemQuantity={getAddOnQuantity}
+                />
             </div>
         </div>
     );

@@ -43,6 +43,7 @@ export default function StorageCart() {
                     <div>
                       <div className="font-medium">{item.size}</div>
                       <div className="text-gray-600">{item.locationName}</div>
+                      <div className="text-gray-500">{item.itemType === "addon" ? "Add-on" : "Storage unit"}</div>
                       <div className="text-gray-500">Qty: {item.quantity}</div>
                     </div>
                     <button

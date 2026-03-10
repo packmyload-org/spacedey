@@ -9,6 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import type { JwtPayload } from 'jsonwebtoken';
 import { env } from '@/config/env';
 import { syncUnitTypeAvailability } from '@/lib/db/storageUnits';
+import { calculateCheckoutPricing } from '@/lib/pricing/storagePricing';
 
 interface AuthTokenPayload extends JwtPayload {
     userId: string;
@@ -16,7 +17,7 @@ interface AuthTokenPayload extends JwtPayload {
 
 export async function POST(req: Request) {
     try {
-        const { siteId, unitTypeId, storageUnitId, startDate } = await req.json();
+        const { siteId, unitTypeId, storageUnitId, startDate, paymentMode } = await req.json();
 
         // 1. Auth check
         const cookieStore = await cookies();
@@ -74,12 +75,17 @@ export async function POST(req: Request) {
         }
 
         // 3. Booking amount calculations
-        const monthlyRate = Number(unit.priceAmount);
         const registrationFee = Number(site.registrationFee || 30000);
         const annualDues = Number(site.annualDues || 35000);
-
-        // Total initial due includes joining fee + 1st month + annual dues
-        const totalAmount = registrationFee + monthlyRate + annualDues;
+        const pricing = calculateCheckoutPricing({
+            width: Number(unit.width),
+            depth: Number(unit.depth),
+            unit: unit.unit,
+            registrationFee,
+            annualDues,
+        });
+        const monthlyRate = pricing.monthlyRate;
+        const totalAmount = paymentMode === 'full' ? pricing.dueTodayForPayOncePlan : pricing.dueTodayForMonthlyPlan;
 
         // 4. Create Booking
         const booking = bookingRepo.create({
@@ -111,7 +117,8 @@ export async function POST(req: Request) {
                 registrationFee,
                 monthlyRate,
                 annualDues,
-                totalAmount
+                totalAmount,
+                paymentMode: paymentMode === 'full' ? 'full' : 'monthly'
             }
         });
 

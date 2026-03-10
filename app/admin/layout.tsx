@@ -128,15 +128,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const renderSidebarContent = (collapsed: boolean) => (
     <>
-      <div className={`border-b border-white/10 ${collapsed ? 'px-3 py-4' : 'px-5 py-5'}`}>
+      <div className={`border-b border-white/10 ${collapsed ? 'px-2.5 py-3' : 'px-4 py-4'}`}>
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between gap-3'}`}>
           <Link href="/" className="flex min-w-0 items-center">
-            <div className="rounded-2xl bg-white/10 p-2.5 backdrop-blur-sm">
+            <div>
               <Image
                 src="/images/logo.png"
                 alt="Spacedey Logo"
-                width={collapsed ? 34 : 112}
-                height={32}
+                width={collapsed ? 9 : 8}
+                height={collapsed ? 12 : 6}
                 priority
                 className="h-auto w-auto"
               />
@@ -146,31 +146,31 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <button
             type="button"
             onClick={() => setIsDesktopSidebarCollapsed((value) => !value)}
-            className="hidden h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white transition-colors hover:bg-white/20 lg:inline-flex"
+            className="hidden h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-white transition-colors hover:bg-white/20 lg:inline-flex"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
-      <div className={`border-b border-white/10 ${collapsed ? 'px-3 py-4' : 'px-5 py-5'}`}>
-        <div className={`rounded-[24px] bg-white/10 backdrop-blur-sm ${collapsed ? 'p-3' : 'p-4'}`}>
-          <p className={`text-[11px] font-black uppercase tracking-[0.28em] text-white/55 ${collapsed ? 'text-center' : ''}`}>
+      <div className={`border-b border-white/10 ${collapsed ? 'px-2.5 py-3' : 'px-4 py-4'}`}>
+        <div className={`rounded-[20px] bg-white/10 backdrop-blur-sm ${collapsed ? 'p-2.5' : 'p-3.5'}`}>
+          <p className={`text-[10px] font-black uppercase tracking-[0.24em] text-white/55 ${collapsed ? 'text-center' : ''}`}>
             Admin
           </p>
-          <h1 className={`mt-2 text-white ${collapsed ? 'text-center text-base font-black' : 'text-xl font-black'}`}>
+          <h1 className={`mt-1.5 text-white ${collapsed ? 'text-center text-sm font-black' : 'text-lg font-black'}`}>
             {collapsed ? 'HQ' : 'Spacedey HQ'}
           </h1>
           {!collapsed && (
-            <p className="mt-2 text-sm leading-6 text-white/70">
+            <p className="mt-1.5 text-xs leading-5 text-white/70">
               Work with sites, users, and finance in a focused admin workspace.
             </p>
           )}
         </div>
       </div>
 
-      <nav className={`flex-1 space-y-2 ${collapsed ? 'px-3 py-4' : 'px-4 py-5'}`}>
+      <nav className={`flex-1 space-y-1.5 overflow-y-auto ${collapsed ? 'px-2.5 py-3' : 'px-3.5 py-4'}`}>
         {navItems.map((item) => {
           const isActive = isActiveRoute(item.href);
 
@@ -178,10 +178,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Link
               key={item.name}
               href={item.href}
-              className={`group flex items-center rounded-[22px] transition-all ${
+              className={`group flex items-center rounded-[18px] transition-all ${
                 collapsed
-                  ? 'justify-center px-3 py-3.5'
-                  : 'gap-3 px-4 py-3.5'
+                  ? 'justify-center px-2 py-2.5'
+                  : 'gap-2.5 px-3 py-2.5'
               } ${
                 isActive
                   ? 'bg-white text-[#1138D8] shadow-[0_18px_45px_rgba(4,16,61,0.2)]'
@@ -189,11 +189,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               }`}
               title={collapsed ? item.name : undefined}
             >
-              <item.icon className={`h-5 w-5 flex-shrink-0 ${isActive ? 'text-[#1642F0]' : 'text-white/80'}`} />
+              <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-[#1642F0]' : 'text-white/80'}`} />
               {!collapsed && (
                 <div className="min-w-0">
-                  <p className="text-sm font-bold">{item.name}</p>
-                  <p className={`truncate text-xs ${isActive ? 'text-[#4D66C8]' : 'text-white/55 group-hover:text-white/72'}`}>
+                  <p className="text-xs font-bold">{item.name}</p>
+                  <p className={`truncate text-[11px] ${isActive ? 'text-[#4D66C8]' : 'text-white/55 group-hover:text-white/72'}`}>
                     {item.description}
                   </p>
                 </div>
@@ -203,28 +203,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         })}
       </nav>
 
-      <div className={`border-t border-white/10 ${collapsed ? 'p-3' : 'p-4'}`}>
-        <div className={`rounded-[24px] bg-white/10 backdrop-blur-sm ${collapsed ? 'p-3' : 'p-4'}`}>
+      <div className={`border-t border-white/10 ${collapsed ? 'p-2.5' : 'p-3.5'}`}>
+        <div className={`rounded-[20px] bg-white/10 backdrop-blur-sm ${collapsed ? 'p-2.5' : 'p-3.5'}`}>
           <button
             type="button"
             onClick={handleLogout}
             className={`flex w-full items-center text-left text-white transition-opacity hover:opacity-90 ${
-              collapsed ? 'justify-center' : 'gap-3'
+              collapsed ? 'justify-center' : 'gap-2.5'
             }`}
             title={collapsed ? 'Log out' : undefined}
           >
-            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-white text-sm font-black text-[#1642F0]">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white text-xs font-black text-[#1642F0]">
               {initials || 'AD'}
             </div>
             {!collapsed && (
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">
+                <p className="truncate text-xs font-bold">
                   {authStore.user?.firstName} {authStore.user?.lastName}
                 </p>
-                <p className="truncate text-xs text-white/65">{authStore.user?.email}</p>
+                <p className="truncate text-[11px] text-white/65">{authStore.user?.email}</p>
               </div>
             )}
-            {!collapsed && <LogOut className="h-4 w-4 flex-shrink-0 text-white/80" />}
+            {!collapsed && <LogOut className="h-3.5 w-3.5 flex-shrink-0 text-white/80" />}
           </button>
         </div>
       </div>
@@ -235,8 +235,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="min-h-screen bg-[#EDF3FF] text-[#0F172A]">
       <div className="flex min-h-screen">
         <aside
-          className={`hidden border-r border-white/10 bg-[linear-gradient(180deg,#1642F0_0%,#0C2BAA_100%)] text-white lg:flex lg:flex-col ${
-            isDesktopSidebarCollapsed ? 'lg:w-[104px]' : 'lg:w-[320px]'
+          className={`hidden self-start overflow-hidden border-r border-white/10 bg-[linear-gradient(180deg,#1642F0_0%,#0C2BAA_100%)] text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col ${
+            isDesktopSidebarCollapsed ? 'lg:w-[92px]' : 'lg:w-[288px]'
           } transition-[width] duration-300`}
         >
           {renderSidebarContent(isDesktopSidebarCollapsed)}

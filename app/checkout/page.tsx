@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSearchStore } from "@/lib/store/useSearchStore";
 import { ChevronLeft, Info, CheckCircle2, Loader2, PartyPopper, X } from "lucide-react";
+import { calculateCheckoutPricing, NAIRA_PER_SQUARE_FOOT_PER_MONTH, PAY_ONCE_MONTHS } from "@/lib/pricing/storagePricing";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
 import type { ApiSite, ApiStorageUnit, ApiUnitType } from "@/lib/types/local";
 
@@ -53,8 +54,7 @@ function CheckoutContent() {
     const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
 
     // Booking payment state
-    const [paymentMode, setPaymentMode] = useState<'full' | 'incremental'>('full');
-    const [customAmount, setCustomAmount] = useState<string>("");
+    const [paymentMode, setPaymentMode] = useState<'monthly' | 'full'>('monthly');
     const [selectedProvider, setSelectedProvider] = useState<PaymentProvider | null>(null);
 
     useEffect(() => {
@@ -89,15 +89,20 @@ function CheckoutContent() {
     }, [siteId, storageUnitId, unitTypeId, sites]);
 
     const registrationFee = Number(selectedSite?.registrationFee || 30000);
-    const monthlyRate = Number(selectedUnit?.priceAmount ?? selectedUnit?.price.amount ?? 0);
     const annualDues = Number(selectedSite?.annualDues || 35000);
-
-    // 5% Discount on joining fee for online payment
-    const regDiscount = registrationFee * 0.05;
-    const discountedReg = registrationFee - regDiscount;
-
-    const totalDue = discountedReg + monthlyRate + annualDues;
-    const finalAmount = paymentMode === 'full' ? totalDue : (Number(customAmount) || 5000);
+    const pricing = calculateCheckoutPricing({
+        width: Number(selectedUnit?.dimensions.width || 0),
+        depth: Number(selectedUnit?.dimensions.depth || 0),
+        unit: selectedUnit?.dimensions.unit,
+        registrationFee,
+        annualDues,
+        payOnceMonths: PAY_ONCE_MONTHS,
+    });
+    const monthlyRate = pricing.monthlyRate;
+    const squareFootage = pricing.squareFootage;
+    const monthlyPlanAmount = pricing.dueTodayForMonthlyPlan;
+    const fullPlanAmount = pricing.dueTodayForPayOncePlan;
+    const finalAmount = paymentMode === 'full' ? fullPlanAmount : monthlyPlanAmount;
 
     const handleCheckout = async (provider: PaymentProvider) => {
         if (!selectedSite || !selectedUnit || !siteId || !unitTypeId) {
@@ -105,10 +110,6 @@ function CheckoutContent() {
             return;
         }
 
-        if (paymentMode === 'incremental' && (Number(customAmount) < 5000)) {
-            setError("Minimum incremental payment is ₦5,000");
-            return;
-        }
 
         setSubmitting(true);
         setError(null);
@@ -121,7 +122,8 @@ function CheckoutContent() {
                     siteId,
                     unitTypeId,
                     storageUnitId: selectedStorageUnit?.id,
-                    startDate: new Date().toISOString()
+                    startDate: new Date().toISOString(),
+                    paymentMode
                 })
             });
 
@@ -139,7 +141,9 @@ function CheckoutContent() {
                 body: JSON.stringify({
                     bookingId: bookingData.bookingId,
                     provider,
-                    amount: finalAmount
+                    amount: finalAmount,
+                    paymentMode,
+                    monthsCovered: paymentMode === 'full' ? PAY_ONCE_MONTHS : 1
                 })
             });
 
@@ -162,10 +166,6 @@ function CheckoutContent() {
             return;
         }
 
-        if (paymentMode === 'incremental' && Number(customAmount) < 5000) {
-            setError("Minimum incremental payment is ₦5,000");
-            return;
-        }
 
         setError(null);
         setIsProviderModalOpen(true);
@@ -203,7 +203,7 @@ function CheckoutContent() {
                         {/* Booking Header */}
                         <div>
                             <h1 className="text-4xl font-black text-blue-900 mb-4">Booking Checkout</h1>
-                           <p className="text-gray-500 max-w-xl text-lg">Secure your unit at {selectedSite.name}. Pay full now or start incrementally.</p>
+                           <p className="text-gray-500 max-w-xl text-lg">Secure your unit at {selectedSite.name}. Choose monthly payments or pay once upfront.</p>
                             {selectedStorageUnit?.unitNumber ? (
                                 <p className="mt-2 text-sm font-semibold text-blue-600">Assigned unit: {selectedStorageUnit.unitNumber}</p>
                             ) : null}
@@ -226,12 +226,11 @@ function CheckoutContent() {
                                         </div>
                                         <div>
                                             <span className="block font-black text-blue-900">Joining Fee</span>
-                                            <span className="text-xs text-green-600 font-bold uppercase tracking-wider">5% Discount Applied</span>
+                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Paid once at signup</span>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="block text-gray-400 line-through text-sm">₦{registrationFee.toLocaleString()}</span>
-                                        <span className="block font-black text-blue-900 text-xl">₦{discountedReg.toLocaleString()}</span>
+                                        <span className="block font-black text-blue-900 text-xl">₦{registrationFee.toLocaleString()}</span>
                                     </div>
                                 </div>
 
@@ -242,7 +241,7 @@ function CheckoutContent() {
                                         </div>
                                         <div>
                                             <span className="block font-black text-blue-900">Monthly Subscription</span>
-                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{selectedUnit.name} Unit</span>
+                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{squareFootage.toLocaleString()} sq ft × ₦{NAIRA_PER_SQUARE_FOOT_PER_MONTH.toLocaleString()} / month</span>
                                         </div>
                                     </div>
                                     <span className="block font-black text-blue-900 text-xl">₦{monthlyRate.toLocaleString()}</span>
@@ -267,9 +266,23 @@ function CheckoutContent() {
                         <section className="space-y-6">
                             <h2 className="text-xl font-black text-blue-900 flex items-center gap-2">
                                 <div className="w-2 h-8 bg-blue-600 rounded-full" />
-                                Select Payment Mode
+                                Select Payment Plan
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button
+                                    onClick={() => setPaymentMode('monthly')}
+                                    className={`p-8 rounded-[2rem] border-2 transition-all text-left ${paymentMode === 'monthly'
+                                            ? "border-blue-600 bg-blue-50 shadow-lg"
+                                            : "border-gray-100 bg-white hover:border-gray-200"
+                                        }`}
+                                >
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${paymentMode === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                        <CheckCircle2 className="w-6 h-6" />
+                                    </div>
+                                    <span className="block font-black text-blue-900 text-lg">Monthly Payment</span>
+                                    <span className="text-sm text-gray-500">Pay signup fees and your first month today, then continue monthly</span>
+                                </button>
+
                                 <button
                                     onClick={() => setPaymentMode('full')}
                                     className={`p-8 rounded-[2rem] border-2 transition-all text-left ${paymentMode === 'full'
@@ -278,50 +291,33 @@ function CheckoutContent() {
                                         }`}
                                 >
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${paymentMode === 'full' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                                        <CheckCircle2 className="w-6 h-6" />
-                                    </div>
-                                    <span className="block font-black text-blue-900 text-lg">Full Payment</span>
-                                    <span className="text-sm text-gray-500">Pay entire startup cost at once</span>
-                                </button>
-
-                                <button
-                                    onClick={() => setPaymentMode('incremental')}
-                                    className={`p-8 rounded-[2rem] border-2 transition-all text-left ${paymentMode === 'incremental'
-                                            ? "border-blue-600 bg-blue-50 shadow-lg"
-                                            : "border-gray-100 bg-white hover:border-gray-200"
-                                        }`}
-                                >
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${paymentMode === 'incremental' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
                                         <PartyPopper className="w-6 h-6" />
                                     </div>
-                                    <span className="block font-black text-blue-900 text-lg">Incremental Payment</span>
-                                    <span className="text-sm text-gray-500">Pay in part today & complete later</span>
+                                    <span className="block font-black text-blue-900 text-lg">Pay Once</span>
+                                    <span className="text-sm text-gray-500">Pay 12 months upfront in one checkout</span>
                                 </button>
                             </div>
 
-                            {paymentMode === 'incremental' && (
-                                <div className="mt-6 p-8 bg-white rounded-[2rem] border-2 border-blue-100 animate-in slide-in-from-top-4 duration-500">
-                                    <label className="block text-sm font-black text-blue-900 uppercase tracking-widest mb-4">Amount to pay today (min ₦5,000)</label>
-                                    <div className="relative">
-                                        <div className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">₦</div>
-                                        <input
-                                            type="number"
-                                            className="w-full pl-12 pr-6 py-6 bg-gray-50 border-none rounded-2xl text-2xl font-black text-blue-900 focus:ring-2 focus:ring-blue-600 outline-none"
-                                            placeholder="5000"
-                                            value={customAmount}
-                                            onChange={(e) => setCustomAmount(e.target.value)}
-                                        />
-                                    </div>
-                                    <p className="mt-4 text-xs text-blue-400 font-medium">Your unit will be fully active once your balance reaches ₦{(discountedReg + monthlyRate).toLocaleString()}</p>
-                                </div>
-                            )}
+                            <div className="mt-6 p-8 bg-white rounded-[2rem] border-2 border-blue-100 animate-in slide-in-from-top-4 duration-500">
+                                <p className="text-sm font-black text-blue-900 uppercase tracking-widest">Selected plan</p>
+                                <p className="mt-4 text-2xl font-black text-blue-900">
+                                    {paymentMode === 'monthly'
+                                        ? `₦${monthlyPlanAmount.toLocaleString()} due today`
+                                        : `₦${fullPlanAmount.toLocaleString()} due today`}
+                                </p>
+                                <p className="mt-3 text-sm leading-6 text-blue-700/80">
+                                    {paymentMode === 'monthly'
+                                        ? `This covers your joining fee, annual dues, and the first month for ${squareFootage.toLocaleString()} square feet.`
+                                        : `This covers your joining fee, annual dues, and ${PAY_ONCE_MONTHS} months upfront at ₦${monthlyRate.toLocaleString()} per month.`}
+                                </p>
+                            </div>
                         </section>
                     </div>
 
                     {/* Summary Sidebar */}
                     <div className="lg:col-span-4">
                         <div className="sticky top-32 bg-white rounded-[2rem] p-10 shadow-2xl shadow-blue-900/10 border border-gray-50 text-center">
-                            <p className="text-sm font-black text-blue-900/40 uppercase tracking-[0.2em] mb-4">Total Amount to Pay</p>
+                            <p className="text-sm font-black text-blue-900/40 uppercase tracking-[0.2em] mb-4">Amount Due Today</p>
                             <div className="text-5xl font-black text-blue-900 mb-2 truncate">
                                 ₦{finalAmount.toLocaleString()}
                             </div>
@@ -333,7 +329,7 @@ function CheckoutContent() {
                                     Choose your payment provider at checkout
                                 </h2>
                                 <p className="mt-2 text-sm leading-6 text-gray-500">
-                                    When you continue, you&apos;ll pick either Paystack or Flutterwave before we initialize the payment.
+                                    When you continue, you&apos;ll pick either Paystack or Flutterwave for your monthly or upfront plan.
                                 </p>
                                 {selectedProvider && (
                                     <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-blue-700">
@@ -354,7 +350,7 @@ function CheckoutContent() {
 
                             <div className="mt-8 flex items-center justify-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest">
                                 <Info className="w-4 h-4" />
-                                Instant activation on full pay
+                                Pricing is based on ₦3,000 per square foot per month
                             </div>
                         </div>
                     </div>
@@ -370,7 +366,7 @@ function CheckoutContent() {
                                 <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-500">Select payment service</p>
                                 <h2 className="mt-3 text-3xl font-black text-blue-900">Choose how you want to pay</h2>
                                 <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
-                                    We&apos;ll create your booking first, then redirect you to your selected payment provider.
+                                    We&apos;ll create your booking with the selected plan first, then redirect you to your selected payment provider.
                                 </p>
                             </div>
                             <button
