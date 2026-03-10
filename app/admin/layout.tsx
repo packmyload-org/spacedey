@@ -93,9 +93,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    authStore.logout();
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      authStore.logout();
+      router.push('/');
+    }
   };
 
   const initials = `${authStore.user?.firstName?.charAt(0) ?? ''}${authStore.user?.lastName?.charAt(0) ?? ''}`.toUpperCase();

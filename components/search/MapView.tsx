@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
+import { Component, type ErrorInfo, type ReactNode, useMemo, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { env } from '@/config';
 import { ApiSite } from '@/lib/types/local';
@@ -10,6 +10,54 @@ import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
 interface MapViewProps {
   selectedCity: string;
   sites: ApiSite[];
+}
+
+interface MapErrorBoundaryProps {
+  children: ReactNode;
+  fallback: ReactNode;
+  onError?: () => void;
+}
+
+interface MapErrorBoundaryState {
+  hasError: boolean;
+}
+
+class MapErrorBoundary extends Component<MapErrorBoundaryProps, MapErrorBoundaryState> {
+  state: MapErrorBoundaryState = {
+    hasError: false,
+  };
+
+  static getDerivedStateFromError(): MapErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('Map rendering error:', error, info);
+    this.props.onError?.();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
+
+function getValidCoordinates(site: ApiSite): { lat: number; lng: number } | null {
+  const lat = Number(site?.coordinates?.lat);
+  const lng = Number(site?.coordinates?.lng);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return null;
+  }
+
+  return { lat, lng };
 }
 
 // Inner component to handle map interactions like panning
@@ -71,28 +119,29 @@ export default function MapView({ selectedCity, sites }: Readonly<MapViewProps>)
   const mapsEnabled = env.googleMaps.enabled;
   const [mapLoadFailed, setMapLoadFailed] = useState(false);
   const hasSelectedCity = Boolean(selectedCity);
+  const safeSites = useMemo(() => (Array.isArray(sites) ? sites : []), [sites]);
 
   const filteredSites = useMemo(() => {
     if (!hasSelectedCity) {
-      return sites;
+      return safeSites;
     }
 
-    return sites.filter((site) => cityMatchesSite(site, selectedCity));
-  }, [hasSelectedCity, selectedCity, sites]);
+    return safeSites.filter((site) => cityMatchesSite(site, selectedCity));
+  }, [hasSelectedCity, selectedCity, safeSites]);
 
   const showAllLocations = hasSelectedCity && filteredSites.length === 0;
   const activeSites = useMemo(() => {
     if (!hasSelectedCity) {
-      return sites;
+      return safeSites;
     }
 
-    return filteredSites.length > 0 ? filteredSites : sites;
-  }, [filteredSites, hasSelectedCity, sites]);
+    return filteredSites.length > 0 ? filteredSites : safeSites;
+  }, [filteredSites, hasSelectedCity, safeSites]);
 
   const centerLocation = useMemo(() => {
-    const sitesWithCoordinates = activeSites.filter(
-      (site) => Boolean(site.coordinates.lat) && Boolean(site.coordinates.lng)
-    );
+    const sitesWithCoordinates = activeSites
+      .map((site) => getValidCoordinates(site))
+      .filter((coords): coords is { lat: number; lng: number } => coords !== null);
 
     if (sitesWithCoordinates.length === 0) {
       return { lat: 9.082, lng: 8.6753 };
@@ -100,8 +149,8 @@ export default function MapView({ selectedCity, sites }: Readonly<MapViewProps>)
 
     const total = sitesWithCoordinates.reduce(
       (acc, site) => ({
-        lat: acc.lat + site.coordinates.lat,
-        lng: acc.lng + site.coordinates.lng,
+        lat: acc.lat + site.lat,
+        lng: acc.lng + site.lng,
       }),
       { lat: 0, lng: 0 }
     );
@@ -140,32 +189,51 @@ export default function MapView({ selectedCity, sites }: Readonly<MapViewProps>)
             </p>
           </div>
         )}
-        <APIProvider
-          apiKey={apiKey}
+        <MapErrorBoundary
+          fallback={
+            <SearchMapFallback
+              sites={activeSites}
+              selectedCity={selectedCity}
+              showAllLocations={showAllLocations || !hasSelectedCity}
+            />
+          }
           onError={() => {
             setMapLoadFailed(true);
           }}
         >
-          <Map
-            defaultCenter={centerLocation}
-            defaultZoom={zoomLevel}
-            gestureHandling={'greedy'}
-            disableDefaultUI={false}
-            className="w-full h-full"
-            mapId="spacedey-map-id" // Required for AdvancedMarker if we upgrade later, good practice
+          <APIProvider
+            apiKey={apiKey}
+            onError={() => {
+              setMapLoadFailed(true);
+            }}
           >
-            {activeSites.map((site, index) => (
-              site.coordinates.lat && site.coordinates.lng ? (
+            <Map
+              defaultCenter={centerLocation}
+              defaultZoom={zoomLevel}
+              gestureHandling={'greedy'}
+              disableDefaultUI={false}
+              className="w-full h-full"
+              mapId="spacedey-map-id" // Required for AdvancedMarker if we upgrade later, good practice
+            >
+              {activeSites.map((site, index) => {
+                const coordinates = getValidCoordinates(site);
+
+                if (!coordinates) {
+                  return null;
+                }
+
+                return (
                 <Marker
                   key={`${site.id}-${index}`}
-                  position={{ lat: site.coordinates.lat, lng: site.coordinates.lng }}
+                  position={coordinates}
                   title={site.name}
                 />
-              ) : null
-            ))}
-            <MapUpdater center={centerLocation} zoom={zoomLevel} />
-          </Map>
-        </APIProvider>
+                );
+              })}
+              <MapUpdater center={centerLocation} zoom={zoomLevel} />
+            </Map>
+          </APIProvider>
+        </MapErrorBoundary>
       </div>
     </div>
   );

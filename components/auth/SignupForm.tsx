@@ -2,17 +2,19 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/lib/store/useAuthStore';
 
 export default function SignupForm() {
   const router = useRouter();
+  const setAuth = useAuthStore((state) => state.setAuth);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +50,7 @@ export default function SignupForm() {
           lastName,
           email,
           password,
+          rememberMe,
         }),
       });
 
@@ -57,10 +60,8 @@ export default function SignupForm() {
         throw new Error(data?.error || 'Failed to create account.');
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/auth/signin');
-      }, 1200);
+      setAuth(data.user, data.accessToken, rememberMe);
+      router.push('/');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong.';
       if (message.toLowerCase().includes('recaptcha')) {
@@ -90,7 +91,6 @@ export default function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-8 max-w-lg mx-auto">
       {globalError && <div className="mb-4 text-sm text-red-600">{globalError}</div>}
-      {success && <div className="mb-4 text-sm text-green-600">Account created — redirecting...</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <label className="block">
@@ -168,6 +168,16 @@ export default function SignupForm() {
           />
         </label>
       </div>
+
+      <label className="mb-6 flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={rememberMe}
+          onChange={(e) => setRememberMe(e.target.checked)}
+          className="h-4 w-4 rounded border-gray-300 text-[#1642F0] focus:ring-[#1642F0]"
+        />
+        <span>Keep me signed in</span>
+      </label>
 
       <button
         type="submit"

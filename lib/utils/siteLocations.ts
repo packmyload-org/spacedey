@@ -1,16 +1,21 @@
 import { ApiSite, ApiUnitType } from '@/lib/types/local';
 
 export const KNOWN_CITIES = [
+  'Lekki',
+  'Ikeja',
+  'Surulere',
+  'Maitama',
+  'Garki',
   'Port Harcourt',
   'Benin City',
   'Abeokuta',
-  'Kaduna',
-  'Abuja',
-  'Ibadan',
   'Enugu',
-  'Lagos',
+  'Kaduna',
+  'Ibadan',
   'Kano',
   'Jos',
+  'Abuja',
+  'Lagos',
 ];
 
 export function extractCityFromAddress(address: string): string {

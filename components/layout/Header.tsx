@@ -49,7 +49,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const navLinkClass = "flex items-center py-1 text-white border-b-2 border-transparent hover:text-gray-300 focus:text-gray-300 hover:border-gray-300 focus:border-gray-300 focus:outline-none focus:ring transition-colors duration-200";
+  const navLinkClass = "flex items-center py-1 border-b-2 border-transparent text-white transition-colors duration-200 hover:text-white hover:border-white focus:text-white focus:border-white focus:outline-none focus:ring-0";
 
   const handleReserveNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,6 +74,19 @@ export default function Header() {
     { href: "/bookings", label: "My Bookings" },
     { href: "/invoices", label: "My Invoices" },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      logout();
+      setIsProfileOpen(false);
+      setOpen(false);
+      router.push("/");
+    }
+  };
 
   return (
     <header className="fixed w-full top-0 z-40">
@@ -213,11 +226,7 @@ export default function Header() {
                       My Invoices
                     </Link>
                     <button
-                      onClick={() => {
-                        logout();
-                        setIsProfileOpen(false);
-                        router.push("/");
-                      }}
+                      onClick={handleLogout}
                       className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
@@ -363,11 +372,7 @@ export default function Header() {
 
             {isAuthenticated ? (
               <button
-                onClick={() => {
-                  logout();
-                  setOpen(false);
-                  router.push("/");
-                }}
+                onClick={handleLogout}
                 className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl bg-red-50 text-red-600 font-bold border border-red-100 hover:bg-red-100 transition-all cursor-pointer"
               >
                 Sign Out

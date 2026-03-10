@@ -56,7 +56,9 @@ export async function POST(req: Request) {
 
         // 3. Initialize provider payment using the requested installment/full amount
         const reference = `SPDC-${bookingId.split('-')[0].toUpperCase()}-${Date.now()}`;
-        const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback`;
+        const requestOrigin = new URL(req.url).origin;
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || requestOrigin;
+        const callbackUrl = new URL('/payment/callback', appUrl).toString();
         const paymentAmount = Number(amount);
 
         let providerResponse;

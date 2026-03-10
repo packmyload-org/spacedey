@@ -49,8 +49,9 @@ async function seed() {
     }
 
     for (const siteSeed of STORAGE_SITES) {
+      const siteWhere = [siteSeed.code, ...(siteSeed.legacyCodes ?? [])].map((code) => ({ code }));
       let site = await siteRepo.findOne({
-        where: { code: siteSeed.code },
+        where: siteWhere,
         relations: ['unitTypes', 'units', 'units.unitType'],
       });
 
@@ -59,11 +60,12 @@ async function seed() {
           ...siteSeed,
           latitude: siteSeed.lat,
           longitude: siteSeed.lng,
-          city: siteSeed.code,
-          state: siteSeed.code,
+          city: siteSeed.city,
+          state: siteSeed.state,
         });
         console.debug(`Creating site ${siteSeed.code}`);
       } else {
+        site.code = siteSeed.code;
         site.name = siteSeed.name;
         site.address = siteSeed.address;
         site.contactPhone = siteSeed.contactPhone;
@@ -72,8 +74,8 @@ async function seed() {
         site.lng = siteSeed.lng;
         site.latitude = siteSeed.lat;
         site.longitude = siteSeed.lng;
-        site.city = siteSeed.code;
-        site.state = siteSeed.code;
+        site.city = siteSeed.city;
+        site.state = siteSeed.state;
         site.measuringUnit = siteSeed.measuringUnit;
         site.image = siteSeed.image;
         site.about = siteSeed.about;

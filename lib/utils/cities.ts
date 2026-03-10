@@ -11,8 +11,11 @@ export interface City {
 // Available cities - only these cities have active service
 // All other Nigerian cities will show "coming soon" in MapView
 export const CITIES: City[] = [
-  { name: 'Lagos', status: 'available' },
-  { name: 'Abuja', status: 'available' },
+  { name: 'Lekki', status: 'available' },
+  { name: 'Ikeja', status: 'available' },
+  { name: 'Surulere', status: 'available' },
+  { name: 'Maitama', status: 'available' },
+  { name: 'Garki', status: 'available' },
   { name: 'Kano', status: 'available' },
   { name: 'Ibadan', status: 'available' },
   { name: 'Port Harcourt', status: 'available' },
@@ -47,4 +50,3 @@ export const isCityAvailable = (name: string): boolean => {
   const city = getCityByName(name);
   return city?.status === 'available';
 };
-

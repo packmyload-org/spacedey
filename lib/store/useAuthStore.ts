@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 import { UserResponse } from '@/lib/types/local';
 import { UserRole } from '@/lib/types/roles';
 
@@ -7,12 +7,48 @@ interface AuthState {
   user: UserResponse | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  rememberMe: boolean;
 
   // Actions
-  setAuth: (user: UserResponse, accessToken: string) => void;
+  setAuth: (user: UserResponse, accessToken: string, rememberMe: boolean) => void;
   logout: () => void;
   isAdmin: () => boolean;
 }
+
+const authStorage: StateStorage = {
+  getItem: (name) => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    return window.localStorage.getItem(name) ?? window.sessionStorage.getItem(name);
+  },
+  setItem: (name, value) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const parsed = JSON.parse(value) as { state?: { rememberMe?: boolean } };
+    const shouldRemember = parsed.state?.rememberMe === true;
+
+    if (shouldRemember) {
+      window.localStorage.setItem(name, value);
+      window.sessionStorage.removeItem(name);
+      return;
+    }
+
+    window.sessionStorage.setItem(name, value);
+    window.localStorage.removeItem(name);
+  },
+  removeItem: (name) => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.localStorage.removeItem(name);
+    window.sessionStorage.removeItem(name);
+  },
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -20,17 +56,20 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       isAuthenticated: false,
+      rememberMe: false,
 
-      setAuth: (user, accessToken) => set({ 
+      setAuth: (user, accessToken, rememberMe) => set({ 
         user, 
         accessToken, 
-        isAuthenticated: true 
+        isAuthenticated: true,
+        rememberMe,
       }),
 
       logout: () => set({ 
         user: null, 
         accessToken: null, 
-        isAuthenticated: false 
+        isAuthenticated: false,
+        rememberMe: false,
       }),
 
       isAdmin: () => {
@@ -40,6 +79,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'spacedey-auth-storage',
+      storage: createJSONStorage(() => authStorage),
     }
   )
 );
