@@ -10,18 +10,27 @@ import SubscriptionPlan from './entities/SubscriptionPlan';
 import Payment from './entities/Payment';
 import Invoice from './entities/Invoice';
 import StorageUnit from './entities/StorageUnit';
-import { PostgresConnectionOptions } from 'typeorm/browser/driver/postgres/PostgresConnectionOptions.js';
 
+const ssl = env.postgres.ssl
+  ? { rejectUnauthorized: env.postgres.sslRejectUnauthorized }
+  : false;
+
+const postgresConnectionOptions = env.postgres.url
+  ? { url: env.postgres.url }
+  : {
+      host: env.postgres.host,
+      port: env.postgres.port,
+      username: env.postgres.username,
+      password: env.postgres.password,
+      database: env.postgres.database,
+    };
 
 export const AppDataSource = new DataSource({
-  type: env.postgres.type as PostgresConnectionOptions['type'] || 'postgres',
-  host: env.postgres.host,
-  port: env.postgres.port,
-  username: env.postgres.username,
-  password: env.postgres.password,
-  database: env.postgres.database,
-  synchronize: true,
-  logging: env.app.isDevelopment,
+  type: 'postgres',
+  ...postgresConnectionOptions,
+  ssl,
+  synchronize: env.postgres.synchronize,
+  logging: env.postgres.logging,
   entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });

@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
+import { env } from '@/config/env';
+
+const REMEMBER_ME_MAX_AGE = 60 * 60 * 24 * 30;
+const SESSION_TOKEN_EXPIRES_IN = '1d';
+const REMEMBER_ME_TOKEN_EXPIRES_IN = '30d';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const email = String(body?.email || '').trim().toLowerCase();
     const password = String(body?.password || '').trim();
+    const rememberMe = body?.rememberMe === true;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -41,7 +47,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const accessToken = generateToken(user.id);
+    const accessToken = generateToken(
+      user.id,
+      rememberMe ? REMEMBER_ME_TOKEN_EXPIRES_IN : SESSION_TOKEN_EXPIRES_IN
+    );
 
     const userResponse = {
       id: user.id.toString(),
@@ -52,11 +61,23 @@ export async function POST(request: Request) {
       role: user.role,
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       ok: true,
       accessToken,
       user: userResponse,
     });
+
+    response.cookies.set({
+      name: 'auth-token',
+      value: accessToken,
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: env.app.isProduction,
+      path: '/',
+      ...(rememberMe ? { maxAge: REMEMBER_ME_MAX_AGE } : {}),
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';

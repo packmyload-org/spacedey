@@ -32,7 +32,7 @@ export default function LoginForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -41,7 +41,7 @@ export default function LoginForm() {
         throw new Error(data?.error || 'Login failed.');
       }
 
-      setAuth(data.user, data.accessToken);
+      setAuth(data.user, data.accessToken, rememberMe);
       router.push('/');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong.';
@@ -56,10 +56,13 @@ export default function LoginForm() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Login with your email
-          </h1>
-          <p className="text-gray-600">Continue to reserve storage or manage your account.</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Login</h1>
+          <p className="mt-3 text-sm text-gray-500">
+            New here?{' '}
+            <Link href="/auth/signup" className="font-semibold text-[#1642F0] hover:underline">
+              Create an account
+            </Link>
+          </p>
         </div>
 
         <hr className="border-gray-200 mb-6" />
@@ -126,7 +129,7 @@ export default function LoginForm() {
                   </svg>
                 )}
               </div>
-              <span className="text-gray-700">Remember me?</span>
+              <span className="text-gray-700">Keep me signed in</span>
             </label>
 
             <Link href="/auth/forgot-password" className="text-gray-600 hover:text-gray-900">

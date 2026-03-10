@@ -33,7 +33,7 @@ Spacedey is a full-stack web platform that connects individuals and businesses w
 | **Auth** | JWT (`jsonwebtoken` + `bcryptjs`) |
 | **Maps** | Google Maps API (`@vis.gl/react-google-maps`) |
 | **Icons** | [Lucide React](https://lucide.dev/) |
-| **Container** | Docker + Docker Compose |
+| **Container** | Optional Docker + Docker Compose |
 
 ---
 
@@ -43,7 +43,7 @@ Spacedey is a full-stack web platform that connects individuals and businesses w
 
 - **Node.js** v18+
 - **pnpm** (recommended) — `npm install -g pnpm`
-- **Docker & Docker Compose** (for the Postgres database)
+- **Docker & Docker Compose** (optional, only if you want local Postgres in a container)
 
 ### 1. Clone the repository
 
@@ -67,14 +67,24 @@ cp .env.example .env.local
 Then edit `.env.local` with your values:
 
 ```env
-# Postgres
+# Preferred for Supabase / Vercel
+DATABASE_URL=postgresql://...
+DIRECT_DATABASE_URL=postgresql://...
+DB_USE_DIRECT_URL=false
+DB_SSL=true
+DB_SSL_REJECT_UNAUTHORIZED=false
+DB_SYNCHRONIZE=false
+DB_LOGGING=false
+
+# Or fallback to standard Postgres env vars
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_USER=admin
+POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 POSTGRES_DB=spacedey
 DB_TYPE=postgres
-DB_SSL=false
+DB_SYNCHRONIZE=true
+DB_LOGGING=true
 
 # Auth
 JWT_SECRET=your-secure-secret-key
@@ -83,25 +93,31 @@ TOKEN_SECRET=your-token-secret
 
 # Google Maps
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+NEXT_PUBLIC_ENABLE_GOOGLE_MAPS=false
+NEXT_PUBLIC_GOOGLE_MAPS_BILLING_ENABLED=false
 
 # App
 NODE_ENV=development
 PORT=3000
 ```
 
-### 4. Start the database
+### 4. Connect a database
+
+If you are using Supabase, set `DATABASE_URL` and `DIRECT_DATABASE_URL` first.
+
+If you prefer local Docker Postgres instead:
 
 ```bash
 docker-compose up -d
 ```
 
-This starts a PostgreSQL instance on `localhost:5432`.
-
 ### 5. Seed default users
 
 ```bash
-pnpm run seed:data
+DB_USE_DIRECT_URL=true pnpm run seed:data
 ```
+
+For local Docker/Postgres, `pnpm run seed:data` is also fine.
 
 This creates two default accounts:
 
@@ -164,6 +180,7 @@ spacedey/
 |---|---|
 | [Admin Portal Guide](./docs/ADMIN_PORTAL.md) | Role-based access, admin API endpoints, frontend usage, security checklist |
 | [Docker & Postgres Setup](./docs/DOCKER_SETUP.md) | Full Docker setup, environment variables, deployment, troubleshooting |
+| [Supabase + Vercel DB Setup](./docs/SUPABASE_VERCEL.md) | Managed Postgres setup using Supabase with Vercel-friendly env vars |
 
 ---
 
