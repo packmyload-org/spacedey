@@ -12,11 +12,13 @@ interface InitializePaymentBody {
     bookingId?: string;
     provider?: PaymentProvider;
     amount?: number;
+    paymentMode?: 'monthly' | 'full';
+    monthsCovered?: number;
 }
 
 export async function POST(req: Request) {
     try {
-        const { bookingId, provider, amount } = await req.json() as InitializePaymentBody;
+        const { bookingId, provider, amount, paymentMode, monthsCovered } = await req.json() as InitializePaymentBody;
 
         if (!bookingId) {
             return NextResponse.json({ ok: false, message: 'Booking is required' }, { status: 400 });
@@ -84,7 +86,11 @@ export async function POST(req: Request) {
             providerReference: reference,
             amount: paymentAmount,
             status: PaymentStatus.PENDING,
-            metadata: providerResponse
+            metadata: {
+                ...providerResponse,
+                paymentMode: paymentMode ?? 'monthly',
+                monthsCovered: monthsCovered ?? 1,
+            }
         });
 
         await paymentRepo.save(payment);

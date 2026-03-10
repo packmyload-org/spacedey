@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 
 export interface StorageUnit {
   unitId?: string | number;
+  itemType?: "storage" | "addon";
   size: string;
   originalPrice: string;
   currentPrice: string;
@@ -48,6 +49,7 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
         setCartItems(
           parsedItems.map((item) => ({
             unitId: item.unitId,
+            itemType: item.itemType === "addon" ? "addon" : "storage",
             size: item.size || "",
             originalPrice: item.originalPrice || "0",
             currentPrice: item.currentPrice || "0",
@@ -90,10 +92,11 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
       const existingIndex = prev.findIndex(
         (entry) =>
           (entry.unitId && item.unitId
-            ? entry.unitId === item.unitId
+            ? entry.unitId === item.unitId && entry.itemType === item.itemType
             : entry.locationName === item.locationName &&
               entry.locationAddress === item.locationAddress &&
-              entry.size === item.size)
+              entry.size === item.size &&
+              entry.itemType === item.itemType)
       );
 
       if (existingIndex === -1) {

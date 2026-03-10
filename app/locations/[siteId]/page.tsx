@@ -2,6 +2,7 @@ import { connectTypeORM, AppDataSource } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
+import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
 
 async function getSiteByIdFromDB(siteId: string) {
   try {
@@ -49,7 +50,7 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
         id: ut.id,
         name: ut.name,
         code: ut.id,
-        price: ut.priceAmount,
+        price: calculateMonthlyStorageRate({ width: ut.width, depth: ut.depth, unit: ut.unit }),
         dimensions: { width: ut.width, depth: ut.depth, height: 0, unit: ut.unit },
         description: ut.description,
         availableCount: (unitsForType.length > 0)

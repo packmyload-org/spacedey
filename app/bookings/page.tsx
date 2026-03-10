@@ -82,7 +82,7 @@ export default function UserBookingsPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
                     <div>
                         <h1 className="text-4xl font-black text-blue-900 mb-2">My Bookings</h1>
-                        <p className="text-gray-500 text-lg">Manage your storage units and incremental payments</p>
+                        <p className="text-gray-500 text-lg">Manage your storage units and monthly or upfront payments</p>
                     </div>
                 </div>
 

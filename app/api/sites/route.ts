@@ -4,6 +4,7 @@ import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
 import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
+import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
 
 export async function GET() {
   try {
@@ -17,6 +18,8 @@ export async function GET() {
         id: site.id.toString(),
         name: site.name,
         code: site.code,
+        city: site.city || undefined,
+        state: site.state || undefined,
         about: site.about || '',
         image: site.image || '',
         address: site.address,
@@ -43,7 +46,7 @@ export async function GET() {
               unit: ut.unit,
             },
             price: {
-              amount: ut.priceAmount,
+              amount: calculateMonthlyStorageRate({ width: ut.width, depth: ut.depth, unit: ut.unit }),
               currency: ut.priceCurrency,
               originalAmount: ut.priceOriginalAmount,
             },
