@@ -67,7 +67,7 @@ export const env = {
     database: process.env.POSTGRES_DB || process.env.DB_NAME || 'spacedey',
     ssl: readBoolean(process.env.DB_SSL, defaultSsl),
     sslRejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
-    synchronize: readBoolean(process.env.DB_SYNCHRONIZE, isDevelopment),
+    synchronize: readBoolean(process.env.DB_SYNCHRONIZE, false),
     logging: readBoolean(process.env.DB_LOGGING, isDevelopment) as LoggerOptions,
     type: process.env.DB_TYPE as DataSourceOptions['type'],
   },

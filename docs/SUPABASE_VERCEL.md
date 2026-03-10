@@ -32,7 +32,13 @@ You can also keep using the older `POSTGRES_HOST` / `POSTGRES_PORT` style variab
 
 ## Seeding against Supabase
 
-Use the direct connection for seeding:
+Run migrations before seeding:
+
+```bash
+pnpm db:migrate
+```
+
+Use the direct connection for seeding when you want to bypass a pooler:
 
 ```bash
 DB_USE_DIRECT_URL=true pnpm run seed:data
@@ -59,4 +65,4 @@ For most deployments:
 
 ## Important note
 
-This repo currently uses `synchronize` in development. For production deployments, keep `DB_SYNCHRONIZE=false` and move carefully when changing schema.
+This repo now expects TypeORM migrations to manage schema changes. Keep `DB_SYNCHRONIZE=false` in both production and normal development work. If you already have an existing database that was created via `synchronize`, run `pnpm db:baseline` once before using `pnpm db:migrate`.
