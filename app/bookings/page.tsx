@@ -2,12 +2,30 @@
 
 import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
-import { FileText, Download, Eye, Calendar, Tag, CreditCard, ChevronRight, CheckCircle2, AlertCircle } from "lucide-react";
+import Image from "next/image";
+import { Tag, CreditCard, ChevronRight, Loader2, MapPin } from "lucide-react";
 import Link from "next/link";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
 
+interface BookingItem {
+    id: string;
+    status: string;
+    totalAmount: number | string;
+    amountPaid: number | string;
+    site?: {
+        image?: string;
+        name?: string;
+    };
+    unitType?: {
+        name?: string;
+    };
+    storageUnit?: {
+        unitNumber?: string;
+    };
+}
+
 export default function UserBookingsPage() {
-    const [bookings, setBookings] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<BookingItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
 
@@ -28,7 +46,7 @@ export default function UserBookingsPage() {
         fetchBookings();
     }, []);
 
-    const handlePayBalance = async (booking: any) => {
+    const handlePayBalance = async (booking: BookingItem) => {
         const amount = prompt("Enter amount to pay towards balance (₦):", "5000");
         if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
 
@@ -63,7 +81,7 @@ export default function UserBookingsPage() {
             <main className="max-w-7xl mx-auto px-4 pt-32 pb-20">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
                     <div>
-                        <h1 className="text-4xl font-black text-blue-900 mb-2">My Memberships</h1>
+                        <h1 className="text-4xl font-black text-blue-900 mb-2">My Bookings</h1>
                         <p className="text-gray-500 text-lg">Manage your storage units and incremental payments</p>
                     </div>
                 </div>
@@ -80,7 +98,7 @@ export default function UserBookingsPage() {
                             <Tag className="w-12 h-12 text-blue-200" />
                         </div>
                         <h2 className="text-2xl font-black text-blue-900 mb-3">No bookings yet</h2>
-                        <p className="text-gray-500 mb-10 text-lg">Ready to start your storage membership? Find a location near you.</p>
+                        <p className="text-gray-500 mb-10 text-lg">Ready to make your first storage booking? Find a location near you.</p>
                         <Link href="/search" className="inline-block bg-blue-600 text-white px-10 py-5 rounded-full font-black shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
                             EXPORE LOCATIONS
                         </Link>
@@ -114,7 +132,9 @@ export default function UserBookingsPage() {
                                             <h3 className="text-xl font-black text-blue-900 mb-1">{booking.site?.name}</h3>
                                             <div className="flex items-center gap-2 text-gray-400 text-sm font-bold uppercase tracking-widest">
                                                 <Box className="w-3 h-3 text-blue-400" />
-                                                {booking.unitType?.name} Unit
+                                                {booking.storageUnit?.unitNumber
+                                                    ? `${booking.storageUnit.unitNumber} • ${booking.unitType?.name} Unit`
+                                                    : `${booking.unitType?.name} Unit`}
                                             </div>
                                         </div>
 

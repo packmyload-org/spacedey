@@ -25,6 +25,7 @@ export const env = {
   // Google Maps Configuration
   googleMaps: {
     apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    enabled: process.env.NEXT_PUBLIC_ENABLE_GOOGLE_MAPS === 'true',
   },
 
   // Third-party Integrations

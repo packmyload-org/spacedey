@@ -1,6 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
-import Booking from "./Booking";
-import User from "./User";
+import type { Relation } from "typeorm";
+import BookingEntity from "./Booking";
+import type { Booking as BookingModel } from "./Booking";
+import UserEntity from "./User";
+import type { User as UserModel } from "./User";
 
 export enum PaymentStatus {
     PENDING = "pending",
@@ -16,44 +19,44 @@ export enum PaymentProvider {
 @Entity("payments")
 export class Payment {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
-    @ManyToOne(() => Booking, (booking) => booking.id)
-    booking: Booking;
+    @ManyToOne(() => BookingEntity, (booking) => booking.id)
+    booking!: Relation<BookingModel>;
 
-    @ManyToOne(() => User, (user) => user.id)
-    user: User;
+    @ManyToOne(() => UserEntity, (user) => user.id)
+    user!: Relation<UserModel>;
 
     @Column({
         type: "enum",
         enum: PaymentProvider
     })
-    provider: PaymentProvider;
+    provider!: PaymentProvider;
 
-    @Column({ unique: true })
-    providerReference: string; // Internal TX ref or provider IDs
+    @Column({ type: "varchar", unique: true })
+    providerReference!: string; // Internal TX ref or provider IDs
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
-    amount: number;
+    amount!: number;
 
-    @Column({ default: "NGN" })
-    currency: string;
+    @Column({ type: "varchar", default: "NGN" })
+    currency!: string;
 
     @Column({
         type: "enum",
         enum: PaymentStatus,
         default: PaymentStatus.PENDING
     })
-    status: PaymentStatus;
+    status!: PaymentStatus;
 
     @Column({ type: "jsonb", nullable: true })
-    metadata: any; // Store provider raw response
+    metadata!: any; // Store provider raw response
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }
 
 export default Payment;

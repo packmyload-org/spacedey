@@ -1,7 +1,11 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne, JoinColumn } from "typeorm";
-import Booking from "./Booking";
-import User from "./User";
-import Payment from "./Payment";
+import type { Relation } from "typeorm";
+import BookingEntity from "./Booking";
+import type { Booking as BookingModel } from "./Booking";
+import UserEntity from "./User";
+import type { User as UserModel } from "./User";
+import PaymentEntity from "./Payment";
+import type { Payment as PaymentModel } from "./Payment";
 
 export enum InvoiceStatus {
     DRAFT = "draft",
@@ -14,54 +18,54 @@ export enum InvoiceStatus {
 @Entity("invoices")
 export class Invoice {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
-    @Column({ unique: true })
-    invoiceNumber: string; // e.g., "INV-2026-0001"
+    @Column({ type: "varchar", unique: true })
+    invoiceNumber!: string; // e.g., "INV-2026-0001"
 
-    @ManyToOne(() => Booking, (booking) => booking.id)
-    booking: Booking;
+    @ManyToOne(() => BookingEntity, (booking) => booking.id)
+    booking!: Relation<BookingModel>;
 
-    @ManyToOne(() => User, (user) => user.id)
-    user: User;
+    @ManyToOne(() => UserEntity, (user) => user.id)
+    user!: Relation<UserModel>;
 
-    @OneToOne(() => Payment)
+    @OneToOne(() => PaymentEntity)
     @JoinColumn()
-    payment: Payment;
+    payment!: Relation<PaymentModel>;
 
     @Column({ type: "jsonb" })
-    items: any[]; // Line items: { description, qty, unitPrice, total }
+    items!: any[]; // Line items: { description, qty, unitPrice, total }
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
-    subtotal: number;
+    subtotal!: number;
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    tax: number;
+    tax!: number;
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
-    total: number;
+    total!: number;
 
-    @Column({ default: "NGN" })
-    currency: string;
+    @Column({ type: "varchar", default: "NGN" })
+    currency!: string;
 
     @Column({
         type: "enum",
         enum: InvoiceStatus,
         default: InvoiceStatus.DRAFT
     })
-    status: InvoiceStatus;
+    status!: InvoiceStatus;
 
     @Column({ type: "timestamp" })
-    dueDate: Date;
+    dueDate!: Date;
 
     @Column({ type: "timestamp", nullable: true })
-    paidAt: Date;
+    paidAt!: Date | null;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }
 
 export default Invoice;

@@ -9,6 +9,7 @@ import Booking from './entities/Booking';
 import SubscriptionPlan from './entities/SubscriptionPlan';
 import Payment from './entities/Payment';
 import Invoice from './entities/Invoice';
+import StorageUnit from './entities/StorageUnit';
 import { PostgresConnectionOptions } from 'typeorm/browser/driver/postgres/PostgresConnectionOptions.js';
 
 
@@ -21,7 +22,7 @@ export const AppDataSource = new DataSource({
   database: env.postgres.database,
   synchronize: true,
   logging: env.app.isDevelopment,
-  entities: [User, UnitType, Site, Booking, SubscriptionPlan, Payment, Invoice],
+  entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 

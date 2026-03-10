@@ -10,6 +10,7 @@ import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal"
 export default function Footer() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isLocationsModalOpen, setIsLocationsModalOpen] = useState(false);
+  const footerLinkClass = "text-white transition-colors hover:text-gray-300";
 
   const handleSupportClick = () => {
     try {
@@ -37,7 +38,7 @@ export default function Footer() {
         isOpen={isLocationsModalOpen}
         onClose={() => setIsLocationsModalOpen(false)}
       />
-      <footer className="bg-[#0d1d73] text-white ">
+      <footer className="bg-[#0d1d73] text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 flex flex-col md:flex-row items-start sm:justify-center lg:justify-center gap-12">
           <div className="w-full md:w-1/5 text-left">
             {/* <div className="flex items-center gap-2 mb-6">
@@ -59,11 +60,11 @@ export default function Footer() {
               </Link>
             </div>
 
-            <h3 className="uppercase font-bold text-sm mb-3">
+            <h3 className="uppercase font-bold text-sm mb-3 text-white">
               Reach Out To Us
             </h3>
-            <p className="mb-2">09166680777</p>
-            <p className="mb-4">info@spacedey.com</p>
+            <p className="mb-2 text-white">09166680777</p>
+            <p className="mb-4 text-white">info@spacedey.com</p>
             <div className="w-12 h-[2px] bg-[#e65c3a] mb-6"></div>
             <div className="flex gap-4 text-white">
               <a
@@ -107,33 +108,33 @@ export default function Footer() {
                 <button
                   type="button"
                   onClick={() => setIsLocationsModalOpen(true)}
-                  className="hover:text-gray-300"
+                  className={footerLinkClass}
                 >
                   Locations
                 </button>
               </li>
               <li>
-                <Link href="/sizing" className="hover:text-gray-300">
+                <Link href="/sizing" className={footerLinkClass}>
                   Sizing
                 </Link>
               </li>
               <li>
-                <Link href="/sizing" className="hover:text-gray-300">
+                <Link href="/sizing" className={footerLinkClass}>
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/search" className="hover:text-gray-300">
+                <Link href="/search" className={footerLinkClass}>
                   Self-storage near me
                 </Link>
               </li>
               <li>
-                <Link href="/blog" className="hover:text-gray-300">
+                <Link href="/blog" className={footerLinkClass}>
                   News
                 </Link>
               </li>
               <li>
-                <Link href="/referral" className="hover:text-gray-300">
+                <Link href="/referral" className={footerLinkClass}>
                   Refer a Friend
                 </Link>
               </li>
@@ -148,22 +149,22 @@ export default function Footer() {
                 </Link> */}
               </li>
               <li>
-                <Link href="/products" className="hover:text-gray-300">
+                <Link href="/products" className={footerLinkClass}>
                   Perks
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="hover:text-gray-300">
+                <Link href="/products" className={footerLinkClass}>
                   Products
                 </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-gray-300">
+                <a href="#" className={footerLinkClass}>
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-gray-300">
+                <a href="#" className={footerLinkClass}>
                   Terms of Service
                 </a>
               </li>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useCallback, useEffect, useState, use } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import {
@@ -9,12 +9,9 @@ import {
     Save,
     Plus,
     Trash2,
-    Edit3,
-    MapPin,
     Box,
     Upload,
     Info,
-    ImageIcon,
     Map,
     FileText
 } from 'lucide-react';
@@ -33,11 +30,27 @@ interface UnitType {
     availableCount: number;
 }
 
+type StorageUnitStatus = 'available' | 'reserved' | 'occupied' | 'blocked' | 'maintenance';
+
+interface StorageUnit {
+    id?: string;
+    unitNumber: string;
+    status: StorageUnitStatus;
+    label?: string;
+    note?: string;
+    unitType?: {
+        id: string;
+        name: string;
+    };
+    unitTypeId?: string;
+}
+
 interface Site {
     id?: string;
     name: string;
     code: string;
     address: string;
+    about: string;
     contactPhone: string;
     contactEmail: string;
     lat: number;
@@ -46,6 +59,7 @@ interface Site {
     image?: string;
     siteMapUrl?: string;
     unitTypes: UnitType[];
+    units: StorageUnit[];
 }
 
 export default function SiteEditorPage({ params }: { params: Promise<{ id: string }> }) {
@@ -64,15 +78,16 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
         name: '',
         code: '',
         address: '',
+        about: '',
         contactPhone: '',
         contactEmail: '',
         lat: 6.5244,
         lng: 3.3792, // Default Lagos
         measuringUnit: 'ft',
         unitTypes: [],
+        units: [],
     });
 
-    const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
     const [unitForm, setUnitForm] = useState<UnitType>({
         name: '',
         width: 0,
@@ -83,13 +98,14 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
         availableCount: 0,
     });
 
-    useEffect(() => {
-        if (!isNew) {
-            fetchSite();
-        }
-    }, [id, authStore.accessToken]);
+    const [storageUnitForm, setStorageUnitForm] = useState<StorageUnit>({
+        unitNumber: '',
+        status: 'available',
+        label: '',
+        note: '',
+    });
 
-    const fetchSite = async () => {
+    const fetchSite = useCallback(async () => {
         try {
             const res = await fetch(`/api/admin/sites/${id}`, {
                 headers: { Authorization: `Bearer ${authStore.accessToken}` }
@@ -100,12 +116,18 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             } else {
                 setError(data.error);
             }
-        } catch (err) {
+        } catch {
             setError('Failed to load site');
         } finally {
             setLoading(false);
         }
-    };
+    }, [authStore.accessToken, id]);
+
+    useEffect(() => {
+        if (!isNew) {
+            fetchSite();
+        }
+    }, [fetchSite, isNew]);
 
     const handleSaveSite = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -136,7 +158,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             } else {
                 setError(data.error);
             }
-        } catch (err) {
+        } catch {
             setError('An error occurred while saving');
         } finally {
             setSaving(false);
@@ -165,7 +187,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             } else {
                 alert(data.error);
             }
-        } catch (err) {
+        } catch {
             alert('Failed to add unit type');
         }
     };
@@ -179,12 +201,106 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                 headers: { Authorization: `Bearer ${authStore.accessToken}` }
             });
             if (res.ok) {
-                setSite({ ...site, unitTypes: site.unitTypes.filter(u => u.id !== unitId) });
+                setSite({
+                    ...site,
+                    unitTypes: site.unitTypes.filter(u => u.id !== unitId),
+                    units: site.units.filter((unit) => unit.unitType?.id !== unitId && unit.unitTypeId !== unitId),
+                });
             }
-        } catch (err) {
+        } catch {
             alert('Failed to delete unit type');
         }
     };
+
+    const handleAddStorageUnit = async () => {
+        if (!storageUnitForm.unitNumber || !storageUnitForm.unitTypeId) {
+            alert('Please fill in unit number and unit type');
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/admin/sites/${id}/units`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authStore.accessToken}`
+                },
+                body: JSON.stringify(storageUnitForm)
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                setSite((current) => ({
+                    ...current,
+                    units: [...current.units, data.unit],
+                    unitTypes: current.unitTypes.map((unitType) => (
+                        unitType.id === data.unit.unitType?.id
+                            ? { ...unitType, availableCount: data.unit.status === 'available' ? unitType.availableCount + 1 : unitType.availableCount }
+                            : unitType
+                    )),
+                }));
+                setStorageUnitForm({
+                    unitNumber: '',
+                    status: 'available',
+                    label: '',
+                    note: '',
+                    unitTypeId: storageUnitForm.unitTypeId,
+                });
+            } else {
+                alert(data.error);
+            }
+        } catch {
+            alert('Failed to add storage unit');
+        }
+    };
+
+    const handleUpdateStorageUnit = async (unitId: string, updates: Partial<StorageUnit>) => {
+        try {
+            const res = await fetch(`/api/admin/sites/${id}/units/${unitId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authStore.accessToken}`
+                },
+                body: JSON.stringify(updates)
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                setSite((current) => ({
+                    ...current,
+                    units: current.units.map((unit) => unit.id === unitId ? { ...unit, ...data.unit } : unit),
+                }));
+                fetchSite();
+            } else {
+                alert(data.error);
+            }
+        } catch {
+            alert('Failed to update storage unit');
+        }
+    };
+
+    const handleDeleteStorageUnit = async (unitId: string) => {
+        if (!window.confirm('Delete this storage unit?')) return;
+
+        try {
+            const res = await fetch(`/api/admin/sites/${id}/units/${unitId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${authStore.accessToken}` }
+            });
+
+            if (res.ok) {
+                setSite((current) => ({
+                    ...current,
+                    units: current.units.filter((unit) => unit.id !== unitId),
+                }));
+                fetchSite();
+            }
+        } catch {
+            alert('Failed to delete storage unit');
+        }
+    };
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'siteMapUrl') => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -211,7 +327,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             } else {
                 alert(data.error || 'Upload failed');
             }
-        } catch (err) {
+        } catch {
             alert('An error occurred during upload');
         } finally {
             if (type === 'image') setUploadingImage(false);
@@ -250,6 +366,11 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Form */}
                 <div className="lg:col-span-2 space-y-8">
+                    {error && (
+                        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {error}
+                        </div>
+                    )}
                     <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                         <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
                             <Info className="w-5 h-5 mr-2 text-blue-600" />
@@ -290,6 +411,17 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                     onChange={e => setSite({ ...site, address: e.target.value })}
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                     placeholder="Street, City, State"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">About this Site</label>
+                                <textarea
+                                    rows={5}
+                                    value={site.about}
+                                    onChange={e => setSite({ ...site, about: e.target.value })}
+                                    className="w-full resize-y px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    placeholder="Describe what makes this location useful for customers, the area it serves, and the kind of storage needs it supports."
                                 />
                             </div>
 
@@ -364,8 +496,9 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                             <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                                 <h2 className="text-xl font-bold text-gray-900 flex items-center">
                                     <Box className="w-5 h-5 mr-2 text-blue-600" />
-                                    Unit Types & Inventory
+                                    Unit Types
                                 </h2>
+                                <span className="text-sm font-medium text-gray-500">{site.unitTypes.length} types</span>
                             </div>
 
                             <div className="p-6 space-y-6">
@@ -456,6 +589,142 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {!isNew && (
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                                    <Box className="w-5 h-5 mr-2 text-blue-600" />
+                                    Storage Units
+                                </h2>
+                                <span className="text-sm font-medium text-gray-500">{site.units.length} units</span>
+                            </div>
+
+                            <div className="p-6 space-y-6">
+                                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-4">
+                                    <h3 className="text-sm font-bold text-blue-800 uppercase tracking-wider">Add New Unit</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Unit Number</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. SP051"
+                                                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                value={storageUnitForm.unitNumber}
+                                                onChange={e => setStorageUnitForm({ ...storageUnitForm, unitNumber: e.target.value.toUpperCase() })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Unit Type</label>
+                                            <select
+                                                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                value={storageUnitForm.unitTypeId || ''}
+                                                onChange={e => setStorageUnitForm({ ...storageUnitForm, unitTypeId: e.target.value })}
+                                            >
+                                                <option value="">Select type</option>
+                                                {site.unitTypes.map((unitType) => (
+                                                    <option key={unitType.id} value={unitType.id}>
+                                                        {unitType.name} ({unitType.width} x {unitType.depth} {unitType.unit})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Status</label>
+                                            <select
+                                                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                value={storageUnitForm.status}
+                                                onChange={e => setStorageUnitForm({ ...storageUnitForm, status: e.target.value as StorageUnitStatus })}
+                                            >
+                                                <option value="available">Available</option>
+                                                <option value="reserved">Reserved</option>
+                                                <option value="occupied">Occupied</option>
+                                                <option value="blocked">Blocked</option>
+                                                <option value="maintenance">Maintenance</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Label</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Optional"
+                                                className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                value={storageUnitForm.label || ''}
+                                                onChange={e => setStorageUnitForm({ ...storageUnitForm, label: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="flex items-end gap-2">
+                                            <button
+                                                onClick={handleAddStorageUnit}
+                                                className="w-full inline-flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                            >
+                                                <Plus className="w-4 h-4 mr-2" />
+                                                Add Unit
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-blue-600 uppercase mb-1">Note</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Optional note like cleaning, overdue, broken door"
+                                            className="w-full px-3 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                            value={storageUnitForm.note || ''}
+                                            onChange={e => setStorageUnitForm({ ...storageUnitForm, note: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {site.units.length === 0 ? (
+                                        <p className="text-center text-gray-500 py-8 italic">No storage units added yet.</p>
+                                    ) : (
+                                        site.units.map((unit) => (
+                                            <div key={unit.id} className="rounded-xl border border-gray-200 p-4">
+                                                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                                                    <div>
+                                                        <p className="font-bold text-gray-900">{unit.unitNumber}</p>
+                                                        <p className="text-sm text-gray-500">
+                                                            {unit.unitType?.name || 'Unknown type'}
+                                                        </p>
+                                                        {unit.note ? (
+                                                            <p className="mt-1 text-xs text-gray-500">{unit.note}</p>
+                                                        ) : null}
+                                                    </div>
+                                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                                        <input
+                                                            type="text"
+                                                            defaultValue={unit.label || ''}
+                                                            placeholder="Label"
+                                                            onBlur={(e) => handleUpdateStorageUnit(unit.id!, { label: e.target.value })}
+                                                            className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        />
+                                                        <select
+                                                            value={unit.status}
+                                                            onChange={(e) => handleUpdateStorageUnit(unit.id!, { status: e.target.value as StorageUnitStatus })}
+                                                            className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                        >
+                                                            <option value="available">Available</option>
+                                                            <option value="reserved">Reserved</option>
+                                                            <option value="occupied">Occupied</option>
+                                                            <option value="blocked">Blocked</option>
+                                                            <option value="maintenance">Maintenance</option>
+                                                        </select>
+                                                        <button
+                                                            onClick={() => handleDeleteStorageUnit(unit.id!)}
+                                                            className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))

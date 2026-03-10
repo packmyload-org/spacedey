@@ -1,7 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
-import User from "./User";
-import Site from "./Site";
-import UnitType from "./UnitType";
+import type { Relation } from "typeorm";
+import UserEntity from "./User";
+import type { User as UserModel } from "./User";
+import SiteEntity from "./Site";
+import type { Site as SiteModel } from "./Site";
+import UnitTypeEntity from "./UnitType";
+import type { UnitType as UnitTypeModel } from "./UnitType";
+import StorageUnitEntity from "./StorageUnit";
+import type { StorageUnit as StorageUnitModel } from "./StorageUnit";
 
 export enum BookingStatus {
     PENDING = "pending",
@@ -14,16 +20,19 @@ export enum BookingStatus {
 @Entity("bookings")
 export class Booking {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
-    @ManyToOne(() => User, (user) => user.id)
-    user: User;
+    @ManyToOne(() => UserEntity, (user) => user.id)
+    user!: Relation<UserModel>;
 
-    @ManyToOne(() => Site, (site) => site.id)
-    site: Site;
+    @ManyToOne(() => SiteEntity, (site) => site.id)
+    site!: Relation<SiteModel>;
 
-    @ManyToOne(() => UnitType, (unitType) => unitType.id)
-    unitType: UnitType;
+    @ManyToOne(() => UnitTypeEntity, (unitType) => unitType.id)
+    unitType!: Relation<UnitTypeModel>;
+
+    @ManyToOne(() => StorageUnitEntity, { nullable: true })
+    storageUnit!: Relation<StorageUnitModel> | null;
 
     // No longer using fixed SubscriptionPlan
 
@@ -32,37 +41,37 @@ export class Booking {
         enum: BookingStatus,
         default: BookingStatus.PENDING
     })
-    status: BookingStatus;
+    status!: BookingStatus;
 
     @Column({ type: "timestamp" })
-    startDate: Date;
+    startDate!: Date;
 
     @Column({ type: "timestamp", nullable: true })
-    endDate: Date;
+    endDate!: Date | null;
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
-    monthlyRate: number; // Cached price of unit at time of booking
+    monthlyRate!: number; // Cached price of unit at time of booking
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    registrationFee: number;
+    registrationFee!: number;
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    annualDues: number;
+    annualDues!: number;
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    amountPaid: number; // Total installments received
+    amountPaid!: number; // Total installments received
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
-    totalAmount: number; // Total initial due (Reg + 1st Month + Annual)
+    totalAmount!: number; // Total initial due (Reg + 1st Month + Annual)
 
-    @Column({ default: "NGN" })
-    currency: string;
+    @Column({ type: "varchar", default: "NGN" })
+    currency!: string;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }
 
 export default Booking;

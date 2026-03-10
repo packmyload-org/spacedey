@@ -27,8 +27,7 @@ const defaultAddOns: AddOn[] = [
     name: "Spacedey Blue",
     description:
       "With Spacedey Blue, you're in control. Say goodbye to price increases and hello to hassle-free storage — cancel anytime with no strings.",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets/TEMP/930a6f1acb33012e44ec75f131fe284e89eb661e6882f48ca472eec205e7a88d?format=webp&placeholderIfAbsent=true&width=2000",
+    image: "/images/products/cardboard-box-medium.png",
     features: [
       { icon: "✓", text: "12 month price lock" },
       { icon: "✓", text: "Price starts at ₦4,500. per square feet/month" },
@@ -36,13 +35,24 @@ const defaultAddOns: AddOn[] = [
     ],
   },
   {
+    id: "packing-supplies",
+    name: "Packing Supplies",
+    description:
+      "Get the everyday packing essentials you need before move-in, from tape and wrap support to easy prep for cleaner, safer storage.",
+    image: "/images/products/tape-dispenser.png",
+    features: [
+      { icon: "✓", text: "Great for move-in prep and repacking" },
+      { icon: "✓", text: "Helps keep boxes secure in storage" },
+      { icon: "✓", text: "Useful for both personal and business items" },
+    ],
+  },
+  {
     id: "insurance",
     name: "Insurance",
     description: "Convenient, easy-to-add protection plans from Minico",
-    image:
-      "https://cdn.builder.io/api/v1/image/assets/TEMP/4b9dfee66be3d92388290aa6aee5f4e9b2e98250952a6a743caff00366b2711d?format=webp&placeholderIfAbsent=true&width=2000",
+    image: "/images/services/umbrella.png",
     features: [
-      { icon: "✓", text: "Protects up to ₦500,00." },
+      { icon: "✓", text: "Protects up to ₦500,000." },
       { icon: "✓", text: "₦0 deductible" },
       {
         icon: "✓",
@@ -51,6 +61,18 @@ const defaultAddOns: AddOn[] = [
     ],
     linkText: "View sample policy",
     linkHref: "#",
+  },
+  {
+    id: "move-in-support",
+    name: "Move-In Support",
+    description:
+      "Plan smoother drop-offs and business inventory moves with service support built around recurring storage use and quick access.",
+    image: "/images/services/truck.png",
+    features: [
+      { icon: "✓", text: "Useful for larger drop-offs and restocks" },
+      { icon: "✓", text: "Supports business and household moves" },
+      { icon: "✓", text: "Pairs well with flexible unit access" },
+    ],
   },
 ];
 

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
         // Fetch sites with unitTypes and some basic stats
         const sites = await repo.find({
-            relations: ['unitTypes'],
+            relations: ['unitTypes', 'units'],
             order: { createdAt: 'DESC' }
         });
 
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
             lng,
             measuringUnit,
             image,
+            about,
             siteMapUrl
         } = body;
 
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
             lng,
             measuringUnit: measuringUnit || 'ft',
             image,
+            about,
             siteMapUrl
         });
 

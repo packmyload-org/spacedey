@@ -1,0 +1,88 @@
+<svg width="1600" height="960" viewBox="0 0 1600 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="960" rx="40" fill="#EAF1FF"/>
+  <rect x="40" y="40" width="1520" height="880" rx="32" fill="url(#bg)"/>
+  <path d="M220 220C310 160 430 140 540 180C650 220 730 320 850 334C970 348 1090 274 1206 292C1322 310 1438 420 1460 540C1484 672 1402 798 1270 830C1138 862 1002 798 874 766C746 734 626 734 514 776C402 818 274 900 184 854C94 808 52 634 92 506C132 378 130 280 220 220Z" fill="#DCE8FF"/>
+  <path d="M250 258C334 210 436 206 542 232C650 260 758 320 868 320C978 320 1102 264 1208 294C1312 322 1404 418 1412 534C1420 648 1338 758 1238 790C1138 822 1014 776 890 746C768 716 646 702 530 730C416 758 294 830 218 784C142 738 112 628 124 534C136 440 168 306 250 258Z" stroke="#C1D5FF" stroke-width="16"/>
+  <path d="M350 184L382 812" stroke="#BDD0FB" stroke-width="10" stroke-linecap="round" stroke-dasharray="18 24"/>
+  <path d="M744 132L728 850" stroke="#BDD0FB" stroke-width="10" stroke-linecap="round" stroke-dasharray="18 24"/>
+  <path d="M1128 146L1168 832" stroke="#BDD0FB" stroke-width="10" stroke-linecap="round" stroke-dasharray="18 24"/>
+  <path d="M160 336L1436 370" stroke="#BDD0FB" stroke-width="10" stroke-linecap="round" stroke-dasharray="18 24"/>
+  <path d="M150 620L1440 654" stroke="#BDD0FB" stroke-width="10" stroke-linecap="round" stroke-dasharray="18 24"/>
+  <path d="M252 514C338 444 430 404 540 420C650 436 706 502 802 528C900 556 1004 546 1094 504C1184 462 1290 388 1380 412" stroke="#F59E0B" stroke-width="20" stroke-linecap="round"/>
+
+  <g filter="url(#pinShadow)">
+    <path d="M508 278C508 242.654 536.654 214 572 214C607.346 214 636 242.654 636 278C636 331.2 572 394 572 394C572 394 508 331.2 508 278Z" fill="#1642F0"/>
+    <circle cx="572" cy="278" r="22" fill="white"/>
+  </g>
+  <g filter="url(#pinShadow)">
+    <path d="M884 246C884 210.654 912.654 182 948 182C983.346 182 1012 210.654 1012 246C1012 299.2 948 362 948 362C948 362 884 299.2 884 246Z" fill="#1642F0"/>
+    <circle cx="948" cy="246" r="22" fill="white"/>
+  </g>
+  <g filter="url(#pinShadow)">
+    <path d="M1012 420C1012 384.654 1040.65 356 1076 356C1111.35 356 1140 384.654 1140 420C1140 473.2 1076 536 1076 536C1076 536 1012 473.2 1012 420Z" fill="#1642F0"/>
+    <circle cx="1076" cy="420" r="22" fill="white"/>
+  </g>
+  <g filter="url(#pinShadow)">
+    <path d="M700 494C700 458.654 728.654 430 764 430C799.346 430 828 458.654 828 494C828 547.2 764 610 764 610C764 610 700 547.2 700 494Z" fill="#D96541"/>
+    <circle cx="764" cy="494" r="22" fill="white"/>
+  </g>
+  <g filter="url(#pinShadow)">
+    <path d="M474 562C474 526.654 502.654 498 538 498C573.346 498 602 526.654 602 562C602 615.2 538 678 538 678C538 678 474 615.2 474 562Z" fill="#1642F0"/>
+    <circle cx="538" cy="562" r="22" fill="white"/>
+  </g>
+  <g filter="url(#pinShadow)">
+    <path d="M940 600C940 564.654 968.654 536 1004 536C1039.35 536 1068 564.654 1068 600C1068 653.2 1004 716 1004 716C1004 716 940 653.2 940 600Z" fill="#1642F0"/>
+    <circle cx="1004" cy="600" r="22" fill="white"/>
+  </g>
+
+  <g filter="url(#cardShadow)">
+    <rect x="94" y="88" width="296" height="168" rx="28" fill="white" fill-opacity="0.92"/>
+    <text x="132" y="140" fill="#16306D" font-family="Arial, sans-serif" font-size="28" font-weight="700">Storage network</text>
+    <text x="132" y="182" fill="#5E6C91" font-family="Arial, sans-serif" font-size="22">Mock coverage view for</text>
+    <text x="132" y="214" fill="#5E6C91" font-family="Arial, sans-serif" font-size="22">locations across Nigeria</text>
+  </g>
+
+  <g filter="url(#cardShadow)">
+    <rect x="1178" y="704" width="286" height="140" rx="28" fill="white" fill-opacity="0.94"/>
+    <circle cx="1238" cy="760" r="14" fill="#D96541"/>
+    <text x="1272" y="768" fill="#16306D" font-family="Arial, sans-serif" font-size="24" font-weight="700">Highlighted city</text>
+    <circle cx="1238" cy="804" r="14" fill="#1642F0"/>
+    <text x="1272" y="812" fill="#16306D" font-family="Arial, sans-serif" font-size="24" font-weight="700">Available markets</text>
+  </g>
+
+  <g fill="#16306D" font-family="Arial, sans-serif" font-size="24" font-weight="700">
+    <text x="532" y="442">Abuja</text>
+    <text x="912" y="408">Kaduna</text>
+    <text x="1042" y="582">Jos</text>
+    <text x="728" y="654">Lagos</text>
+    <text x="490" y="722">Ibadan</text>
+    <text x="986" y="756">Enugu</text>
+  </g>
+
+  <defs>
+    <linearGradient id="bg" x1="800" y1="40" x2="800" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FAFF"/>
+      <stop offset="1" stop-color="#DCE8FF"/>
+    </linearGradient>
+    <filter id="pinShadow" x="458" y="152" width="196" height="292" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="18"/>
+      <feGaussianBlur stdDeviation="18"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0862745 0 0 0 0 0.258824 0 0 0 0 0.941176 0 0 0 0.2 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+    <filter id="cardShadow" x="54" y="60" width="1450" height="824" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="16"/>
+      <feGaussianBlur stdDeviation="20"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.0627451 0 0 0 0 0.164706 0 0 0 0 0.447059 0 0 0 0.12 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_1"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1_1" result="shape"/>
+    </filter>
+  </defs>
+</svg>

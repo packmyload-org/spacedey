@@ -3,25 +3,25 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 @Entity("subscription_plans")
 export class SubscriptionPlan {
     @PrimaryGeneratedColumn("uuid")
-    id: string;
+    id!: string;
 
-    @Column()
-    name: string;
+    @Column({ type: "varchar" })
+    name!: string;
 
-    @Column()
-    durationMonths: number;
+    @Column({ type: "int" })
+    durationMonths!: number;
 
     @Column({ type: "decimal", precision: 5, scale: 2, default: 0 })
-    discountPercent: number;
+    discountPercent!: number;
 
-    @Column({ default: true })
-    isActive: boolean;
+    @Column({ type: "boolean", default: true })
+    isActive!: boolean;
 
     @CreateDateColumn()
-    createdAt: Date;
+    createdAt!: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date;
+    updatedAt!: Date;
 }
 
 export default SubscriptionPlan;

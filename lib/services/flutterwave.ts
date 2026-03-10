@@ -3,6 +3,10 @@ import axios from 'axios';
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY;
 
 export const flutterwave = {
+    isConfigured() {
+        return Boolean(FLUTTERWAVE_SECRET_KEY);
+    },
+
     async initializePayment(email: string, amount: number, txRef: string, redirectUrl: string) {
         try {
             const response = await axios.post(
@@ -30,9 +34,13 @@ export const flutterwave = {
             );
 
             return response.data;
-        } catch (error: any) {
-            console.error('Flutterwave initialize error:', error.response?.data || error.message);
-            throw new Error(error.response?.data?.message || 'Failed to initialize Flutterwave payment');
+        } catch (error: unknown) {
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.message || error.message
+                : 'Failed to initialize Flutterwave payment';
+
+            console.error('Flutterwave initialize error:', message);
+            throw new Error(message);
         }
     },
 
@@ -48,9 +56,13 @@ export const flutterwave = {
             );
 
             return response.data;
-        } catch (error: any) {
-            console.error('Flutterwave verify error:', error.response?.data || error.message);
-            throw new Error(error.response?.data?.message || 'Failed to verify Flutterwave payment');
+        } catch (error: unknown) {
+            const message = axios.isAxiosError(error)
+                ? error.response?.data?.message || error.message
+                : 'Failed to verify Flutterwave payment';
+
+            console.error('Flutterwave verify error:', message);
+            throw new Error(message);
         }
     },
 };

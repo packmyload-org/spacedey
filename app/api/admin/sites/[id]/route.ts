@@ -23,7 +23,7 @@ export async function GET(
 
         const site = await repo.findOne({
             where: { id },
-            relations: ['unitTypes']
+            relations: ['unitTypes', 'units', 'units.unitType']
         });
 
         if (!site) {
@@ -64,16 +64,17 @@ export async function PATCH(
         }
 
         // Update fields if provided
-        if (body.name) site.name = body.name;
-        if (body.code) site.code = body.code;
-        if (body.address) site.address = body.address;
-        if (body.contactPhone) site.contactPhone = body.contactPhone;
-        if (body.contactEmail) site.contactEmail = body.contactEmail;
+        if (body.name !== undefined) site.name = body.name;
+        if (body.code !== undefined) site.code = body.code;
+        if (body.address !== undefined) site.address = body.address;
+        if (body.contactPhone !== undefined) site.contactPhone = body.contactPhone;
+        if (body.contactEmail !== undefined) site.contactEmail = body.contactEmail;
         if (body.lat !== undefined) site.lat = body.lat;
         if (body.lng !== undefined) site.lng = body.lng;
-        if (body.measuringUnit) site.measuringUnit = body.measuringUnit;
-        if (body.image) site.image = body.image;
-        if (body.siteMapUrl) site.siteMapUrl = body.siteMapUrl;
+        if (body.measuringUnit !== undefined) site.measuringUnit = body.measuringUnit;
+        if (body.image !== undefined) site.image = body.image;
+        if (body.about !== undefined) site.about = body.about;
+        if (body.siteMapUrl !== undefined) site.siteMapUrl = body.siteMapUrl;
 
         await repo.save(site);
 

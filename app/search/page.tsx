@@ -4,7 +4,7 @@ import SearchBar from "@/components/search/SearchBar";
 import CityList from "@/components/search/CityList";
 import MapView from "@/components/search/MapView";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSearchStore } from "@/lib/store/useSearchStore";
 
@@ -31,15 +31,32 @@ function SearchContent() {
       const decodedCity = decodeURIComponent(cityParam);
       setSelectedCity(decodedCity);
       setSearchQuery(decodedCity);
+      return;
     }
+
+    setSelectedCity("");
+    setSearchQuery("");
   }, [searchParams, setSelectedCity, setSearchQuery]);
+
+  const syncSelectedCity = useCallback((cityName: string) => {
+    const normalizedCity = cityName.trim();
+    setSelectedCity(normalizedCity);
+    setSearchQuery(normalizedCity);
+
+    const url = new URL(globalThis.location.href);
+
+    if (normalizedCity) {
+      url.searchParams.set('city', normalizedCity);
+    } else {
+      url.searchParams.delete('city');
+    }
+
+    globalThis.history.replaceState({}, '', url);
+  }, [setSearchQuery, setSelectedCity]);
 
   // Handle search from SearchBar
   const handleSearch = (cityName: string) => {
-    setSelectedCity(cityName);
-    const url = new URL(globalThis.location.href);
-    url.searchParams.set('city', cityName);
-    globalThis.history.pushState({}, '', url);
+    syncSelectedCity(cityName);
   };
 
   return (
@@ -59,7 +76,7 @@ function SearchContent() {
                 <CityList
                   searchQuery={searchQuery}
                   selectedCity={selectedCity}
-                  onSelectCity={setSelectedCity}
+                  onSelectCity={syncSelectedCity}
                   sites={sites}
                 />
               </div>

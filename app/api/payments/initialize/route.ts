@@ -8,9 +8,23 @@ import { cookies } from 'next/headers';
 import * as jwt from 'jsonwebtoken';
 import { env } from '@/config/env';
 
+interface InitializePaymentBody {
+    bookingId?: string;
+    provider?: PaymentProvider;
+    amount?: number;
+}
+
 export async function POST(req: Request) {
     try {
-        const { bookingId, provider, amount } = await req.json();
+        const { bookingId, provider, amount } = await req.json() as InitializePaymentBody;
+
+        if (!bookingId) {
+            return NextResponse.json({ ok: false, message: 'Booking is required' }, { status: 400 });
+        }
+
+        if (!provider) {
+            return NextResponse.json({ ok: false, message: 'Payment provider is required' }, { status: 400 });
+        }
 
         if (!amount || amount <= 0) {
             return NextResponse.json({ ok: false, message: 'Invalid payment amount' }, { status: 400 });
@@ -23,7 +37,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ ok: false, message: 'Authentication required' }, { status: 401 });
         }
 
-        const decoded = jwt.verify(token, env.jwt.secret) as any;
+        const decoded = jwt.verify(token, env.jwt.secret) as { userId: string };
         const userId = decoded.userId;
 
         const dataSource = await connectTypeORM();
@@ -40,16 +54,21 @@ export async function POST(req: Request) {
             return NextResponse.json({ ok: false, message: 'Booking not found' }, { status: 404 });
         }
 
-        // 3. Initialize Provider Payment
-        // For iFitness model, we use the custom 'amount' passed from frontend (incremental)
+        // 3. Initialize provider payment using the requested installment/full amount
         const reference = `SPDC-${bookingId.split('-')[0].toUpperCase()}-${Date.now()}`;
         const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback`;
         const paymentAmount = Number(amount);
 
         let providerResponse;
         if (provider === PaymentProvider.PAYSTACK) {
+            if (!paystack.isConfigured()) {
+                return NextResponse.json({ ok: false, message: 'Paystack is not configured yet' }, { status: 400 });
+            }
             providerResponse = await paystack.initializePayment(booking.user.email, paymentAmount, reference, callbackUrl);
         } else if (provider === PaymentProvider.FLUTTERWAVE) {
+            if (!flutterwave.isConfigured()) {
+                return NextResponse.json({ ok: false, message: 'Flutterwave is not configured yet' }, { status: 400 });
+            }
             providerResponse = await flutterwave.initializePayment(booking.user.email, paymentAmount, reference, callbackUrl);
         } else {
             return NextResponse.json({ ok: false, message: 'Invalid payment provider' }, { status: 400 });
@@ -73,8 +92,9 @@ export async function POST(req: Request) {
             authorizationUrl: provider === PaymentProvider.PAYSTACK ? providerResponse.data.authorization_url : providerResponse.data.link
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Internal server error';
         console.error('Initialize payment error:', error);
-        return NextResponse.json({ ok: false, message: error.message || 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ ok: false, message }, { status: 500 });
     }
 }

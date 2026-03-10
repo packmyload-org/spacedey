@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import {
@@ -9,13 +9,20 @@ import {
     Plus,
     Edit2,
     Trash2,
-    ExternalLink,
     Search,
     Box,
     Mail,
     Phone
 } from 'lucide-react';
 import Image from 'next/image';
+
+interface UnitTypeSummary {
+    id: string;
+}
+
+interface StorageUnitSummary {
+    id: string;
+}
 
 interface Site {
     id: string;
@@ -25,7 +32,8 @@ interface Site {
     contactPhone: string;
     contactEmail: string;
     image?: string;
-    unitTypes: any[];
+    unitTypes: UnitTypeSummary[];
+    units?: StorageUnitSummary[];
     createdAt: string;
 }
 
@@ -34,17 +42,11 @@ export default function AdminSitesPage() {
     const router = useRouter();
     const [sites, setSites] = useState<Site[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        fetchSites();
-    }, [authStore.accessToken]);
-
-    const fetchSites = async () => {
+    const fetchSites = useCallback(async () => {
         try {
             setLoading(true);
-            setError(null);
 
             const response = await fetch('/api/admin/sites', {
                 headers: {
@@ -58,12 +60,16 @@ export default function AdminSitesPage() {
 
             const data = await response.json();
             setSites(data.sites || []);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
+        } catch {
+            setSites([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, [authStore.accessToken]);
+
+    useEffect(() => {
+        fetchSites();
+    }, [fetchSites]);
 
     const handleDeleteSite = async (id: string, name: string) => {
         if (!window.confirm(`Are you sure you want to delete "${name}"? This will also delete all associated unit types.`)) {
@@ -202,7 +208,7 @@ export default function AdminSitesPage() {
                                         </div>
                                         <div className="flex items-center text-gray-600">
                                             <Box className="w-4 h-4 mr-2 text-gray-400" />
-                                            {site.unitTypes?.length || 0} Unit Types
+                                            {site.unitTypes?.length || 0} Unit Types • {site.units?.length || 0} Units
                                         </div>
                                     </div>
                                 </div>
