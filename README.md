@@ -83,7 +83,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=password
 POSTGRES_DB=spacedey
 DB_TYPE=postgres
-DB_SYNCHRONIZE=true
+DB_SYNCHRONIZE=false
 DB_LOGGING=true
 
 # Auth
@@ -111,10 +111,24 @@ If you prefer local Docker Postgres instead:
 docker-compose up -d
 ```
 
-### 5. Seed default users
+### 5. Run migrations
+
+Create the schema first:
 
 ```bash
-DB_USE_DIRECT_URL=true pnpm run seed:data
+pnpm db:migrate
+```
+
+If you already have a database that was built with `synchronize`, baseline the initial migration once before switching to the migration flow:
+
+```bash
+pnpm db:baseline
+```
+
+### 6. Seed baseline data
+
+```bash
+pnpm run seed:data
 ```
 
 For local Docker/Postgres, `pnpm run seed:data` is also fine.
@@ -128,7 +142,7 @@ This creates two default accounts:
 
 > ⚠️ **Change these passwords before deploying to production!**
 
-### 6. Start the development server
+### 7. Start the development server
 
 ```bash
 pnpm dev
@@ -146,7 +160,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `pnpm build` | Production build |
 | `pnpm start` | Start the production server |
 | `pnpm lint` | Run ESLint |
-| `pnpm seed:data` | Seed the database with default users |
+| `pnpm db:migrate` | Run pending TypeORM migrations |
+| `pnpm db:migrate:revert` | Revert the most recent migration |
+| `pnpm db:migrate:show` | List applied and pending migrations |
+| `pnpm db:baseline` | Mark the initial migration as applied on an existing DB |
+| `pnpm db:setup` | Run migrations, then seed baseline data |
+| `pnpm seed:data` | Seed baseline users, sites, unit types, and inventory |
 
 ---
 
@@ -181,6 +200,7 @@ spacedey/
 | [Admin Portal Guide](./docs/ADMIN_PORTAL.md) | Role-based access, admin API endpoints, frontend usage, security checklist |
 | [Docker & Postgres Setup](./docs/DOCKER_SETUP.md) | Full Docker setup, environment variables, deployment, troubleshooting |
 | [Supabase + Vercel DB Setup](./docs/SUPABASE_VERCEL.md) | Managed Postgres setup using Supabase with Vercel-friendly env vars |
+| [Database Workflow](./docs/DATABASE_WORKFLOW.md) | Migrations, baselining, and seeding guidance |
 
 ---
 
