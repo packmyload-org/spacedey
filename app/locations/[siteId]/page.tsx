@@ -30,17 +30,17 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
     name: site.name,
     code: site.code,
     about: site.about || undefined,
-    image: site.image,
+    image: site.image || undefined,
     address: {
       street: site.address || undefined,
     },
     contact: {
-      phone: site.contactPhone,
-      email: site.contactEmail,
+      phone: site.contactPhone || '',
+      email: site.contactEmail || '',
     },
     coordinates: {
-      lat: site.lat,
-      lng: site.lng,
+      lat: site.lat ?? site.latitude ?? 0,
+      lng: site.lng ?? site.longitude ?? 0,
     },
     unitTypes: (site.unitTypes || []).map((ut) => {
       const unitsForType = siteUnits.filter((unit) => unit.unitType?.id === ut.id);

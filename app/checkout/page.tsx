@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSearchStore } from "@/lib/store/useSearchStore";
@@ -35,7 +35,7 @@ const paymentProviders = [
     },
 ] as const;
 
-export default function CheckoutPage() {
+function CheckoutContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { sites } = useSearchStore();
@@ -438,5 +438,17 @@ export default function CheckoutPage() {
                 </div>
             )}
         </div>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="animate-spin h-10 w-10 text-blue-600" />
+            </div>
+        }>
+            <CheckoutContent />
+        </Suspense>
     );
 }
