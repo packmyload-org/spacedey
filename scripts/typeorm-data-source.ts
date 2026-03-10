@@ -69,7 +69,11 @@ const postgresConnectionOptions = useDirectUrl && directDatabaseUrl
         database: process.env.POSTGRES_DB || process.env.DB_NAME || 'spacedey',
       };
 
+<<<<<<< HEAD
 const TypeormDataSource = new DataSource({
+=======
+export const AppDataSource = new DataSource({
+>>>>>>> feat/custom-integration
   type: 'postgres',
   ...postgresConnectionOptions,
   ssl,
@@ -79,4 +83,8 @@ const TypeormDataSource = new DataSource({
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 
+<<<<<<< HEAD
 export default TypeormDataSource;
+=======
+export default AppDataSource;
+>>>>>>> feat/custom-integration

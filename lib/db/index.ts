@@ -1,5 +1,8 @@
 import 'reflect-metadata';
+<<<<<<< HEAD
 import path from 'path';
+=======
+>>>>>>> feat/custom-integration
 import { DataSource } from 'typeorm';
 import { env } from '@/config/env';
 import User from './entities/User';
@@ -32,7 +35,10 @@ export const AppDataSource = new DataSource({
   synchronize: env.postgres.synchronize,
   logging: env.postgres.logging,
   entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
+<<<<<<< HEAD
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
+=======
+>>>>>>> feat/custom-integration
 });
 
 export async function connectTypeORM(): Promise<DataSource> {

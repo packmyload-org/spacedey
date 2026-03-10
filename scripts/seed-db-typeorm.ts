@@ -1,6 +1,10 @@
 import 'reflect-metadata';
+<<<<<<< HEAD
 import dotenv from 'dotenv';
 import { AppDataSource } from '../lib/db/index.js';
+=======
+import { AppDataSource } from './typeorm-data-source.js';
+>>>>>>> feat/custom-integration
 import User from '../lib/db/entities/User.js';
 import Site from '../lib/db/entities/Site.js';
 import UnitType from '../lib/db/entities/UnitType.js';
@@ -8,8 +12,11 @@ import StorageUnit, { StorageUnitStatus } from '../lib/db/entities/StorageUnit.j
 import { STORAGE_SITES, STORAGE_UNIT_TYPES, getStorageUnitSeedKey } from '../lib/data/storageCatalog.js';
 import { UserRole } from '../lib/types/roles.js';
 
+<<<<<<< HEAD
 dotenv.config();
 
+=======
+>>>>>>> feat/custom-integration
 const DEFAULT_USERS = [
   {
     email: 'admin@spacedey.com',
