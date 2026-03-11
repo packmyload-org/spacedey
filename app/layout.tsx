@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Analytics } from '@vercel/analytics/next';
 import ZendeskWidget from "@/components/ZendeskWidget";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCart from "@/components/StorageCart";
@@ -22,6 +23,7 @@ export default function RootLayout({
           {children}
           <StorageCart />
         </StorageCartProvider>
+        <Analytics />
       </body>
     </html>
   );
