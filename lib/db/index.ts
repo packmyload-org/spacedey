@@ -14,30 +14,42 @@ const ssl = env.postgres.ssl
   ? { rejectUnauthorized: env.postgres.sslRejectUnauthorized }
   : false;
 
-if (!env.postgres.url) {
-  throw new Error(
-    'Missing DATABASE_URL or DIRECT_DATABASE_URL. Configure the database URL-based env vars before starting the app.'
-  );
-}
+let appDataSource: DataSource | null = null;
 
-export const AppDataSource = new DataSource({
-  type: 'postgres',
-  url: env.postgres.url,
-  ssl,
-  synchronize: env.postgres.synchronize,
-  logging: env.postgres.logging,
-  entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
-});
+function getAppDataSource(): DataSource {
+  if (appDataSource) {
+    return appDataSource;
+  }
+
+  if (!env.postgres.url) {
+    throw new Error(
+      'Missing DATABASE_URL or DIRECT_DATABASE_URL. Configure the database URL-based env vars before starting the app.'
+    );
+  }
+
+  appDataSource = new DataSource({
+    type: 'postgres',
+    url: env.postgres.url,
+    ssl,
+    synchronize: env.postgres.synchronize,
+    logging: env.postgres.logging,
+    entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
+  });
+
+  return appDataSource;
+}
 
 let dataSourceInitializationPromise: Promise<DataSource> | null = null;
 
 export async function connectTypeORM(): Promise<DataSource> {
-  if (AppDataSource.isInitialized) {
-    return AppDataSource;
+  const dataSource = getAppDataSource();
+
+  if (dataSource.isInitialized) {
+    return dataSource;
   }
 
   if (!dataSourceInitializationPromise) {
-    dataSourceInitializationPromise = AppDataSource.initialize()
+    dataSourceInitializationPromise = dataSource.initialize()
       .then((dataSource) => {
         console.log('✓ Connected to relational DB via TypeORM');
         return dataSource;
@@ -52,11 +64,11 @@ export async function connectTypeORM(): Promise<DataSource> {
 }
 
 export async function disconnectTypeORM(): Promise<void> {
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy();
+  if (appDataSource?.isInitialized) {
+    await appDataSource.destroy();
     dataSourceInitializationPromise = null;
     console.log('Disconnected TypeORM');
   }
 }
 
-export default AppDataSource;
+export { getAppDataSource };
