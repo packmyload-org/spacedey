@@ -12,6 +12,8 @@ import {
     DEFAULT_RECURRING_DURATION_MONTHS,
     normalizeRecurringDurationMonths,
 } from '@/lib/billing/config';
+import { BookingStatus } from '@/lib/db/entities/Booking';
+import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
 
 interface InitializePaymentBody {
     bookingId?: string;
@@ -46,6 +48,10 @@ function normalizeAllocations(body: InitializePaymentBody): PaymentBookingAlloca
     }
 
     return [];
+}
+
+function roundCurrency(value: number) {
+    return Math.round(value * 100) / 100;
 }
 
 export async function POST(req: Request) {
@@ -92,6 +98,7 @@ export async function POST(req: Request) {
         const dataSource = await connectTypeORM();
         const bookingRepo = dataSource.getRepository(Booking);
         const paymentRepo = dataSource.getRepository(Payment);
+        await expireStalePendingBookings(dataSource);
 
         const bookings = await bookingRepo.find({
             where: { id: In(bookingIds), user: { id: userId } },
@@ -107,6 +114,36 @@ export async function POST(req: Request) {
         if (!primaryBooking) {
             return NextResponse.json({ ok: false, message: 'Primary booking not found' }, { status: 404 });
         }
+        const bookingBillingTypes = new Set(bookings.map((booking) => booking.billingMetadata?.billingType ?? PaymentBillingType.ONE_TIME));
+        if (bookingBillingTypes.size > 1) {
+            return NextResponse.json({ ok: false, message: 'Selected bookings must use the same billing type' }, { status: 400 });
+        }
+
+        for (const allocation of bookingAllocations) {
+            const booking = bookingMap.get(allocation.bookingId);
+
+            if (!booking) {
+                return NextResponse.json({ ok: false, message: 'One or more bookings were not found' }, { status: 404 });
+            }
+
+            if (![BookingStatus.PENDING, BookingStatus.PARTIAL].includes(booking.status)) {
+                return NextResponse.json({ ok: false, message: 'Only pending bookings with an outstanding balance can be charged' }, { status: 400 });
+            }
+
+            const outstandingAmount = roundCurrency(Math.max(Number(booking.totalAmount) - Number(booking.amountPaid), 0));
+
+            if (outstandingAmount <= 0) {
+                return NextResponse.json({ ok: false, message: 'One or more bookings no longer have an outstanding balance' }, { status: 400 });
+            }
+
+            if (Math.abs(roundCurrency(Number(allocation.amount)) - outstandingAmount) > 0.01) {
+                return NextResponse.json({
+                    ok: false,
+                    message: 'Payment amount must match the booking balance due',
+                }, { status: 400 });
+            }
+        }
+
         const recurringEndsAt = typeof primaryBooking.billingMetadata?.recurringEndDate === 'string'
             ? primaryBooking.billingMetadata.recurringEndDate
             : null;
@@ -215,6 +252,15 @@ export async function POST(req: Request) {
         });
 
         await paymentRepo.save(payment);
+        const paymentInitializedAt = new Date().toISOString();
+        await bookingRepo.save(bookings.map((booking) => ({
+            ...booking,
+            billingMetadata: {
+                ...(booking.billingMetadata ?? {}),
+                pendingPaymentReference: reference,
+                pendingPaymentInitializedAt: paymentInitializedAt,
+            },
+        })));
 
         return NextResponse.json({
             ok: true,

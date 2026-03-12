@@ -3,25 +3,63 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Image from "next/image";
-import { Tag, CreditCard, ChevronRight, Loader2, MapPin } from "lucide-react";
+import { Tag, CreditCard, Loader2, MapPin, CalendarClock, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
+import { formatStorageUnitLabel } from "@/lib/pricing/storagePricing";
 
 interface BookingItem {
     id: string;
     status: string;
     totalAmount: number | string;
     amountPaid: number | string;
+    endDate?: string | null;
+    billingMetadata?: {
+        billingType?: "one_time" | "recurring";
+        recurringDurationMonths?: number;
+    } | null;
     site?: {
         image?: string;
         name?: string;
     };
     unitType?: {
         name?: string;
+        width?: number;
+        depth?: number;
+        unit?: string;
     };
     storageUnit?: {
         unitNumber?: string;
     };
+}
+
+function formatBookingUnitLabel(booking: BookingItem) {
+    if (booking.unitType?.width && booking.unitType?.depth) {
+        return formatStorageUnitLabel({
+            width: Number(booking.unitType.width),
+            depth: Number(booking.unitType.depth),
+            unit: booking.unitType.unit,
+        });
+    }
+
+    return booking.unitType?.name || "Storage Unit";
+}
+
+function formatDateLabel(dateString?: string | null) {
+    if (!dateString) {
+        return null;
+    }
+
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return new Intl.DateTimeFormat("en-NG", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    }).format(date);
 }
 
 export default function UserBookingsPage() {
@@ -47,8 +85,8 @@ export default function UserBookingsPage() {
     }, []);
 
     const handlePayBalance = async (booking: BookingItem) => {
-        const amount = prompt("Enter amount to pay towards balance (₦):", "5000");
-        if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
+        const amountDue = Math.max(Number(booking.totalAmount) - Number(booking.amountPaid), 0);
+        if (amountDue <= 0) return;
 
         setProcessingId(booking.id);
         try {
@@ -58,7 +96,7 @@ export default function UserBookingsPage() {
                 body: JSON.stringify({
                     bookingId: booking.id,
                     provider: PaymentProvider.PAYSTACK,
-                    amount: Number(amount)
+                    amount: amountDue
                 })
             });
             const data = await res.json();
@@ -82,7 +120,7 @@ export default function UserBookingsPage() {
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
                     <div>
                         <h1 className="text-4xl font-black text-blue-900 mb-2">My Bookings</h1>
-                        <p className="text-gray-500 text-lg">Manage your storage units and monthly or upfront payments</p>
+                        <p className="text-gray-500 text-lg">Manage your storage bookings and keep track of active billing records</p>
                     </div>
                 </div>
 
@@ -106,8 +144,14 @@ export default function UserBookingsPage() {
                 ) : (
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                         {bookings.map((booking) => {
-                            const balance = Number(booking.totalAmount) - Number(booking.amountPaid);
-                            const percent = Math.min(100, Math.round((Number(booking.amountPaid) / Number(booking.totalAmount)) * 100));
+                            const billingType = booking.billingMetadata?.billingType ?? "one_time";
+                            const isRecurring = billingType === "recurring";
+                            const balance = Math.max(Number(booking.totalAmount) - Number(booking.amountPaid), 0);
+                            const percent = Number(booking.totalAmount) > 0
+                                ? Math.min(100, Math.round((Math.min(Number(booking.amountPaid), Number(booking.totalAmount)) / Number(booking.totalAmount)) * 100))
+                                : 0;
+                            const unitLabel = formatBookingUnitLabel(booking);
+                            const recurringEndDateLabel = formatDateLabel(booking.endDate);
 
                             return (
                                 <div key={booking.id} className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-xl shadow-blue-900/5 group hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-500 flex flex-col md:flex-row gap-8">
@@ -133,25 +177,48 @@ export default function UserBookingsPage() {
                                             <div className="flex items-center gap-2 text-gray-400 text-sm font-bold uppercase tracking-widest">
                                                 <Box className="w-3 h-3 text-blue-400" />
                                                 {booking.storageUnit?.unitNumber
-                                                    ? `${booking.storageUnit.unitNumber} • ${booking.unitType?.name} Unit`
-                                                    : `${booking.unitType?.name} Unit`}
+                                                    ? `${booking.storageUnit.unitNumber} • ${unitLabel}`
+                                                    : unitLabel}
                                             </div>
                                         </div>
 
                                         <div className="space-y-4 mb-8">
-                                            <div>
-                                                <div className="flex justify-between text-xs font-black text-blue-900 uppercase tracking-widest mb-2">
-                                                    <span>Payment Progress</span>
-                                                    <span>{percent}%</span>
+                                            {isRecurring ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+                                                        <span className="block text-[10px] font-black text-blue-600 uppercase tracking-widest">Billing</span>
+                                                        <span className="mt-1 flex items-center gap-2 text-sm font-bold text-blue-900">
+                                                            <RefreshCcw className="w-4 h-4" />
+                                                            Recurring monthly
+                                                        </span>
+                                                    </div>
+                                                    <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
+                                                        <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Term Ends</span>
+                                                        <span className="mt-1 flex items-center gap-2 text-sm font-bold text-gray-900">
+                                                            <CalendarClock className="w-4 h-4 text-blue-500" />
+                                                            {recurringEndDateLabel || "Not set"}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                                <div className="h-3 bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
-                                                    <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+                                            ) : (
+                                                <div>
+                                                    <div className="flex justify-between text-xs font-black text-blue-900 uppercase tracking-widest mb-2">
+                                                        <span>Payment Progress</span>
+                                                        <span>{percent}%</span>
+                                                    </div>
+                                                    <div className="h-3 bg-gray-50 rounded-full overflow-hidden border border-gray-100 p-0.5">
+                                                        <div className="h-full bg-blue-600 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }} />
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                             <div className="flex justify-between items-end">
                                                 <div className="text-left">
-                                                    <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Balance Due</span>
-                                                    <span className="text-xl font-black text-blue-900">₦{balance.toLocaleString()}</span>
+                                                    <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                        {isRecurring ? "Current Month Covered" : "Balance Due"}
+                                                    </span>
+                                                    <span className="text-xl font-black text-blue-900">
+                                                        {isRecurring ? "Yes" : `₦${balance.toLocaleString()}`}
+                                                    </span>
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Paid</span>
@@ -160,18 +227,19 @@ export default function UserBookingsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="mt-auto grid grid-cols-2 gap-3">
-                                            <button
-                                                onClick={() => handlePayBalance(booking)}
-                                                disabled={processingId === booking.id || balance <= 0}
-                                                className="flex items-center justify-center gap-2 bg-[#1642F0] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                                            >
-                                                {processingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                                                Pay Balance
-                                            </button>
-                                            <Link href={`/bookings/${booking.id}`} className="flex items-center justify-center gap-2 bg-white border-2 border-gray-100 text-blue-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all">
-                                                Details
-                                                <ChevronRight className="w-4 h-4" />
+                                        <div className={`mt-auto grid gap-3 ${isRecurring ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
+                                            {!isRecurring && (
+                                                <button
+                                                    onClick={() => handlePayBalance(booking)}
+                                                    disabled={processingId === booking.id || balance <= 0}
+                                                    className="flex items-center justify-center gap-2 bg-[#1642F0] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                                >
+                                                    {processingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                                                    Complete Payment
+                                                </button>
+                                            )}
+                                            <Link href="/invoices" className="flex items-center justify-center gap-2 bg-white border-2 border-gray-100 text-blue-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all">
+                                                View Invoices
                                             </Link>
                                         </div>
                                     </div>

@@ -11,6 +11,7 @@ import { env } from '@/config/env';
 import { syncUnitTypeAvailability } from '@/lib/db/storageUnits';
 import { calculateCheckoutPricing } from '@/lib/pricing/storagePricing';
 import { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
 import {
     DEFAULT_RECURRING_DURATION_MONTHS,
     getRecurringEndDate,
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
         const unitRepo = dataSource.getRepository(UnitType);
         const storageUnitRepo = dataSource.getRepository(StorageUnit);
         const bookingRepo = dataSource.getRepository(Booking);
+        await expireStalePendingBookings(dataSource);
 
         // 2. Fetch dependencies
         const site = await siteRepo.findOne({ where: { id: siteId } });
@@ -181,6 +183,7 @@ export async function GET() {
 
         const dataSource = await connectTypeORM();
         const bookingRepo = dataSource.getRepository(Booking);
+        await expireStalePendingBookings(dataSource);
 
         const bookings = await bookingRepo.find({
             where: { user: { id: userId } },

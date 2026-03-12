@@ -47,9 +47,9 @@ export default function LocationsPageContent(): JSX.Element {
                 <div className="relative">
                   <select value={storageSize} onChange={(e) => setStorageSize(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <option value="any">Any size</option>
-                    <option value="small">Small (5x5 - 5x10)</option>
-                    <option value="medium">Medium (10x10 - 10x15)</option>
-                    <option value="large">Large (10x20+)</option>
+                    <option value="small">Small (5&apos; × 5&apos; to 5&apos; × 10&apos;)</option>
+                    <option value="medium">Medium (10&apos; × 10&apos; to 10&apos; × 15&apos;)</option>
+                    <option value="large">Large (10&apos; × 20&apos;+)</option>
                   </select>
                   <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                 </div>
@@ -116,5 +116,4 @@ export default function LocationsPageContent(): JSX.Element {
     </div>
   );
 }
-
 

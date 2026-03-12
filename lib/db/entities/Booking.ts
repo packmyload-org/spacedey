@@ -24,6 +24,8 @@ export interface BookingBillingMetadata {
     billingInterval?: "monthly";
     recurringDurationMonths?: number;
     recurringEndDate?: string | null;
+    pendingPaymentReference?: string;
+    pendingPaymentInitializedAt?: string | null;
     paystack?: {
         allocationAmount?: number;
         authorizationCode?: string;

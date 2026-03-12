@@ -119,6 +119,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, message: 'Payment already processed' });
     }
 
+    if (existingPayment?.status === PaymentStatus.FAILED) {
+      return NextResponse.json({ ok: true, message: 'Late success ignored for failed payment' });
+    }
+
     if (existingPayment) {
       const updatedBookings = await applySuccessfulPayment({
         dataSource,

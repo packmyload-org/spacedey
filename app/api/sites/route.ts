@@ -5,10 +5,12 @@ import Site from '@/lib/db/entities/Site';
 import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
 import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
+import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
 
 export async function GET() {
   try {
     const appDataSource = await connectTypeORM();
+    await expireStalePendingBookings(appDataSource);
     const repo = appDataSource.getRepository(Site);
     const sites = await repo.find({ relations: ['unitTypes', 'units', 'units.unitType'] });
     const apiSites: ApiSite[] = sites.map((site) => {

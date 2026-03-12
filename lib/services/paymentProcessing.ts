@@ -84,6 +84,8 @@ function mergeRecurringBillingMetadata({
       billingInterval: 'monthly' as const,
       recurringDurationMonths: payment.metadata?.recurringDurationMonths ?? currentMetadata.recurringDurationMonths,
       recurringEndDate: currentMetadata.recurringEndDate ?? null,
+      pendingPaymentReference: undefined,
+      pendingPaymentInitializedAt: undefined,
     } satisfies BookingBillingMetadata;
   }
 
@@ -106,6 +108,8 @@ function mergeRecurringBillingMetadata({
       billingInterval: 'monthly' as const,
       recurringDurationMonths: payment.metadata?.recurringDurationMonths ?? currentMetadata.recurringDurationMonths,
       recurringEndDate: currentMetadata.recurringEndDate ?? null,
+      pendingPaymentReference: undefined,
+      pendingPaymentInitializedAt: undefined,
       flutterwave: {
         ...existingFlutterwave,
         allocationAmount,
@@ -125,6 +129,8 @@ function mergeRecurringBillingMetadata({
       billingInterval: 'monthly' as const,
       recurringDurationMonths: payment.metadata?.recurringDurationMonths ?? currentMetadata.recurringDurationMonths,
       recurringEndDate: currentMetadata.recurringEndDate ?? null,
+      pendingPaymentReference: undefined,
+      pendingPaymentInitializedAt: undefined,
     } satisfies BookingBillingMetadata;
   }
 
@@ -142,6 +148,8 @@ function mergeRecurringBillingMetadata({
     billingInterval: 'monthly' as const,
     recurringDurationMonths: payment.metadata?.recurringDurationMonths ?? currentMetadata.recurringDurationMonths,
     recurringEndDate: currentMetadata.recurringEndDate ?? null,
+    pendingPaymentReference: undefined,
+    pendingPaymentInitializedAt: undefined,
     paystack: {
       ...existingPaystack,
       allocationAmount,
@@ -168,51 +176,53 @@ export async function applySuccessfulPayment({
   payment: Payment;
   providerData?: ProviderPayloadShape;
 }) {
-  const bookingRepo = dataSource.getRepository(Booking);
-  const paymentRepo = dataSource.getRepository(Payment);
   const bookingAllocations = getPaymentAllocations(payment);
   const bookingIds = bookingAllocations.map((allocation) => allocation.bookingId);
-  const bookings = await bookingRepo.find({
-    where: { id: In(bookingIds) },
-    relations: ['site', 'unitType', 'user'],
+  return dataSource.transaction(async (manager) => {
+    const bookingRepo = manager.getRepository(Booking);
+    const paymentRepo = manager.getRepository(Payment);
+    const bookings = await bookingRepo.find({
+      where: { id: In(bookingIds) },
+      relations: ['site', 'unitType', 'user'],
+    });
+    const bookingsById = new Map(bookings.map((booking) => [booking.id, booking]));
+    const updatedBookings: Booking[] = [];
+
+    payment.status = PaymentStatus.SUCCESS;
+    payment.metadata = { ...payment.metadata, verification: providerData ?? payment.metadata?.verification };
+
+    for (const allocation of bookingAllocations) {
+      const booking = bookingsById.get(allocation.bookingId);
+      if (!booking || booking.status === BookingStatus.CANCELLED) {
+        continue;
+      }
+
+      booking.amountPaid = Number(booking.amountPaid) + Number(allocation.amount);
+
+      const activationThreshold = Number(booking.totalAmount);
+      if (booking.amountPaid >= activationThreshold) {
+        booking.status = BookingStatus.ACTIVE;
+      } else if (booking.amountPaid > 0) {
+        booking.status = BookingStatus.PARTIAL;
+      }
+
+      booking.billingMetadata = mergeRecurringBillingMetadata({
+        booking,
+        payment,
+        providerData,
+        allocationAmount: Number(allocation.amount),
+      });
+
+      await bookingRepo.save(booking);
+      await generateInvoice(manager, payment, {
+        bookingId: booking.id,
+        amount: allocation.amount,
+      });
+      updatedBookings.push(booking);
+    }
+
+    await paymentRepo.save(payment);
+
+    return updatedBookings;
   });
-  const bookingsById = new Map(bookings.map((booking) => [booking.id, booking]));
-  const updatedBookings: Booking[] = [];
-
-  payment.status = PaymentStatus.SUCCESS;
-  payment.metadata = { ...payment.metadata, verification: providerData ?? payment.metadata?.verification };
-
-  for (const allocation of bookingAllocations) {
-    const booking = bookingsById.get(allocation.bookingId);
-    if (!booking) {
-      continue;
-    }
-
-    booking.amountPaid = Number(booking.amountPaid) + Number(allocation.amount);
-
-    const activationThreshold = Number(booking.totalAmount);
-    if (booking.amountPaid >= activationThreshold) {
-      booking.status = BookingStatus.ACTIVE;
-    } else if (booking.amountPaid > 0) {
-      booking.status = BookingStatus.PARTIAL;
-    }
-
-    booking.billingMetadata = mergeRecurringBillingMetadata({
-      booking,
-      payment,
-      providerData,
-      allocationAmount: Number(allocation.amount),
-    });
-
-    await bookingRepo.save(booking);
-    await generateInvoice(dataSource, payment, {
-      bookingId: booking.id,
-      amount: allocation.amount,
-    });
-    updatedBookings.push(booking);
-  }
-
-  await paymentRepo.save(payment);
-
-  return updatedBookings;
 }
