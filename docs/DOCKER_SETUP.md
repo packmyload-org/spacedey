@@ -42,24 +42,32 @@ The application will be available at `http://localhost:3000` and Postgres at `lo
 Create a `.env.local` file based on `.env.example`:
 
 ```env
-# Postgres
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_USER=admin
-POSTGRES_PASSWORD=password
-POSTGRES_DB=spacedey
+# Preferred for Supabase / Vercel
+DATABASE_URL=postgresql://...
+DIRECT_DATABASE_URL=postgresql://...
+DB_USE_DIRECT_URL=false
 DB_TYPE=postgres
-DB_SSL=false
+DB_SSL=true
+DB_SSL_REJECT_UNAUTHORIZED=false
+DB_SYNCHRONIZE=false
+DB_LOGGING=false
 
-# JWT
+# Optional fallback for a host-based Postgres container
+# POSTGRES_HOST=postgres
+# POSTGRES_PORT=5432
+# POSTGRES_USER=admin
+# POSTGRES_PASSWORD=password
+# POSTGRES_DB=spacedey
+
+# Auth
 JWT_SECRET=your-secure-secret-key
+PASSWORD_SALT=your-salt-value
+TOKEN_SECRET=your-token-secret
 
-# reCAPTCHA
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=your-site-key
-RECAPTCHA_SECRET_KEY=your-secret-key
-
-# Development
-SKIP_RECAPTCHA_VERIFICATION=false
+# App
+NODE_ENV=development
+PORT=3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ## Local Development
@@ -118,7 +126,7 @@ The project defines TypeORM entities for `User`, `Site`, and `UnitType` with col
 
 1. **Change JWT Secret:** Update `JWT_SECRET` in production
 2. **Change DB Credentials:** Update `POSTGRES_USER` and `POSTGRES_PASSWORD`
-3. **Enable reCAPTCHA:** Configure proper reCAPTCHA keys
+3. **Set Security Secrets:** Provide strong `PASSWORD_SALT` and `TOKEN_SECRET` values
 4. **Use HTTPS:** Deploy with HTTPS in production
 5. **Environment Variables:** Never commit `.env.local` to version control
 
@@ -166,12 +174,13 @@ docker build -t spacedey:latest .
 # Run container
 docker run -d \
   -p 3000:3000 \
-  -e POSTGRES_HOST=<your-postgres-host> \
-  -e POSTGRES_PORT=<your-postgres-port> \
-  -e POSTGRES_USER=<your-postgres-user> \
-  -e POSTGRES_PASSWORD=<your-postgres-password> \
-  -e POSTGRES_DB=<your-postgres-db> \
+  -e DATABASE_URL=<your-database-url> \
+  -e DIRECT_DATABASE_URL=<your-direct-database-url> \
+  -e DB_SSL=true \
+  -e DB_SSL_REJECT_UNAUTHORIZED=false \
   -e JWT_SECRET=<your-jwt-secret> \
+  -e PASSWORD_SALT=<your-password-salt> \
+  -e TOKEN_SECRET=<your-token-secret> \
   spacedey:latest
 ```
 
@@ -179,11 +188,13 @@ docker run -d \
 
 Ensure these are set as environment variables:
 
-- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
+- `DATABASE_URL` and `DIRECT_DATABASE_URL` for hosted Postgres, or `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` for a host-based setup
 - `JWT_SECRET` - Secure random string
+- `PASSWORD_SALT`
+- `TOKEN_SECRET`
 - `NODE_ENV=production`
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`
-- `RECAPTCHA_SECRET_KEY`
+- `DB_SSL=true` for managed/remote Postgres
+- `NEXT_PUBLIC_APP_URL` if the deployed public URL differs from the request origin
 
 ## Migration Notes
 
