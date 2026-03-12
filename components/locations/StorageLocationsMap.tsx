@@ -12,7 +12,9 @@ import {
   useMap,
 } from '@vis.gl/react-google-maps';
 import { env } from '@/config';
+import { useSitesData } from '@/contexts/SitesContext';
 import type { ApiSite } from '@/lib/types/local';
+import { getUniqueSiteCities } from '@/lib/utils/siteLocations';
 import { MapPin, Phone, Mail, Box } from 'lucide-react';
 
 interface StorageMapSectionProps {
@@ -296,42 +298,15 @@ function MockMap({
 export default function StorageMapSection({
   mapHeight = '600px',
 }: Readonly<StorageMapSectionProps>) {
-  const [cities, setCities] = useState<string[]>(defaultCities);
-  const [sites, setSites] = useState<ApiSite[]>([]);
+  const { sites, isLoading } = useSitesData();
   const [selectedCity, setSelectedCity] = useState('');
-  const [loading, setLoading] = useState(true);
   const [mapLoadFailed, setMapLoadFailed] = useState(false);
   const selectedSitesRef = React.useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    async function fetchSites() {
-      try {
-        const response = await fetch('/api/sites');
-        const data: { ok?: boolean; sites?: ApiSite[] } = await response.json();
-
-        if (data.ok && Array.isArray(data.sites)) {
-          setSites(data.sites);
-
-          const uniqueCities = Array.from(
-            new Set(
-              data.sites
-                .map((site) => extractCity(site.address))
-                .filter(Boolean)
-            )
-          ).sort((left, right) => left.localeCompare(right));
-
-          if (uniqueCities.length > 0) {
-            setCities(uniqueCities);
-          }
-        }
-      } catch {
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchSites();
-  }, []);
+  const cities = useMemo(() => {
+    const nextCities = getUniqueSiteCities(sites);
+    return nextCities.length > 0 ? nextCities : defaultCities;
+  }, [sites]);
+  const loading = isLoading && sites.length === 0;
 
   const selectedCitySites = useMemo(() => {
     if (!selectedCity) {
@@ -353,8 +328,8 @@ export default function StorageMapSection({
 
   const featuredCities = useMemo(() => cities.slice(0, 8), [cities]);
   const selectedCityHref = selectedCity ? `/search?city=${encodeURIComponent(selectedCity)}` : '/search';
-  const hasApiKey = Boolean(env.googleMaps.apiKey);
-  const shouldShowLiveMap = Boolean(selectedCity) && env.googleMaps.enabled && hasApiKey && !mapLoadFailed;
+  const hasGoogleMaps = env.googleMaps.enabled;
+  const shouldShowLiveMap = Boolean(selectedCity) && hasGoogleMaps && !mapLoadFailed;
   const showUnavailableMessage = Boolean(selectedCity) && !shouldShowLiveMap;
 
   useEffect(() => {
@@ -457,7 +432,7 @@ export default function StorageMapSection({
                   ? 'Select a city to activate the map and reveal matching locations'
                   : shouldShowLiveMap
                   ? `${cities.length} cities currently listed`
-                  : 'Showing mock coverage preview until Google Maps is enabled with a valid key.'}
+                  : 'Showing mock coverage preview until Google Maps is configured with an API key.'}
             </p>
           </div>
 

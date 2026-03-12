@@ -14,36 +14,47 @@ const ssl = env.postgres.ssl
   ? { rejectUnauthorized: env.postgres.sslRejectUnauthorized }
   : false;
 
-const postgresConnectionOptions = env.postgres.url
-  ? { url: env.postgres.url }
-  : {
-      host: env.postgres.host,
-      port: env.postgres.port,
-      username: env.postgres.username,
-      password: env.postgres.password,
-      database: env.postgres.database,
-    };
+if (!env.postgres.url) {
+  throw new Error(
+    'Missing DATABASE_URL or DIRECT_DATABASE_URL. Configure the database URL-based env vars before starting the app.'
+  );
+}
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  ...postgresConnectionOptions,
+  url: env.postgres.url,
   ssl,
   synchronize: env.postgres.synchronize,
   logging: env.postgres.logging,
   entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
 });
 
+let dataSourceInitializationPromise: Promise<DataSource> | null = null;
+
 export async function connectTypeORM(): Promise<DataSource> {
-  if (!AppDataSource.isInitialized) {
-    await AppDataSource.initialize();
-    console.log('✓ Connected to relational DB via TypeORM');
+  if (AppDataSource.isInitialized) {
+    return AppDataSource;
   }
-  return AppDataSource;
+
+  if (!dataSourceInitializationPromise) {
+    dataSourceInitializationPromise = AppDataSource.initialize()
+      .then((dataSource) => {
+        console.log('✓ Connected to relational DB via TypeORM');
+        return dataSource;
+      })
+      .catch((error: unknown) => {
+        dataSourceInitializationPromise = null;
+        throw error;
+      });
+  }
+
+  return dataSourceInitializationPromise;
 }
 
 export async function disconnectTypeORM(): Promise<void> {
   if (AppDataSource.isInitialized) {
     await AppDataSource.destroy();
+    dataSourceInitializationPromise = null;
     console.log('Disconnected TypeORM');
   }
 }

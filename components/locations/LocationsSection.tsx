@@ -1,44 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import Link from "next/link";
+import { useSitesData } from '@/contexts/SitesContext';
 import { getAvailableCities } from '@/lib/utils/cities';
+import { getUniqueSiteCities } from '@/lib/utils/siteLocations';
 
 const LocationsSection = () => {
-  const [locations, setLocations] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { sites, isLoading } = useSitesData();
+  const locations = useMemo(() => {
+    const seededCities = getAvailableCities().map((city) => city.name);
+    const siteCities = getUniqueSiteCities(sites);
 
-  React.useEffect(() => {
-    async function fetchSites() {
-      try {
-        const res = await fetch('/api/sites');
-        const data = await res.json();
-        const seededCities = getAvailableCities().map((city) => city.name);
-
-        if (data.ok && data.sites) {
-          const apiCities = Array.from(new Set(data.sites.map((site: { address: string }) => {
-            const parts = site.address.split(',').map((p: string) => p.trim());
-            return parts.length >= 2 ? parts[parts.length - 2] : parts[0];
-          }))) as string[];
-
-          const mergedCities = [...seededCities, ...apiCities].filter(
-            (city, index, allCities) => city && allCities.indexOf(city) === index
-          );
-
-          setLocations(mergedCities);
-          return;
-        }
-
-        setLocations(seededCities);
-      } catch (err) {
-        console.error('Failed to fetch sites', err);
-        setLocations(getAvailableCities().map((city) => city.name));
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSites();
-  }, []);
+    return [...seededCities, ...siteCities].filter(
+      (city, index, allCities) => city && allCities.indexOf(city) === index
+    );
+  }, [sites]);
+  const loading = isLoading && sites.length === 0;
 
   return (
     <div className="py-12 px-6 lg:px-20">

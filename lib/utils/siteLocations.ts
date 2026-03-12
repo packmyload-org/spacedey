@@ -137,6 +137,30 @@ export function sortAlphabetically(values: string[]): string[] {
   return [...values].sort((left, right) => left.localeCompare(right));
 }
 
+export function getUniqueSiteCities(sites: Pick<ApiSite, 'city' | 'address'>[]): string[] {
+  return sortAlphabetically(
+    Array.from(
+      new Set(
+        sites
+          .map((site) => getSiteCity(site))
+          .filter(Boolean)
+      )
+    )
+  );
+}
+
+export function getUniqueSiteStates(sites: Pick<ApiSite, 'state' | 'address'>[]): string[] {
+  return sortAlphabetically(
+    Array.from(
+      new Set(
+        sites
+          .map((site) => getSiteState(site))
+          .filter(Boolean)
+      )
+    )
+  );
+}
+
 export function formatUnitDimensions(dimensions: ApiUnitType['dimensions']): string {
   const { width, depth, unit } = dimensions;
   return `${width} x ${depth} ${unit}`;

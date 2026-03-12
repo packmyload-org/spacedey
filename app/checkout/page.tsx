@@ -3,7 +3,7 @@
 import React, { Suspense, useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSearchStore } from "@/lib/store/useSearchStore";
+import { useSitesData } from "@/contexts/SitesContext";
 import { ChevronLeft, Info, CheckCircle2, Loader2, PartyPopper, X } from "lucide-react";
 import { calculateCheckoutPricing, NAIRA_PER_SQUARE_FOOT_PER_MONTH, PAY_ONCE_MONTHS } from "@/lib/pricing/storagePricing";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
@@ -16,11 +16,6 @@ interface CheckoutSite extends ApiSite {
 
 interface CheckoutUnit extends ApiUnitType {
     priceAmount?: number;
-}
-
-interface CheckoutSitesResponse {
-    ok?: boolean;
-    sites?: CheckoutSite[];
 }
 
 const paymentProviders = [
@@ -39,7 +34,7 @@ const paymentProviders = [
 function CheckoutContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { sites } = useSearchStore();
+    const { sites, hasLoaded, error: sitesError } = useSitesData();
 
     const siteId = searchParams.get("siteId");
     const unitTypeId = searchParams.get("unitTypeId");
@@ -59,13 +54,12 @@ function CheckoutContent() {
 
     useEffect(() => {
         async function loadData() {
+            if (!hasLoaded) {
+                return;
+            }
+
             try {
-                let site = sites.find((entry) => entry.id === siteId) as CheckoutSite | undefined;
-                if (!site && siteId) {
-                    const res = await fetch(`/api/sites`);
-                    const data: CheckoutSitesResponse = await res.json();
-                    site = data.sites?.find((entry) => entry.id === siteId);
-                }
+                const site = sites.find((entry) => entry.id === siteId) as CheckoutSite | undefined;
 
                 if (site) {
                     setSelectedSite(site);
@@ -76,7 +70,7 @@ function CheckoutContent() {
                         ?? null;
                     setSelectedStorageUnit(storageUnit);
                 } else {
-                    setError("Storage location not found.");
+                    setError(sitesError || "Storage location not found.");
                 }
             } catch (err: unknown) {
                 console.error("Load checkout data error", err);
@@ -86,7 +80,7 @@ function CheckoutContent() {
             }
         }
         loadData();
-    }, [siteId, storageUnitId, unitTypeId, sites]);
+    }, [hasLoaded, siteId, sites, sitesError, storageUnitId, unitTypeId]);
 
     const registrationFee = Number(selectedSite?.registrationFee || 30000);
     const annualDues = Number(selectedSite?.annualDues || 35000);

@@ -67,24 +67,11 @@ cp .env.example .env.local
 Then edit `.env.local` with your values:
 
 ```env
-# Preferred for Supabase / Vercel
 DATABASE_URL=postgresql://...
 DIRECT_DATABASE_URL=postgresql://...
 DB_USE_DIRECT_URL=false
 DB_SSL=true
 DB_SSL_REJECT_UNAUTHORIZED=false
-DB_SYNCHRONIZE=false
-DB_LOGGING=false
-
-# Or fallback to standard Postgres env vars
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-POSTGRES_DB=spacedey
-DB_TYPE=postgres
-DB_SYNCHRONIZE=false
-DB_LOGGING=true
 
 # Auth
 JWT_SECRET=your-secure-secret-key
@@ -93,8 +80,6 @@ TOKEN_SECRET=your-token-secret
 
 # Google Maps
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
-NEXT_PUBLIC_ENABLE_GOOGLE_MAPS=false
-NEXT_PUBLIC_GOOGLE_MAPS_BILLING_ENABLED=false
 
 # App
 NODE_ENV=development
@@ -105,10 +90,7 @@ PORT=3000
 
 If you are using Supabase, set `DATABASE_URL` and `DIRECT_DATABASE_URL` first.
 
-If you prefer a local database, start a Postgres 15 instance however you normally manage local services, then point `.env.local` at it with either:
-
-- `DATABASE_URL` and `DIRECT_DATABASE_URL`, or
-- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`
+If you prefer a local database, start a Postgres 15 instance however you normally manage local services, then point `.env.local` at it with `DATABASE_URL` and `DIRECT_DATABASE_URL`.
 
 ### 5. Run migrations
 

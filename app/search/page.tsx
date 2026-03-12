@@ -6,11 +6,13 @@ import CityList from "@/components/search/CityList";
 import MapView from "@/components/search/MapView";
 import { useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { useSitesData } from "@/contexts/SitesContext";
 import { useSearchStore } from "@/lib/store/useSearchStore";
 import { getSiteCity, getSiteState, resolveStateFromQuery } from "@/lib/utils/siteLocations";
 
 function SearchContent() {
   const searchParams = useSearchParams();
+  const { sites, isLoading: sitesLoading, error: sitesError } = useSitesData();
   const {
     searchQuery,
     setSearchQuery,
@@ -18,13 +20,7 @@ function SearchContent() {
     setSelectedState,
     selectedCity,
     setSelectedCity,
-    sites,
-    fetchSites,
   } = useSearchStore();
-
-  useEffect(() => {
-    fetchSites();
-  }, [fetchSites]);
 
   useEffect(() => {
     const stateParam = searchParams.get("state");
@@ -142,10 +138,28 @@ function SearchContent() {
     globalThis.history.replaceState({}, "", url);
   }, [setSearchQuery, setSelectedCity, setSelectedState]);
 
+  if (sitesLoading && sites.length === 0) {
+    return (
+      <>
+        <Header />
+        <main className="flex-1 lg:flex lg:flex-col mt-20">
+          <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+            <p className="text-gray-600">Loading storage sites...</p>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
       <main className="flex-1 lg:flex lg:flex-col mt-20">
+        {sitesError && sites.length === 0 ? (
+          <div className="mx-4 mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700 lg:mx-8">
+            {sitesError}
+          </div>
+        ) : null}
         <div className="lg:flex lg:flex-col lg:flex-1 lg:bg-brand-page-bg">
           <div className="lg:flex lg:flex-1">
             <div className="lg:w-1/2 max-h-[calc(100vh-82px)] overflow-y-scroll">
