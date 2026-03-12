@@ -15,6 +15,40 @@ function PaymentCallbackContent() {
     const [message, setMessage] = useState("Verifying your payment...");
     const verificationAttempted = useRef(false);
 
+    function buildSuccessMessage(data: {
+        recurringEnabled?: boolean;
+        billingType?: 'one_time' | 'recurring';
+        recurringDurationMonths?: number;
+        recurringEndsAt?: string | null;
+        processedBookings?: Array<unknown>;
+    }) {
+        const processedCount = Array.isArray(data.processedBookings) ? data.processedBookings.length : 0;
+        const recurringDurationMonths = Number(data.recurringDurationMonths || 0);
+        const isRecurring = data.billingType === 'recurring' || data.recurringEnabled;
+        const recurringEndsAt = data.recurringEndsAt ? new Date(data.recurringEndsAt) : null;
+        const recurringEndsAtLabel = recurringEndsAt && !Number.isNaN(recurringEndsAt.getTime())
+            ? new Intl.DateTimeFormat("en-NG", { day: "numeric", month: "short", year: "numeric" }).format(recurringEndsAt)
+            : null;
+
+        if (isRecurring) {
+            if (recurringDurationMonths > 0 && recurringEndsAtLabel) {
+                return `First monthly payment confirmed. Your storage is active and recurring billing will run for ${recurringDurationMonths} month${recurringDurationMonths === 1 ? "" : "s"} in total, ending around ${recurringEndsAtLabel}.`;
+            }
+
+            if (recurringDurationMonths > 0) {
+                return `First monthly payment confirmed. Your storage is active and recurring billing will run for ${recurringDurationMonths} month${recurringDurationMonths === 1 ? "" : "s"} in total.`;
+            }
+
+            return "First monthly payment confirmed. Your storage is active and recurring billing is now set up.";
+        }
+
+        if (processedCount > 1) {
+            return `Payment confirmed! ${processedCount} storage units are now active for the first month.`;
+        }
+
+        return "Payment confirmed! Your storage unit is active for the first month.";
+    }
+
     useEffect(() => {
         // Prevent double verification on strict mode
         if (verificationAttempted.current) return;
@@ -40,21 +74,12 @@ function PaymentCallbackContent() {
 
                 const data = await res.json();
                 if (data.ok) {
-                    const processedBookings = Array.isArray(data.processedBookings) ? data.processedBookings : [];
-                    const processedCount = processedBookings.length;
-
                     if (data.checkoutSource === "cart") {
                         clearStorageItems();
                     }
 
                     setStatus('success');
-                    setMessage(
-                        data.recurringEnabled
-                            ? "First monthly payment confirmed. Your storage is active and Paystack recurring billing is now set up."
-                            : processedCount > 1
-                                ? `Payment confirmed! ${processedCount} storage units are now active.`
-                                : "Payment confirmed! Your storage unit is now active."
-                    );
+                    setMessage(buildSuccessMessage(data));
                 } else {
                     setStatus('failed');
                     setMessage(data.message || "Payment verification failed.");

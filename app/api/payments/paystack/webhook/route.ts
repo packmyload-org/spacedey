@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { In } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
-import Payment, { PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
+import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
 import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
@@ -55,7 +55,7 @@ function matchesRecurringGroup({
   subscriptionCode: string | null;
 }) {
   const paystackMetadata = booking.billingMetadata?.paystack;
-  if (!paystackMetadata) {
+  if (booking.billingMetadata?.billingType !== PaymentBillingType.RECURRING || !paystackMetadata) {
     return false;
   }
 
@@ -200,7 +200,10 @@ export async function POST(req: Request) {
         bookingAllocations,
         checkoutSource: 'recurring',
         paymentMode: 'monthly',
+        billingType: PaymentBillingType.RECURRING,
+        billingInterval: 'monthly',
         monthsCovered: 1,
+        recurringDurationMonths: matchingBookings[0].billingMetadata?.recurringDurationMonths,
         paystackPlanCode: planCode ?? matchingBookings[0].billingMetadata?.paystack?.planCode,
         paystackPlanName: getNestedString(plan, 'name') ?? matchingBookings[0].billingMetadata?.paystack?.planName,
       },

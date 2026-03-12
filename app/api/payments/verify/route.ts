@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
-import Payment, { PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
+import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
+import { isRecurringBilling } from '@/lib/billing/config';
 import { paystack } from '@/lib/services/paystack';
 import { flutterwave } from '@/lib/services/flutterwave';
 import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
@@ -23,12 +24,21 @@ export async function POST(req: Request) {
         }
 
         if (payment.status === PaymentStatus.SUCCESS) {
+            const recurringEnabled = isRecurringBilling({
+                billingType: payment.metadata?.billingType,
+                legacyPaymentMode: payment.metadata?.paymentMode,
+                provider: payment.provider,
+            });
+            const billingType = recurringEnabled ? PaymentBillingType.RECURRING : (payment.metadata?.billingType ?? PaymentBillingType.ONE_TIME);
             return NextResponse.json({
                 ok: true,
                 message: 'Payment already verified',
                 checkoutSource: payment.metadata?.checkoutSource ?? 'direct',
                 paymentMode: payment.metadata?.paymentMode ?? 'monthly',
-                recurringEnabled: payment.provider === PaymentProvider.PAYSTACK && payment.metadata?.paymentMode === 'monthly',
+                billingType,
+                recurringDurationMonths: payment.metadata?.recurringDurationMonths,
+                recurringEndsAt: payment.metadata?.recurringEndsAt ?? payment.booking.endDate?.toISOString() ?? null,
+                recurringEnabled,
             });
         }
 
@@ -53,6 +63,12 @@ export async function POST(req: Request) {
                 providerData,
             });
             const primaryBooking = updatedBookings[0];
+            const recurringEnabled = isRecurringBilling({
+                billingType: payment.metadata?.billingType,
+                legacyPaymentMode: payment.metadata?.paymentMode,
+                provider: payment.provider,
+            });
+            const billingType = recurringEnabled ? PaymentBillingType.RECURRING : (payment.metadata?.billingType ?? PaymentBillingType.ONE_TIME);
 
             return NextResponse.json({
                 ok: true,
@@ -61,7 +77,10 @@ export async function POST(req: Request) {
                 amountPaid: primaryBooking?.amountPaid,
                 checkoutSource: payment.metadata?.checkoutSource ?? 'direct',
                 paymentMode: payment.metadata?.paymentMode ?? 'monthly',
-                recurringEnabled: payment.provider === PaymentProvider.PAYSTACK && payment.metadata?.paymentMode === 'monthly',
+                billingType,
+                recurringDurationMonths: payment.metadata?.recurringDurationMonths,
+                recurringEndsAt: payment.metadata?.recurringEndsAt ?? primaryBooking?.endDate?.toISOString() ?? null,
+                recurringEnabled,
                 processedBookings: updatedBookings.map((booking) => ({
                     bookingId: booking.id,
                     status: booking.status,
