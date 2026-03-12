@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
+import { useSitesData } from "@/contexts/SitesContext";
 import FadeIn from "@/components/ui/FadeIn";
 import { getAvailableCities } from "@/lib/utils/cities";
 import { getLocationDetails } from "@/lib/utils/sampleLocations";
+import { getSiteCity } from "@/lib/utils/siteLocations";
 
 type Location = {
   city: string;
@@ -25,53 +27,38 @@ function buildKnownLocations(): Location[] {
 
 export default function FeatureList() {
   const router = useRouter();
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { sites, isLoading: isSitesLoading } = useSitesData();
   const [visibleSlides, setVisibleSlides] = useState(3);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(3);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [transitionDisabled, setTransitionDisabled] = useState(false);
 
-  // 1. Fetch data
-  useEffect(() => {
-    async function fetchLocations() {
-      try {
-        const res = await fetch('/api/sites');
-        const data = await res.json();
-        if (data.ok && data.sites && data.sites.length > 0) {
-          const uniqueCities = new Map<string, string>();
-          data.sites.forEach((site: { address: string; image?: string }) => {
-            const parts = site.address.split(',').map((p: string) => p.trim());
-            const city = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
-            if (!uniqueCities.has(city)) {
-              uniqueCities.set(city, site.image || getLocationDetails(city).image || DEFAULT_IMAGE);
-            }
-          });
-
-          buildKnownLocations().forEach(({ city, image }) => {
-            if (!uniqueCities.has(city)) {
-              uniqueCities.set(city, image);
-            }
-          });
-
-          const locArray = Array.from(uniqueCities.entries()).map(([city, image]) => ({ city, image }));
-          setLocations(locArray);
-          setCurrentIndex(Math.min(3, locArray.length)); // Start at first real slide
-        } else {
-          const fallback = buildKnownLocations();
-          setLocations(fallback);
-          setCurrentIndex(Math.min(3, fallback.length));
-        }
-      } catch {
-        const fallback = buildKnownLocations();
-        setLocations(fallback);
-        setCurrentIndex(Math.min(3, fallback.length));
-      } finally {
-        setLoading(false);
-      }
+  const locations = useMemo(() => {
+    if (sites.length === 0) {
+      return buildKnownLocations();
     }
-    fetchLocations();
-  }, []);
+
+    const uniqueCities = new Map<string, string>();
+
+    sites.forEach((site) => {
+      const city = getSiteCity(site);
+
+      if (!city || uniqueCities.has(city)) {
+        return;
+      }
+
+      uniqueCities.set(city, site.image || getLocationDetails(city).image || DEFAULT_IMAGE);
+    });
+
+    buildKnownLocations().forEach(({ city, image }) => {
+      if (!uniqueCities.has(city)) {
+        uniqueCities.set(city, image);
+      }
+    });
+
+    return Array.from(uniqueCities.entries()).map(([city, image]) => ({ city, image }));
+  }, [sites]);
+  const loading = isSitesLoading && sites.length === 0;
 
   // 2. Responsive slides
   useEffect(() => {
@@ -89,6 +76,9 @@ export default function FeatureList() {
   // 3. Carousel logic helpers
   const realLength = locations.length;
   const cloneCount = Math.min(3, realLength);
+  const safeCurrentIndex = realLength === 0
+    ? 0
+    : Math.min(Math.max(currentIndex, cloneCount), cloneCount + realLength - 1);
 
   const extendedSlides = useMemo(() => {
     if (realLength === 0) return [];
@@ -113,7 +103,9 @@ export default function FeatureList() {
     setCurrentIndex(startIndex + idx);
   }, [startIndex]);
 
-  const normalizedIndex = realLength > 0 ? ((currentIndex - startIndex) % realLength + realLength) % realLength : 0;
+  const normalizedIndex = realLength > 0
+    ? ((safeCurrentIndex - startIndex) % realLength + realLength) % realLength
+    : 0;
 
   // 4. Autoplay and Keyboard
   useEffect(() => {
@@ -133,13 +125,13 @@ export default function FeatureList() {
   }, [nextSlide, prevSlide]);
 
   const handleTransitionEnd = () => {
-    if (currentIndex >= startIndex + realLength) {
+    if (safeCurrentIndex >= startIndex + realLength) {
       setTransitionDisabled(true);
-      setCurrentIndex(currentIndex - realLength);
+      setCurrentIndex(safeCurrentIndex - realLength);
       setTimeout(() => setTransitionDisabled(false), 20);
-    } else if (currentIndex < startIndex) {
+    } else if (safeCurrentIndex < startIndex) {
       setTransitionDisabled(true);
-      setCurrentIndex(currentIndex + realLength);
+      setCurrentIndex(safeCurrentIndex + realLength);
       setTimeout(() => setTransitionDisabled(false), 20);
     }
   };
@@ -171,7 +163,7 @@ export default function FeatureList() {
         <div className="relative overflow-hidden">
           <div
             className={`flex ${transitionDisabled ? "" : "transition-transform duration-500 ease-in-out"}`}
-            style={{ transform: `translateX(-${(currentIndex * 100) / visibleSlides}%)` }}
+            style={{ transform: `translateX(-${(safeCurrentIndex * 100) / visibleSlides}%)` }}
             onTransitionEnd={handleTransitionEnd}
           >
             {extendedSlides.map((loc, idx) => (

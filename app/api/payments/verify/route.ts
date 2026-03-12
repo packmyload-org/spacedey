@@ -1,17 +1,15 @@
 import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
-import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
 import { paystack } from '@/lib/services/paystack';
 import { flutterwave } from '@/lib/services/flutterwave';
-import { generateInvoice } from '@/lib/services/invoicing';
+import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
 
 export async function POST(req: Request) {
     try {
         const { reference, transactionId } = await req.json();
 
         const dataSource = await connectTypeORM();
-        const bookingRepo = dataSource.getRepository(Booking);
         const paymentRepo = dataSource.getRepository(Payment);
 
         // 1. Find the pending payment
@@ -25,7 +23,13 @@ export async function POST(req: Request) {
         }
 
         if (payment.status === PaymentStatus.SUCCESS) {
-            return NextResponse.json({ ok: true, message: 'Payment already verified' });
+            return NextResponse.json({
+                ok: true,
+                message: 'Payment already verified',
+                checkoutSource: payment.metadata?.checkoutSource ?? 'direct',
+                paymentMode: payment.metadata?.paymentMode ?? 'monthly',
+                recurringEnabled: payment.provider === PaymentProvider.PAYSTACK && payment.metadata?.paymentMode === 'monthly',
+            });
         }
 
         // 2. Verify with Provider
@@ -43,38 +47,26 @@ export async function POST(req: Request) {
 
         // 3. Update status and Increment amountPaid
         if (isSuccessful) {
-            payment.status = PaymentStatus.SUCCESS;
-            payment.metadata = { ...payment.metadata, verification: providerData };
-
-            // Update booking balance
-            const booking = await bookingRepo.findOne({
-                where: { id: payment.booking.id },
-                relations: ['site', 'unitType', 'user']
+            const updatedBookings = await applySuccessfulPayment({
+                dataSource,
+                payment,
+                providerData,
             });
-
-            if (booking) {
-                booking.amountPaid = Number(booking.amountPaid) + Number(payment.amount);
-
-                // A booking becomes active once the joining fee and first month are covered.
-                const activationThreshold = Number(booking.registrationFee) + Number(booking.monthlyRate);
-
-                if (booking.amountPaid >= activationThreshold) {
-                    booking.status = BookingStatus.ACTIVE;
-                } else if (booking.amountPaid > 0) {
-                    booking.status = BookingStatus.PARTIAL;
-                }
-
-                await bookingRepo.save(booking);
-                await generateInvoice(dataSource, payment);
-            }
-
-            await paymentRepo.save(payment);
+            const primaryBooking = updatedBookings[0];
 
             return NextResponse.json({
                 ok: true,
                 message: 'Payment verified',
-                bookingStatus: booking?.status,
-                amountPaid: booking?.amountPaid
+                bookingStatus: primaryBooking?.status,
+                amountPaid: primaryBooking?.amountPaid,
+                checkoutSource: payment.metadata?.checkoutSource ?? 'direct',
+                paymentMode: payment.metadata?.paymentMode ?? 'monthly',
+                recurringEnabled: payment.provider === PaymentProvider.PAYSTACK && payment.metadata?.paymentMode === 'monthly',
+                processedBookings: updatedBookings.map((booking) => ({
+                    bookingId: booking.id,
+                    status: booking.status,
+                    amountPaid: booking.amountPaid,
+                })),
             });
         } else {
             payment.status = PaymentStatus.FAILED;

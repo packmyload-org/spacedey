@@ -116,7 +116,7 @@ function SearchMapFallback({
 
 export default function MapView({ selectedState, selectedCity, sites }: Readonly<MapViewProps>) {
   const apiKey = env.googleMaps.apiKey;
-  const mapsEnabled = env.googleMaps.enabled;
+  const hasGoogleMaps = env.googleMaps.enabled;
   const [mapLoadFailed, setMapLoadFailed] = useState(false);
   const safeSites = useMemo(() => (Array.isArray(sites) ? sites : []), [sites]);
   const selectedLabel = selectedCity || selectedState;
@@ -171,7 +171,7 @@ export default function MapView({ selectedState, selectedCity, sites }: Readonly
   }, [activeSites]);
 
   const zoomLevel = hasSelection && !showAllSites ? (selectedCity ? 11 : 8) : 6;
-  const showStaticFallback = !mapsEnabled || !apiKey || mapLoadFailed;
+  const showStaticFallback = !hasGoogleMaps || mapLoadFailed;
 
   if (showStaticFallback) {
     return (
@@ -211,7 +211,7 @@ export default function MapView({ selectedState, selectedCity, sites }: Readonly
           }}
         >
           <APIProvider
-            apiKey={apiKey}
+            apiKey={apiKey!}
             onError={() => {
               setMapLoadFailed(true);
             }}

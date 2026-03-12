@@ -16,6 +16,9 @@ interface LocationCardProps {
   pricing?: Array<{ size: string; originalPrice: string; currentPrice: string }>;
   units?: Array<{
     id: string | number;
+    siteId?: string;
+    unitTypeId?: string;
+    storageUnitId?: string;
     name: string;
     dimensionsLabel?: string;
     originalPrice: string;
@@ -177,6 +180,7 @@ function LocationCard({
               <div className="space-y-2 lg:hidden mt-3">
                 {displayUnits.slice(0, 2).map((unit) => {
                   const unitLabel = 'size' in unit ? unit.size : unit.name;
+                  const cartLabel = 'dimensionsLabel' in unit && unit.dimensionsLabel ? unit.dimensionsLabel : unitLabel;
                   const availableCount = getAvailableCount(unit);
                   const unitUnavailable = typeof availableCount === 'number' && availableCount < 1;
 
@@ -203,7 +207,10 @@ function LocationCard({
                         onClick={() => {
                           addToCart({
                             unitId: unit.id,
-                            size: unitLabel,
+                            siteId: 'siteId' in unit ? unit.siteId : undefined,
+                            unitTypeId: 'unitTypeId' in unit ? unit.unitTypeId : undefined,
+                            storageUnitId: 'storageUnitId' in unit ? unit.storageUnitId : undefined,
+                            size: cartLabel,
                             originalPrice: unit.originalPrice,
                             currentPrice: unit.currentPrice,
                             maxQuantity: 'maxQuantity' in unit ? unit.maxQuantity : undefined,
@@ -253,6 +260,7 @@ function LocationCard({
                 <div className="space-y-2">
                   {displayUnits.map((unit, index) => {
                     const unitLabel = 'size' in unit ? unit.size : unit.name;
+                    const cartLabel = 'dimensionsLabel' in unit && unit.dimensionsLabel ? unit.dimensionsLabel : unitLabel;
                     const availableCount = getAvailableCount(unit);
                     const unitUnavailable = typeof availableCount === 'number' && availableCount < 1;
 
@@ -275,7 +283,10 @@ function LocationCard({
                         onClick={() => {
                           addToCart({
                             unitId: unit.id,
-                            size: unitLabel,
+                            siteId: 'siteId' in unit ? unit.siteId : undefined,
+                            unitTypeId: 'unitTypeId' in unit ? unit.unitTypeId : undefined,
+                            storageUnitId: 'storageUnitId' in unit ? unit.storageUnitId : undefined,
+                            size: cartLabel,
                             originalPrice: unit.originalPrice,
                             currentPrice: unit.currentPrice,
                             maxQuantity: 'maxQuantity' in unit ? unit.maxQuantity : undefined,

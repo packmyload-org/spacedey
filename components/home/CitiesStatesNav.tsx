@@ -1,51 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from "next/link";
+import { useSitesData } from '@/contexts/SitesContext';
 import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
-import type { ApiSite } from '@/lib/types/local';
+import { getUniqueSiteCities, getUniqueSiteStates } from '@/lib/utils/siteLocations';
 
 const fallbackCities = Object.values(LOCATION_DETAILS).map((detail) => detail.city);
 const fallbackStates = Array.from(new Set(Object.values(LOCATION_DETAILS).map((detail) => detail.state)));
 
 export default function CitiesStatesNav() {
+  const { sites } = useSitesData();
   const [activeTab, setActiveTab] = useState('cities');
-  const [cities, setCities] = useState<string[]>(fallbackCities);
-  const [states, setStates] = useState<string[]>(fallbackStates);
-
-  React.useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/sites');
-        const data = await res.json();
-        if (data.ok && data.sites) {
-          const uniqueCities = new Set<string>();
-          const uniqueStates = new Set<string>();
-
-          data.sites.forEach((site: ApiSite) => {
-            if (site.city) {
-              uniqueCities.add(site.city);
-            }
-
-            if (site.state) {
-              uniqueStates.add(site.state);
-            }
-          });
-
-          if (uniqueCities.size > 0) {
-            setCities(Array.from(uniqueCities));
-          }
-
-          if (uniqueStates.size > 0) {
-            setStates(Array.from(uniqueStates));
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch data', err);
-      }
-    }
-    fetchData();
-  }, []);
+  const cities = useMemo(() => {
+    const nextCities = getUniqueSiteCities(sites);
+    return nextCities.length > 0 ? nextCities : fallbackCities;
+  }, [sites]);
+  const states = useMemo(() => {
+    const nextStates = getUniqueSiteStates(sites);
+    return nextStates.length > 0 ? nextStates : fallbackStates;
+  }, [sites]);
 
   return (
     <section className="bg-white min-h-full px-10 p-8">

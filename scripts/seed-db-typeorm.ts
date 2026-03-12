@@ -76,8 +76,8 @@ async function seed() {
         site.measuringUnit = siteSeed.measuringUnit;
         site.image = siteSeed.image;
         site.about = siteSeed.about;
-        site.registrationFee = siteSeed.registrationFee;
-        site.annualDues = siteSeed.annualDues;
+        site.registrationFee = 0;
+        site.annualDues = 0;
         console.debug(`Updating site ${siteSeed.code}`);
       }
 

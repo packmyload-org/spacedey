@@ -2,45 +2,21 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useSitesData } from "@/contexts/SitesContext";
 import PrimaryButton from "../ui/PrimaryButton";
 import InputSearch from "../ui/InputSearch";
-import type { ApiSite } from "@/lib/types/local";
-import { getSiteState, resolveStateFromQuery, sortAlphabetically } from "@/lib/utils/siteLocations";
+import { getUniqueSiteStates, resolveStateFromQuery } from "@/lib/utils/siteLocations";
 
 function HeroSection() {
   const router = useRouter();
+  const { sites, isLoading: isSitesLoading } = useSitesData();
   const [query, setQuery] = useState("");
   const [activeState, setActiveState] = useState("");
-  const [states, setStates] = useState<string[]>([]);
-  const [sites, setSites] = useState<ApiSite[]>([]);
-  const [loadingStates, setLoadingStates] = useState(true);
-
-  React.useEffect(() => {
-    async function fetchStates() {
-      try {
-        const res = await fetch('/api/sites');
-        const data: { ok?: boolean; sites?: ApiSite[] } = await res.json();
-
-        if (data.ok && data.sites) {
-          setSites(data.sites);
-
-          const uniqueStates = sortAlphabetically(
-            Array.from(new Set(data.sites.map((site) => getSiteState(site)).filter(Boolean)))
-          );
-
-          if (uniqueStates.length > 0) {
-            setStates(uniqueStates);
-          }
-        }
-      } catch {
-        setStates(['Abuja', 'Lagos', 'Rivers']);
-      } finally {
-        setLoadingStates(false);
-      }
-    }
-
-    fetchStates();
-  }, []);
+  const states = React.useMemo(() => {
+    const nextStates = getUniqueSiteStates(sites);
+    return nextStates.length > 0 ? nextStates : ['Abuja', 'Lagos', 'Rivers'];
+  }, [sites]);
+  const loadingStates = isSitesLoading && sites.length === 0;
 
   const handleStateClick = (state: string) => {
     setActiveState(state);

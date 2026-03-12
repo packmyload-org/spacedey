@@ -11,10 +11,26 @@ import type { StorageUnit as StorageUnitModel } from "./StorageUnit";
 
 export enum BookingStatus {
     PENDING = "pending",
-    PARTIAL = "partial", // Paid something but not full initial fees
-    ACTIVE = "active",  // Met activation threshold
+    PARTIAL = "partial", // Paid something but not the selected billing amount
+    ACTIVE = "active",  // Met the selected billing amount
     EXPIRED = "expired",
     CANCELLED = "cancelled"
+}
+
+export interface BookingBillingMetadata {
+    paystack?: {
+        allocationAmount?: number;
+        authorizationCode?: string;
+        authorizationSignature?: string;
+        authorizationReusable?: boolean;
+        customerCode?: string;
+        customerEmail?: string;
+        lastSuccessfulReference?: string;
+        planCode?: string;
+        planName?: string;
+        subscriptionCode?: string;
+    };
+    [key: string]: unknown;
 }
 
 @Entity("bookings")
@@ -53,19 +69,22 @@ export class Booking {
     monthlyRate!: number; // Cached price of unit at time of booking
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    registrationFee!: number;
+    registrationFee!: number; // Retained for compatibility; new recurring bookings store 0
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    annualDues!: number;
+    annualDues!: number; // Retained for compatibility; new recurring bookings store 0
 
     @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
     amountPaid!: number; // Total installments received
 
     @Column({ type: "decimal", precision: 12, scale: 2 })
-    totalAmount!: number; // Total initial due (Reg + 1st Month + Annual)
+    totalAmount!: number; // Amount due for the selected billing option
 
     @Column({ type: "varchar", default: "NGN" })
     currency!: string;
+
+    @Column({ type: "jsonb", nullable: true })
+    billingMetadata!: BookingBillingMetadata | null;
 
     @CreateDateColumn()
     createdAt!: Date;

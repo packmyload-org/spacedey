@@ -5,12 +5,24 @@ import type { Booking as BookingModel } from "./Booking";
 import UserEntity from "./User";
 import type { User as UserModel } from "./User";
 
+export interface PaymentBookingAllocation {
+    bookingId: string;
+    amount: number;
+}
+
 export interface PaymentMetadata {
     data?: {
         id?: string | number;
         [key: string]: unknown;
     };
     verification?: unknown;
+    bookingIds?: string[];
+    bookingAllocations?: PaymentBookingAllocation[];
+    checkoutSource?: "cart" | "direct" | "bookings" | "recurring";
+    paymentMode?: "monthly" | "full";
+    monthsCovered?: number;
+    paystackPlanCode?: string;
+    paystackPlanName?: string;
     [key: string]: unknown;
 }
 

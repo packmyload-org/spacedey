@@ -22,27 +22,13 @@ function readBoolean(value: string | undefined, fallback: boolean): boolean {
   return value === 'true';
 }
 
-function readNumber(value: string | undefined, fallback: number): number {
-  if (!value) {
-    return fallback;
-  }
-
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
 function isLocalConnectionString(connectionString: string): boolean {
   return /localhost|127\.0\.0\.1/.test(connectionString);
 }
 
-const pooledDatabaseUrl =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL ||
-  process.env.POSTGRES_PRISMA_URL;
+const pooledDatabaseUrl = process.env.DATABASE_URL;
 
-const directDatabaseUrl =
-  process.env.DIRECT_DATABASE_URL ||
-  process.env.POSTGRES_URL_NON_POOLING;
+const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
 
 const useDirectUrl = process.env.DB_USE_DIRECT_URL === 'true';
 const selectedDatabaseUrl = useDirectUrl
@@ -57,21 +43,15 @@ const ssl = readBoolean(process.env.DB_SSL, defaultSsl)
   ? { rejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false) }
   : false;
 
-const postgresConnectionOptions = useDirectUrl && directDatabaseUrl
-  ? { url: directDatabaseUrl }
-  : selectedDatabaseUrl
-    ? { url: selectedDatabaseUrl }
-    : {
-        host: process.env.POSTGRES_HOST || process.env.DB_HOST || 'localhost',
-        port: readNumber(process.env.POSTGRES_PORT || process.env.DB_PORT, 5432),
-        username: process.env.POSTGRES_USER || process.env.DB_USER || 'postgres',
-        password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'password',
-        database: process.env.POSTGRES_DB || process.env.DB_NAME || 'spacedey',
-      };
+if (!selectedDatabaseUrl) {
+  throw new Error(
+    'Missing DATABASE_URL or DIRECT_DATABASE_URL. Configure the database URL-based env vars before running TypeORM scripts.'
+  );
+}
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  ...postgresConnectionOptions,
+  url: useDirectUrl && directDatabaseUrl ? directDatabaseUrl : selectedDatabaseUrl,
   ssl,
   synchronize: false,
   logging: false,

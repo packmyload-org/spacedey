@@ -3,7 +3,7 @@
  * Centralized environment setup for the application
  */
 
-import type { DataSourceOptions, LoggerOptions } from "typeorm";
+import type { LoggerOptions } from "typeorm";
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isDevelopment = nodeEnv === 'development';
@@ -30,14 +30,9 @@ function isLocalConnectionString(connectionString: string): boolean {
   return /localhost|127\.0\.0\.1/.test(connectionString);
 }
 
-const pooledDatabaseUrl =
-  process.env.DATABASE_URL ||
-  process.env.POSTGRES_URL ||
-  process.env.POSTGRES_PRISMA_URL;
+const pooledDatabaseUrl = process.env.DATABASE_URL;
 
-const directDatabaseUrl =
-  process.env.DIRECT_DATABASE_URL ||
-  process.env.POSTGRES_URL_NON_POOLING;
+const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
 
 const useDirectUrl = process.env.DB_USE_DIRECT_URL === 'true';
 const selectedDatabaseUrl = useDirectUrl
@@ -60,25 +55,16 @@ export const env = {
     pooledUrl: pooledDatabaseUrl,
     directUrl: directDatabaseUrl,
     useDirectUrl,
-    host: process.env.POSTGRES_HOST || process.env.DB_HOST || 'localhost',
-    port: readNumber(process.env.POSTGRES_PORT || process.env.DB_PORT, 5432),
-    username: process.env.POSTGRES_USER || process.env.DB_USER || 'postgres',
-    password: process.env.POSTGRES_PASSWORD || process.env.DB_PASSWORD || 'password',
-    database: process.env.POSTGRES_DB || process.env.DB_NAME || 'spacedey',
     ssl: readBoolean(process.env.DB_SSL, defaultSsl),
     sslRejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
     synchronize: readBoolean(process.env.DB_SYNCHRONIZE, false),
     logging: readBoolean(process.env.DB_LOGGING, isDevelopment) as LoggerOptions,
-    type: process.env.DB_TYPE as DataSourceOptions['type'],
   },
 
   // Google Maps Configuration
   googleMaps: {
     apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-    enabled:
-      process.env.NEXT_PUBLIC_ENABLE_GOOGLE_MAPS === 'true' &&
-      process.env.NEXT_PUBLIC_GOOGLE_MAPS_BILLING_ENABLED === 'true' &&
-      Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY),
+    enabled: Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY),
   },
 
   // Third-party Integrations

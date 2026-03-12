@@ -44,8 +44,10 @@ export async function POST(req: Request) {
         }
 
         let storageUnit = null;
+        let requestedSpecificUnit = false;
 
         if (storageUnitId) {
+            requestedSpecificUnit = true;
             storageUnit = await storageUnitRepo.findOne({
                 where: { id: storageUnitId },
                 relations: ['site', 'unitType'],
@@ -54,11 +56,9 @@ export async function POST(req: Request) {
             if (!storageUnit || storageUnit.site.id !== site.id || storageUnit.unitType.id !== unit.id) {
                 return NextResponse.json({ ok: false, message: 'Storage unit not found for this site and unit type' }, { status: 404 });
             }
+        }
 
-            if (storageUnit.status !== StorageUnitStatus.AVAILABLE) {
-                return NextResponse.json({ ok: false, message: 'Selected storage unit is no longer available' }, { status: 409 });
-            }
-        } else {
+        if (!storageUnit || storageUnit.status !== StorageUnitStatus.AVAILABLE) {
             storageUnit = await storageUnitRepo.findOne({
                 where: {
                     site: { id: site.id },
@@ -75,14 +75,10 @@ export async function POST(req: Request) {
         }
 
         // 3. Booking amount calculations
-        const registrationFee = Number(site.registrationFee || 30000);
-        const annualDues = Number(site.annualDues || 35000);
         const pricing = calculateCheckoutPricing({
             width: Number(unit.width),
             depth: Number(unit.depth),
             unit: unit.unit,
-            registrationFee,
-            annualDues,
         });
         const monthlyRate = pricing.monthlyRate;
         const totalAmount = paymentMode === 'full' ? pricing.dueTodayForPayOncePlan : pricing.dueTodayForMonthlyPlan;
@@ -96,8 +92,8 @@ export async function POST(req: Request) {
             status: BookingStatus.PENDING,
             startDate: new Date(startDate || Date.now()),
             monthlyRate,
-            registrationFee,
-            annualDues,
+            registrationFee: 0,
+            annualDues: 0,
             totalAmount,
             amountPaid: 0,
             currency: 'NGN'
@@ -113,10 +109,10 @@ export async function POST(req: Request) {
             bookingId: booking.id,
             storageUnitId: storageUnit.id,
             unitNumber: storageUnit.unitNumber,
+            requestedSpecificUnit,
+            assignedFallbackUnit: requestedSpecificUnit && storageUnit.id !== storageUnitId,
             breakdown: {
-                registrationFee,
                 monthlyRate,
-                annualDues,
                 totalAmount,
                 paymentMode: paymentMode === 'full' ? 'full' : 'monthly'
             }

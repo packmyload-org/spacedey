@@ -1,12 +1,64 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useStorageCart } from "@/contexts/StorageCartContext";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import type { CartItem } from "@/contexts/StorageCartContext";
+
+function isAddOn(item: CartItem) {
+  return item.itemType === "addon";
+}
+
+function getStorageItems(cartItems: CartItem[]) {
+  return cartItems.filter((item) => !isAddOn(item));
+}
+
+function getCheckoutValidationMessage(cartItems: CartItem[]) {
+  const storageItems = getStorageItems(cartItems);
+  const storageQuantity = storageItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (storageQuantity === 0) {
+    return "Add a storage unit before checkout.";
+  }
+
+  if (cartItems.some(isAddOn)) {
+    return "Cart add-ons are not included in online checkout yet. Remove add-ons to continue.";
+  }
+
+  return null;
+}
 
 export default function StorageCart() {
   const { isOpen, closeCart, cartItems, removeFromCart } = useStorageCart();
   const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const storageItems = getStorageItems(cartItems);
+  const addOnItems = cartItems.filter(isAddOn);
+  const storageTotal = storageItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0);
+  const addOnTotal = addOnItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0);
+  const validationMessage = getCheckoutValidationMessage(cartItems);
+  const visibleCheckoutMessage = checkoutError ?? validationMessage;
+
+  const handleProceedToCheckout = () => {
+    if (validationMessage) {
+      setCheckoutError(validationMessage);
+      return;
+    }
+
+    if (!isAuthenticated) {
+      setCheckoutError(null);
+      closeCart();
+      router.push("/auth/signin");
+      return;
+    }
+
+    setCheckoutError(null);
+
+    closeCart();
+    router.push("/checkout");
+  };
 
   if (!isOpen) return null;
 
@@ -47,7 +99,10 @@ export default function StorageCart() {
                       <div className="text-gray-500">Qty: {item.quantity}</div>
                     </div>
                     <button
-                      onClick={() => removeFromCart(idx)}
+                      onClick={() => {
+                        setCheckoutError(null);
+                        removeFromCart(idx);
+                      }}
                       className="text-red-600 hover:text-red-800 font-medium"
                     >
                       Remove
@@ -66,11 +121,36 @@ export default function StorageCart() {
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="border-t p-4 space-y-3">
-            <div className="flex justify-between text-sm font-semibold">
-              <span>Total:</span>
-              <span>₦{cartItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0).toFixed(2)}</span>
+            <div className="space-y-2 rounded-lg bg-gray-50 p-3 text-sm">
+              <div className="flex justify-between font-semibold">
+                <span>Storage subtotal:</span>
+                <span>₦{storageTotal.toFixed(2)}</span>
+              </div>
+              {addOnItems.length > 0 ? (
+                <div className="flex justify-between text-gray-500">
+                  <span>Add-ons in cart:</span>
+                  <span>₦{addOnTotal.toFixed(2)}</span>
+                </div>
+              ) : null}
+              <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold">
+                <span>Cart total:</span>
+                <span>₦{(storageTotal + addOnTotal).toFixed(2)}</span>
+              </div>
             </div>
-            <button className={`w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 ${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!isAuthenticated}>
+            {addOnItems.length > 0 ? (
+              <p className="rounded bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                Add-ons stay in your cart, but they are not included in the current online checkout flow.
+              </p>
+            ) : null}
+            {visibleCheckoutMessage ? (
+              <p className="rounded bg-red-50 px-3 py-2 text-xs text-red-600">{visibleCheckoutMessage}</p>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleProceedToCheckout}
+              disabled={Boolean(validationMessage)}
+              className="w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
               Proceed to Checkout
             </button>
           </div>

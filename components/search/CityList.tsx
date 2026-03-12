@@ -32,6 +32,9 @@ const getSiteProps = (site: ApiSite) => {
 
       return {
         id: nextAvailableUnit?.id || ut.id,
+        siteId: site.id,
+        unitTypeId: ut.id,
+        storageUnitId: nextAvailableUnit?.id,
         name: ut.name,
         dimensionsLabel: formatUnitDimensions(ut.dimensions),
         originalPrice: (ut.price.originalAmount || ut.price.amount * 1.2).toFixed(0),

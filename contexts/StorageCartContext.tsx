@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 
 export interface StorageUnit {
   unitId?: string | number;
+  siteId?: string;
+  unitTypeId?: string;
+  storageUnitId?: string;
   itemType?: "storage" | "addon";
   size: string;
   originalPrice: string;
@@ -28,6 +31,7 @@ interface StorageCartContextType {
   addToCart: (item: CartItem) => void;
   removeFromCart: (index: number) => void;
   clearCart: () => void;
+  clearStorageItems: () => void;
 }
 
 const StorageCartContext = createContext<StorageCartContextType | undefined>(undefined);
@@ -49,6 +53,9 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
         setCartItems(
           parsedItems.map((item) => ({
             unitId: item.unitId,
+            siteId: typeof item.siteId === "string" ? item.siteId : undefined,
+            unitTypeId: typeof item.unitTypeId === "string" ? item.unitTypeId : undefined,
+            storageUnitId: typeof item.storageUnitId === "string" ? item.storageUnitId : undefined,
             itemType: item.itemType === "addon" ? "addon" : "storage",
             size: item.size || "",
             originalPrice: item.originalPrice || "0",
@@ -130,6 +137,10 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
     setCartItems([]);
   };
 
+  const clearStorageItems = () => {
+    setCartItems((prev) => prev.filter((item) => item.itemType === "addon"));
+  };
+
   return (
     <StorageCartContext.Provider
       value={{
@@ -141,6 +152,7 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
         addToCart,
         removeFromCart,
         clearCart,
+        clearStorageItems,
       }}
     >
       {children}

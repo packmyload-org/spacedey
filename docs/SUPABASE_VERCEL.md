@@ -17,11 +17,7 @@ DIRECT_DATABASE_URL=postgresql://postgres.xxx:[password]@db.xxx.supabase.co:5432
 DB_USE_DIRECT_URL=false
 DB_SSL=true
 DB_SSL_REJECT_UNAUTHORIZED=false
-DB_SYNCHRONIZE=false
-DB_LOGGING=false
 ```
-
-You can also keep using the older `POSTGRES_HOST` / `POSTGRES_PORT` style variables, but URL-based config is the simplest path for Supabase and Vercel.
 
 ## Local development
 
@@ -50,10 +46,9 @@ Add these env vars to your Vercel project:
 
 - `DATABASE_URL`
 - `DIRECT_DATABASE_URL`
+- `DB_USE_DIRECT_URL=false`
 - `DB_SSL=true`
 - `DB_SSL_REJECT_UNAUTHORIZED=false`
-- `DB_SYNCHRONIZE=false`
-- `DB_LOGGING=false`
 - `JWT_SECRET`
 - `PASSWORD_SALT`
 - `TOKEN_SECRET`

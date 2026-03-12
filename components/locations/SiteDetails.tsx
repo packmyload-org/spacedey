@@ -8,6 +8,7 @@ import SiteMapViewer from '@/components/locations/SiteMapViewer';
 import ProductsSpacedeyAddOns from '@/components/products/ProductsStufAddOns';
 import { useStorageCart } from '@/contexts/StorageCartContext';
 import { getLocationDetails } from '@/lib/utils/sampleLocations';
+import { formatStorageUnitLabel } from '@/lib/pricing/storagePricing';
 
 interface SiteDetailsProps {
     site: Site;
@@ -206,6 +207,11 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                 const nextAvailableUnit = availableUnits[0];
                                 const effectiveUnitId = nextAvailableUnit?.id || unit.id;
                                 const isLowStock = unit.availableCount && unit.availableCount < 3;
+                                const unitLabel = formatStorageUnitLabel({
+                                    width: Number(unit.dimensions.width),
+                                    depth: Number(unit.dimensions.depth),
+                                    unit: unit.dimensions.unit,
+                                });
                                 const cartItem = cartItems.find((item) => item.unitId === effectiveUnitId);
                                 const selectedQuantity = cartItem?.quantity || 0;
                                 const hasAvailableSlots = unit.availableCount > selectedQuantity;
@@ -226,7 +232,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                             <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-700 transition-colors">{getStr(unit.name)}</h3>
                                             <div className="flex flex-col gap-2 mt-2">
                                                 <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
-                                                    <span>{unit.dimensions.width} x {unit.dimensions.depth} {unit.dimensions.unit}</span>
+                                                    <span>{unitLabel}</span>
                                                 </div>
                                                     <div className="flex flex-wrap gap-1">
                                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
@@ -277,7 +283,10 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
 
                                                     addToCart({
                                                         unitId: effectiveUnitId,
-                                                        size: getStr(unit.name),
+                                                        siteId: site.id,
+                                                        unitTypeId: unit.id,
+                                                        storageUnitId: nextAvailableUnit?.id,
+                                                        size: unitLabel,
                                                         originalPrice: String(unit.price),
                                                         currentPrice: String(unit.price),
                                                         maxQuantity: unit.availableCount,
