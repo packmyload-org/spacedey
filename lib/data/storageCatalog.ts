@@ -26,15 +26,11 @@ export interface SeedSite {
   measuringUnit: string;
   image: string;
   about: string;
-  registrationFee: number;
-  annualDues: number;
 }
 
 const DEFAULT_CONTACT_PHONE = '+234123456789';
 const DEFAULT_CONTACT_EMAIL = 'info@spacedey.com';
 const DEFAULT_MEASURING_UNIT = 'ft';
-const DEFAULT_REGISTRATION_FEE = 30000;
-const DEFAULT_ANNUAL_DUES = 35000;
 const DEFAULT_AVAILABLE_COUNT = 5;
 
 const SMALL_DESCRIPTION =
@@ -132,8 +128,6 @@ export const STORAGE_SITES: SeedSite[] = Object.values(LOCATION_DETAILS).map((de
     measuringUnit: DEFAULT_MEASURING_UNIT,
     image: detail.image,
     about: detail.about,
-    registrationFee: DEFAULT_REGISTRATION_FEE,
-    annualDues: DEFAULT_ANNUAL_DUES,
   };
 });
 

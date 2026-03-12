@@ -16,6 +16,9 @@ interface LocationCardProps {
   pricing?: Array<{ size: string; originalPrice: string; currentPrice: string }>;
   units?: Array<{
     id: string | number;
+    siteId?: string;
+    unitTypeId?: string;
+    storageUnitId?: string;
     name: string;
     dimensionsLabel?: string;
     originalPrice: string;
@@ -203,6 +206,9 @@ function LocationCard({
                         onClick={() => {
                           addToCart({
                             unitId: unit.id,
+                            siteId: 'siteId' in unit ? unit.siteId : undefined,
+                            unitTypeId: 'unitTypeId' in unit ? unit.unitTypeId : undefined,
+                            storageUnitId: 'storageUnitId' in unit ? unit.storageUnitId : undefined,
                             size: unitLabel,
                             originalPrice: unit.originalPrice,
                             currentPrice: unit.currentPrice,
@@ -275,6 +281,9 @@ function LocationCard({
                         onClick={() => {
                           addToCart({
                             unitId: unit.id,
+                            siteId: 'siteId' in unit ? unit.siteId : undefined,
+                            unitTypeId: 'unitTypeId' in unit ? unit.unitTypeId : undefined,
+                            storageUnitId: 'storageUnitId' in unit ? unit.storageUnitId : undefined,
                             size: unitLabel,
                             originalPrice: unit.originalPrice,
                             currentPrice: unit.currentPrice,

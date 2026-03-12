@@ -277,6 +277,9 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
 
                                                     addToCart({
                                                         unitId: effectiveUnitId,
+                                                        siteId: site.id,
+                                                        unitTypeId: unit.id,
+                                                        storageUnitId: nextAvailableUnit?.id,
                                                         size: getStr(unit.name),
                                                         originalPrice: String(unit.price),
                                                         currentPrice: String(unit.price),

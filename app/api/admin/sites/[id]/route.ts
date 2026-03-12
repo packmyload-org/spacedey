@@ -83,8 +83,8 @@ export async function PATCH(
         if (body.image !== undefined) site.image = body.image;
         if (body.about !== undefined) site.about = body.about;
         if (body.siteMapUrl !== undefined) site.siteMapUrl = body.siteMapUrl;
-        if (body.registrationFee !== undefined) site.registrationFee = body.registrationFee;
-        if (body.annualDues !== undefined) site.annualDues = body.annualDues;
+        site.registrationFee = 0;
+        site.annualDues = 0;
         if (body.latitude !== undefined) {
             site.latitude = body.latitude;
             if (body.lat === undefined) {

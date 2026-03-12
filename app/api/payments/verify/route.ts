@@ -55,8 +55,8 @@ export async function POST(req: Request) {
             if (booking) {
                 booking.amountPaid = Number(booking.amountPaid) + Number(payment.amount);
 
-                // A booking becomes active once the joining fee and first month are covered.
-                const activationThreshold = Number(booking.registrationFee) + Number(booking.monthlyRate);
+                // Activate when the currently selected billing commitment is fully paid.
+                const activationThreshold = Number(booking.totalAmount);
 
                 if (booking.amountPaid >= activationThreshold) {
                     booking.status = BookingStatus.ACTIVE;

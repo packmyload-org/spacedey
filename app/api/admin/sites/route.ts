@@ -62,8 +62,6 @@ export async function POST(request: NextRequest) {
             image,
             about,
             siteMapUrl,
-            registrationFee,
-            annualDues,
             unitTypes = []
         } = body;
 
@@ -104,8 +102,8 @@ export async function POST(request: NextRequest) {
             image,
             about,
             siteMapUrl,
-            registrationFee,
-            annualDues,
+            registrationFee: 0,
+            annualDues: 0,
         });
 
         await repo.save(newSite);

@@ -9,10 +9,7 @@ import { calculateCheckoutPricing, NAIRA_PER_SQUARE_FOOT_PER_MONTH, PAY_ONCE_MON
 import { PaymentProvider } from "@/lib/db/entities/Payment";
 import type { ApiSite, ApiStorageUnit, ApiUnitType } from "@/lib/types/local";
 
-interface CheckoutSite extends ApiSite {
-    registrationFee?: number;
-    annualDues?: number;
-}
+type CheckoutSite = ApiSite;
 
 interface CheckoutUnit extends ApiUnitType {
     priceAmount?: number;
@@ -82,14 +79,10 @@ function CheckoutContent() {
         loadData();
     }, [hasLoaded, siteId, sites, sitesError, storageUnitId, unitTypeId]);
 
-    const registrationFee = Number(selectedSite?.registrationFee || 30000);
-    const annualDues = Number(selectedSite?.annualDues || 35000);
     const pricing = calculateCheckoutPricing({
         width: Number(selectedUnit?.dimensions.width || 0),
         depth: Number(selectedUnit?.dimensions.depth || 0),
         unit: selectedUnit?.dimensions.unit,
-        registrationFee,
-        annualDues,
         payOnceMonths: PAY_ONCE_MONTHS,
     });
     const monthlyRate = pricing.monthlyRate;
@@ -219,12 +212,12 @@ function CheckoutContent() {
                                             01
                                         </div>
                                         <div>
-                                            <span className="block font-black text-blue-900">Joining Fee</span>
-                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Paid once at signup</span>
+                                            <span className="block font-black text-blue-900">Monthly Subscription</span>
+                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{squareFootage.toLocaleString()} sq ft × ₦{NAIRA_PER_SQUARE_FOOT_PER_MONTH.toLocaleString()} / month</span>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <span className="block font-black text-blue-900 text-xl">₦{registrationFee.toLocaleString()}</span>
+                                        <span className="block font-black text-blue-900 text-xl">₦{monthlyRate.toLocaleString()}</span>
                                     </div>
                                 </div>
 
@@ -234,24 +227,11 @@ function CheckoutContent() {
                                             02
                                         </div>
                                         <div>
-                                            <span className="block font-black text-blue-900">Monthly Subscription</span>
-                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{squareFootage.toLocaleString()} sq ft × ₦{NAIRA_PER_SQUARE_FOOT_PER_MONTH.toLocaleString()} / month</span>
+                                            <span className="block font-black text-blue-900">Pay Once Option</span>
+                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{PAY_ONCE_MONTHS} months upfront at ₦{monthlyRate.toLocaleString()} / month</span>
                                         </div>
                                     </div>
-                                    <span className="block font-black text-blue-900 text-xl">₦{monthlyRate.toLocaleString()}</span>
-                                </div>
-
-                                <div className="flex items-center justify-between p-6 rounded-3xl bg-gray-50/50 border border-gray-100">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center font-bold">
-                                            03
-                                        </div>
-                                        <div>
-                                            <span className="block font-black text-blue-900">Annual Dues</span>
-                                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Paid once yearly</span>
-                                        </div>
-                                    </div>
-                                    <span className="block font-black text-blue-900 text-xl">₦{annualDues.toLocaleString()}</span>
+                                    <span className="block font-black text-blue-900 text-xl">₦{fullPlanAmount.toLocaleString()}</span>
                                 </div>
                             </div>
                         </section>
@@ -274,7 +254,7 @@ function CheckoutContent() {
                                         <CheckCircle2 className="w-6 h-6" />
                                     </div>
                                     <span className="block font-black text-blue-900 text-lg">Monthly Payment</span>
-                                    <span className="text-sm text-gray-500">Pay signup fees and your first month today, then continue monthly</span>
+                                    <span className="text-sm text-gray-500">Pay one month today, then continue on your recurring billing cycle</span>
                                 </button>
 
                                 <button
@@ -301,8 +281,8 @@ function CheckoutContent() {
                                 </p>
                                 <p className="mt-3 text-sm leading-6 text-blue-700/80">
                                     {paymentMode === 'monthly'
-                                        ? `This covers your joining fee, annual dues, and the first month for ${squareFootage.toLocaleString()} square feet.`
-                                        : `This covers your joining fee, annual dues, and ${PAY_ONCE_MONTHS} months upfront at ₦${monthlyRate.toLocaleString()} per month.`}
+                                        ? `This covers one month for ${squareFootage.toLocaleString()} square feet at ₦${monthlyRate.toLocaleString()} per month.`
+                                        : `This covers ${PAY_ONCE_MONTHS} months upfront at ₦${monthlyRate.toLocaleString()} per month.`}
                                 </p>
                             </div>
                         </section>

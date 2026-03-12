@@ -75,14 +75,10 @@ export async function POST(req: Request) {
         }
 
         // 3. Booking amount calculations
-        const registrationFee = Number(site.registrationFee || 30000);
-        const annualDues = Number(site.annualDues || 35000);
         const pricing = calculateCheckoutPricing({
             width: Number(unit.width),
             depth: Number(unit.depth),
             unit: unit.unit,
-            registrationFee,
-            annualDues,
         });
         const monthlyRate = pricing.monthlyRate;
         const totalAmount = paymentMode === 'full' ? pricing.dueTodayForPayOncePlan : pricing.dueTodayForMonthlyPlan;
@@ -96,8 +92,8 @@ export async function POST(req: Request) {
             status: BookingStatus.PENDING,
             startDate: new Date(startDate || Date.now()),
             monthlyRate,
-            registrationFee,
-            annualDues,
+            registrationFee: 0,
+            annualDues: 0,
             totalAmount,
             amountPaid: 0,
             currency: 'NGN'
@@ -114,9 +110,7 @@ export async function POST(req: Request) {
             storageUnitId: storageUnit.id,
             unitNumber: storageUnit.unitNumber,
             breakdown: {
-                registrationFee,
                 monthlyRate,
-                annualDues,
                 totalAmount,
                 paymentMode: paymentMode === 'full' ? 'full' : 'monthly'
             }

@@ -43,10 +43,12 @@ export class Site {
   @Column({ type: 'varchar', nullable: true })
   siteMapUrl!: string | null;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 30000 })
+  // Retained for compatibility with older records; recurring pricing now stores 0.
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   registrationFee!: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2, default: 35000 })
+  // Retained for compatibility with older records; recurring pricing now stores 0.
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   annualDues!: number;
 
   // Legacy fields retained for compatibility with earlier seeded/local data.

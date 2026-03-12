@@ -59,8 +59,6 @@ interface Site {
     contactEmail: string;
     lat: number;
     lng: number;
-    registrationFee: number;
-    annualDues: number;
     measuringUnit: string;
     image?: string;
     siteMapUrl?: string;
@@ -108,8 +106,6 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
         contactEmail: '',
         lat: 6.5244,
         lng: 3.3792, // Default Lagos
-        registrationFee: 30000,
-        annualDues: 35000,
         measuringUnit: 'ft',
         unitTypes: [],
         units: [],
@@ -515,29 +511,6 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                     placeholder="Street, City, State"
                                 />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Registration Fee</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={site.registrationFee}
-                                        onChange={e => setSite({ ...site, registrationFee: parseFloat(e.target.value) || 0 })}
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Annual Dues</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={site.annualDues}
-                                        onChange={e => setSite({ ...site, annualDues: parseFloat(e.target.value) || 0 })}
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                    />
-                                </div>
                             </div>
 
                             <div>

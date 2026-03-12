@@ -9,8 +9,6 @@ interface StorageDimensions {
 }
 
 interface CheckoutPricingInput extends StorageDimensions {
-  registrationFee?: number;
-  annualDues?: number;
   payOnceMonths?: number;
 }
 
@@ -44,14 +42,12 @@ export function calculateCheckoutPricing({
   width,
   depth,
   unit,
-  registrationFee = 0,
-  annualDues = 0,
   payOnceMonths = PAY_ONCE_MONTHS,
 }: CheckoutPricingInput) {
   const monthlyRate = calculateMonthlyStorageRate({ width, depth, unit });
   const squareFootage = calculateStorageAreaSquareFeet({ width, depth, unit });
-  const dueTodayForMonthlyPlan = normalizeNumber(registrationFee) + normalizeNumber(annualDues) + monthlyRate;
-  const dueTodayForPayOncePlan = normalizeNumber(registrationFee) + normalizeNumber(annualDues) + (monthlyRate * payOnceMonths);
+  const dueTodayForMonthlyPlan = monthlyRate;
+  const dueTodayForPayOncePlan = monthlyRate * payOnceMonths;
 
   return {
     monthlyRate,
