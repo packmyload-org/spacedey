@@ -105,11 +105,10 @@ PORT=3000
 
 If you are using Supabase, set `DATABASE_URL` and `DIRECT_DATABASE_URL` first.
 
-If you prefer local Docker Postgres instead:
+If you prefer a local database, start a Postgres 15 instance however you normally manage local services, then point `.env.local` at it with either:
 
-```bash
-docker-compose up -d
-```
+- `DATABASE_URL` and `DIRECT_DATABASE_URL`, or
+- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB`
 
 ### 5. Run migrations
 
@@ -131,7 +130,7 @@ pnpm db:baseline
 pnpm run seed:data
 ```
 
-For local Docker/Postgres, `pnpm run seed:data` is also fine.
+For a local Postgres instance, `pnpm run seed:data` is also fine.
 
 This creates two default accounts:
 
@@ -184,10 +183,7 @@ spacedey/
 ├── scripts/              # One-off scripts (e.g. DB seeding)
 ├── public/               # Static assets
 ├── docs/                 # Project documentation
-│   ├── ADMIN_PORTAL.md   # Admin dashboard & API reference
-│   └── DOCKER_SETUP.md   # Docker & database setup guide
-├── docker-compose.yml    # Local Postgres service
-├── Dockerfile            # Production container definition
+│   └── ADMIN_PORTAL.md   # Admin dashboard & API reference
 └── .env.example          # Environment variable template
 ```
 
@@ -198,7 +194,6 @@ spacedey/
 | Document | Description |
 |---|---|
 | [Admin Portal Guide](./docs/ADMIN_PORTAL.md) | Role-based access, admin API endpoints, frontend usage, security checklist |
-| [Docker & Postgres Setup](./docs/DOCKER_SETUP.md) | Full Docker setup, environment variables, deployment, troubleshooting |
 | [Supabase + Vercel DB Setup](./docs/SUPABASE_VERCEL.md) | Managed Postgres setup using Supabase with Vercel-friendly env vars |
 | [Database Workflow](./docs/DATABASE_WORKFLOW.md) | Migrations, baselining, and seeding guidance |
 
@@ -242,27 +237,6 @@ spacedey/
 - All admin routes verify role server-side
 - Admins cannot delete their own account
 - `.env.local` is gitignored — never commit secrets
-
----
-
-## 🐳 Docker Quick Reference
-
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-docker-compose logs -f postgres
-
-# Open a Postgres shell
-docker-compose exec postgres psql -U admin -d spacedey
-
-# Stop services
-docker-compose down
-```
-
-> See [docs/DOCKER_SETUP.md](./docs/DOCKER_SETUP.md) for the full guide including production deployment.
 
 ---
 
