@@ -108,7 +108,8 @@ export async function POST(req: Request) {
             if (!paystack.isConfigured()) {
                 return NextResponse.json({ ok: false, message: 'Paystack is not configured yet' }, { status: 400 });
             }
-            paystackPlan = paymentMode === 'monthly'
+            const effectivePaymentMode = paymentMode ?? 'monthly';
+            paystackPlan = effectivePaymentMode === 'monthly'
                 ? await paystack.ensureMonthlyPlan(paymentAmount)
                 : null;
 
@@ -117,13 +118,13 @@ export async function POST(req: Request) {
                 paymentAmount,
                 reference,
                 callbackUrl,
-                paymentMode === 'monthly'
+                effectivePaymentMode === 'monthly'
                     ? {
                         planCode: paystackPlan?.planCode,
                         channels: ['card'],
                         metadata: {
                             checkoutSource: checkoutSource ?? 'direct',
-                            paymentMode: paymentMode ?? 'monthly',
+                            paymentMode: effectivePaymentMode,
                         },
                     }
                     : {}
@@ -150,12 +151,12 @@ export async function POST(req: Request) {
                 bookingIds,
                 bookingAllocations,
                 checkoutSource: checkoutSource ?? 'direct',
-                paymentMode: paymentMode ?? 'monthly',
+                paymentMode: provider === PaymentProvider.PAYSTACK ? (paymentMode ?? 'monthly') : paymentMode,
                 monthsCovered: monthsCovered ?? 1,
-                paystackPlanCode: provider === PaymentProvider.PAYSTACK && paymentMode === 'monthly'
+                paystackPlanCode: provider === PaymentProvider.PAYSTACK && (paymentMode ?? 'monthly') === 'monthly'
                     ? paystackPlan?.planCode
                     : undefined,
-                paystackPlanName: provider === PaymentProvider.PAYSTACK && paymentMode === 'monthly'
+                paystackPlanName: provider === PaymentProvider.PAYSTACK && (paymentMode ?? 'monthly') === 'monthly'
                     ? paystackPlan?.planName
                     : undefined,
             }
