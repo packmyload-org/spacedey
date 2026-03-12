@@ -17,6 +17,22 @@ export enum BookingStatus {
     CANCELLED = "cancelled"
 }
 
+export interface BookingBillingMetadata {
+    paystack?: {
+        allocationAmount?: number;
+        authorizationCode?: string;
+        authorizationSignature?: string;
+        authorizationReusable?: boolean;
+        customerCode?: string;
+        customerEmail?: string;
+        lastSuccessfulReference?: string;
+        planCode?: string;
+        planName?: string;
+        subscriptionCode?: string;
+    };
+    [key: string]: unknown;
+}
+
 @Entity("bookings")
 export class Booking {
     @PrimaryGeneratedColumn("uuid")
@@ -66,6 +82,9 @@ export class Booking {
 
     @Column({ type: "varchar", default: "NGN" })
     currency!: string;
+
+    @Column({ type: "jsonb", nullable: true })
+    billingMetadata!: BookingBillingMetadata | null;
 
     @CreateDateColumn()
     createdAt!: Date;

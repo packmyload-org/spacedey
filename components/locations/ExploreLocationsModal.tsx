@@ -1,11 +1,13 @@
 // components/ExploreLocationsModal.tsx
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
-import { getAvailableCities } from '@/lib/utils/cities';
+import { useSitesData } from '@/contexts/SitesContext';
+import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
+import { getUniqueSiteStates } from '@/lib/utils/siteLocations';
 
 interface ExploreLocationsModalProps {
   isOpen: boolean;
@@ -18,12 +20,22 @@ export default function ExploreLocationsModal({
 }: ExploreLocationsModalProps) {
   const router = useRouter();
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null);
-  const availableCities = getAvailableCities();
+  const { sites } = useSitesData();
+  const availableStates = useMemo(() => {
+    const siteStates = getUniqueSiteStates(sites);
+    if (siteStates.length > 0) {
+      return siteStates;
+    }
+
+    return Array.from(
+      new Set(Object.values(LOCATION_DETAILS).map((location) => location.state).filter(Boolean))
+    ).sort((left, right) => left.localeCompare(right));
+  }, [sites]);
 
   if (!isOpen) return null;
 
-  const handleLocationClick = (cityName: string) => {
-    router.push(`/search?city=${encodeURIComponent(cityName)}`);
+  const handleLocationClick = (stateName: string) => {
+    router.push(`/search?state=${encodeURIComponent(stateName)}`);
     onClose();
   };
 
@@ -48,19 +60,19 @@ export default function ExploreLocationsModal({
 
           {/* Location List */}
           <div className="space-y-1">
-            {availableCities.map((city) => (
+            {availableStates.map((state) => (
               <button
-                key={city.name}
-                onClick={() => handleLocationClick(city.name)}
-                onMouseEnter={() => setHoveredLocation(city.name)}
+                key={state}
+                onClick={() => handleLocationClick(state)}
+                onMouseEnter={() => setHoveredLocation(state)}
                 onMouseLeave={() => setHoveredLocation(null)}
                 className="w-full flex items-center justify-between px-6 py-5 text-left border-b border-gray-200 hover:bg-gray-50 transition-colors group"
               >
                 <span className="text-lg text-blue-600 font-medium group-hover:text-blue-700">
-                  {city.name}
+                  {state}
                 </span>
                 <ChevronRight
-                  className={`w-5 h-5 text-red-500 transition-transform ${hoveredLocation === city.name ? 'translate-x-1' : ''
+                  className={`w-5 h-5 text-red-500 transition-transform ${hoveredLocation === state ? 'translate-x-1' : ''
                     }`}
                 />
               </button>

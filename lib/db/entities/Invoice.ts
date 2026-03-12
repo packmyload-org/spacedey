@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from "typeorm";
 import type { Relation } from "typeorm";
 import BookingEntity from "./Booking";
 import type { Booking as BookingModel } from "./Booking";
@@ -36,7 +36,7 @@ export class Invoice {
     @ManyToOne(() => UserEntity, (user) => user.id)
     user!: Relation<UserModel>;
 
-    @OneToOne(() => PaymentEntity)
+    @ManyToOne(() => PaymentEntity)
     @JoinColumn()
     payment!: Relation<PaymentModel>;
 

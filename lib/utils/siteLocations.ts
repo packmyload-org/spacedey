@@ -1,4 +1,5 @@
 import { ApiSite, ApiUnitType } from '@/lib/types/local';
+import { formatStorageUnitLabel } from '@/lib/pricing/storagePricing';
 
 export const KNOWN_CITIES = [
   'Lekki',
@@ -162,6 +163,5 @@ export function getUniqueSiteStates(sites: Pick<ApiSite, 'state' | 'address'>[])
 }
 
 export function formatUnitDimensions(dimensions: ApiUnitType['dimensions']): string {
-  const { width, depth, unit } = dimensions;
-  return `${width} x ${depth} ${unit}`;
+  return formatStorageUnitLabel(dimensions);
 }

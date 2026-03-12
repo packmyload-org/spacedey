@@ -180,6 +180,7 @@ function LocationCard({
               <div className="space-y-2 lg:hidden mt-3">
                 {displayUnits.slice(0, 2).map((unit) => {
                   const unitLabel = 'size' in unit ? unit.size : unit.name;
+                  const cartLabel = 'dimensionsLabel' in unit && unit.dimensionsLabel ? unit.dimensionsLabel : unitLabel;
                   const availableCount = getAvailableCount(unit);
                   const unitUnavailable = typeof availableCount === 'number' && availableCount < 1;
 
@@ -209,7 +210,7 @@ function LocationCard({
                             siteId: 'siteId' in unit ? unit.siteId : undefined,
                             unitTypeId: 'unitTypeId' in unit ? unit.unitTypeId : undefined,
                             storageUnitId: 'storageUnitId' in unit ? unit.storageUnitId : undefined,
-                            size: unitLabel,
+                            size: cartLabel,
                             originalPrice: unit.originalPrice,
                             currentPrice: unit.currentPrice,
                             maxQuantity: 'maxQuantity' in unit ? unit.maxQuantity : undefined,
@@ -259,6 +260,7 @@ function LocationCard({
                 <div className="space-y-2">
                   {displayUnits.map((unit, index) => {
                     const unitLabel = 'size' in unit ? unit.size : unit.name;
+                    const cartLabel = 'dimensionsLabel' in unit && unit.dimensionsLabel ? unit.dimensionsLabel : unitLabel;
                     const availableCount = getAvailableCount(unit);
                     const unitUnavailable = typeof availableCount === 'number' && availableCount < 1;
 
@@ -284,7 +286,7 @@ function LocationCard({
                             siteId: 'siteId' in unit ? unit.siteId : undefined,
                             unitTypeId: 'unitTypeId' in unit ? unit.unitTypeId : undefined,
                             storageUnitId: 'storageUnitId' in unit ? unit.storageUnitId : undefined,
-                            size: unitLabel,
+                            size: cartLabel,
                             originalPrice: unit.originalPrice,
                             currentPrice: unit.currentPrice,
                             maxQuantity: 'maxQuantity' in unit ? unit.maxQuantity : undefined,

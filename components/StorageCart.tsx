@@ -3,50 +3,27 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStorageCart } from "@/contexts/StorageCartContext";
-import { useSitesData } from "@/contexts/SitesContext";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import type { CartItem } from "@/contexts/StorageCartContext";
 
-function resolveCheckoutTarget(cartItems: CartItem[], sites: ReturnType<typeof useSitesData>["sites"]) {
-  const selectedItem = cartItems.find((item) => item.itemType !== "addon");
+function isAddOn(item: CartItem) {
+  return item.itemType === "addon";
+}
 
-  if (!selectedItem) {
-    return null;
+function getStorageItems(cartItems: CartItem[]) {
+  return cartItems.filter((item) => !isAddOn(item));
+}
+
+function getCheckoutValidationMessage(cartItems: CartItem[]) {
+  const storageItems = getStorageItems(cartItems);
+  const storageQuantity = storageItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  if (storageQuantity === 0) {
+    return "Add a storage unit before checkout.";
   }
 
-  if (selectedItem.siteId && selectedItem.unitTypeId) {
-    return {
-      siteId: selectedItem.siteId,
-      unitTypeId: selectedItem.unitTypeId,
-      storageUnitId: selectedItem.storageUnitId,
-    };
-  }
-
-  const itemId = selectedItem.storageUnitId || selectedItem.unitId;
-  if (!itemId) {
-    return null;
-  }
-
-  const normalizedItemId = String(itemId);
-
-  for (const site of sites) {
-    for (const unitType of site.unitTypes || []) {
-      if (unitType.id === normalizedItemId) {
-        return {
-          siteId: site.id,
-          unitTypeId: unitType.id,
-        };
-      }
-
-      const storageUnit = unitType.units?.find((unit) => unit.id === normalizedItemId);
-      if (storageUnit) {
-        return {
-          siteId: site.id,
-          unitTypeId: unitType.id,
-          storageUnitId: storageUnit.id,
-        };
-      }
-    }
+  if (cartItems.some(isAddOn)) {
+    return "Cart add-ons are not included in online checkout yet. Remove add-ons to continue.";
   }
 
   return null;
@@ -55,12 +32,20 @@ function resolveCheckoutTarget(cartItems: CartItem[], sites: ReturnType<typeof u
 export default function StorageCart() {
   const { isOpen, closeCart, cartItems, removeFromCart } = useStorageCart();
   const { isAuthenticated } = useAuthStore();
-  const { sites } = useSitesData();
   const router = useRouter();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const storageItems = getStorageItems(cartItems);
+  const addOnItems = cartItems.filter(isAddOn);
+  const storageTotal = storageItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0);
+  const addOnTotal = addOnItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0);
+  const validationMessage = getCheckoutValidationMessage(cartItems);
+  const visibleCheckoutMessage = checkoutError ?? validationMessage;
 
   const handleProceedToCheckout = () => {
-    const checkoutTarget = resolveCheckoutTarget(cartItems, sites);
+    if (validationMessage) {
+      setCheckoutError(validationMessage);
+      return;
+    }
 
     if (!isAuthenticated) {
       setCheckoutError(null);
@@ -69,24 +54,10 @@ export default function StorageCart() {
       return;
     }
 
-    if (!checkoutTarget) {
-      setCheckoutError("Add a storage unit before checkout.");
-      return;
-    }
-
     setCheckoutError(null);
 
-    const params = new URLSearchParams({
-      siteId: checkoutTarget.siteId,
-      unitTypeId: checkoutTarget.unitTypeId,
-    });
-
-    if (checkoutTarget.storageUnitId) {
-      params.set("storageUnitId", checkoutTarget.storageUnitId);
-    }
-
     closeCart();
-    router.push(`/checkout?${params.toString()}`);
+    router.push("/checkout");
   };
 
   if (!isOpen) return null;
@@ -150,17 +121,35 @@ export default function StorageCart() {
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="border-t p-4 space-y-3">
-            <div className="flex justify-between text-sm font-semibold">
-              <span>Total:</span>
-              <span>₦{cartItems.reduce((sum, item) => sum + (parseFloat(item.currentPrice) * item.quantity), 0).toFixed(2)}</span>
+            <div className="space-y-2 rounded-lg bg-gray-50 p-3 text-sm">
+              <div className="flex justify-between font-semibold">
+                <span>Storage subtotal:</span>
+                <span>₦{storageTotal.toFixed(2)}</span>
+              </div>
+              {addOnItems.length > 0 ? (
+                <div className="flex justify-between text-gray-500">
+                  <span>Add-ons in cart:</span>
+                  <span>₦{addOnTotal.toFixed(2)}</span>
+                </div>
+              ) : null}
+              <div className="flex justify-between border-t border-gray-200 pt-2 font-semibold">
+                <span>Cart total:</span>
+                <span>₦{(storageTotal + addOnTotal).toFixed(2)}</span>
+              </div>
             </div>
-            {checkoutError ? (
-              <p className="rounded bg-red-50 px-3 py-2 text-xs text-red-600">{checkoutError}</p>
+            {addOnItems.length > 0 ? (
+              <p className="rounded bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                Add-ons stay in your cart, but they are not included in the current online checkout flow.
+              </p>
+            ) : null}
+            {visibleCheckoutMessage ? (
+              <p className="rounded bg-red-50 px-3 py-2 text-xs text-red-600">{visibleCheckoutMessage}</p>
             ) : null}
             <button
               type="button"
               onClick={handleProceedToCheckout}
-              className="w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700"
+              disabled={Boolean(validationMessage)}
+              className="w-full bg-blue-600 text-white py-3 rounded font-semibold uppercase text-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Proceed to Checkout
             </button>

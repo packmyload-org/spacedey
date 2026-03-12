@@ -31,6 +31,7 @@ interface StorageCartContextType {
   addToCart: (item: CartItem) => void;
   removeFromCart: (index: number) => void;
   clearCart: () => void;
+  clearStorageItems: () => void;
 }
 
 const StorageCartContext = createContext<StorageCartContextType | undefined>(undefined);
@@ -136,6 +137,10 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
     setCartItems([]);
   };
 
+  const clearStorageItems = () => {
+    setCartItems((prev) => prev.filter((item) => item.itemType === "addon"));
+  };
+
   return (
     <StorageCartContext.Provider
       value={{
@@ -147,6 +152,7 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
         addToCart,
         removeFromCart,
         clearCart,
+        clearStorageItems,
       }}
     >
       {children}

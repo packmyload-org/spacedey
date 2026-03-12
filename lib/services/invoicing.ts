@@ -3,13 +3,24 @@ import Invoice, { InvoiceStatus } from '../db/entities/Invoice';
 import Payment from '../db/entities/Payment';
 import Booking from '../db/entities/Booking';
 
-export async function generateInvoice(dataSource: DataSource, payment: Payment): Promise<Invoice> {
+interface InvoiceGenerationOptions {
+    bookingId?: string;
+    amount?: number;
+}
+
+export async function generateInvoice(
+    dataSource: DataSource,
+    payment: Payment,
+    options: InvoiceGenerationOptions = {}
+): Promise<Invoice> {
     const invoiceRepo = dataSource.getRepository(Invoice);
     const bookingRepo = dataSource.getRepository(Booking);
+    const targetBookingId = options.bookingId || payment.booking.id;
+    const paymentAmount = Number(options.amount ?? payment.amount);
 
     // 1. Fetch full booking details for line items
     const booking = await bookingRepo.findOne({
-        where: { id: payment.booking.id },
+        where: { id: targetBookingId },
         relations: ['site', 'unitType', 'user']
     });
 
@@ -26,8 +37,8 @@ export async function generateInvoice(dataSource: DataSource, payment: Payment):
         {
             description: `Payment Installment for Storage Unit: ${booking.unitType.name} at ${booking.site.name}`,
             qty: 1,
-            unitPrice: Number(payment.amount),
-            total: Number(payment.amount)
+            unitPrice: paymentAmount,
+            total: paymentAmount
         }
     ];
 
@@ -38,9 +49,9 @@ export async function generateInvoice(dataSource: DataSource, payment: Payment):
         user: booking.user,
         payment,
         items,
-        subtotal: Number(payment.amount),
+        subtotal: paymentAmount,
         tax: 0,
-        total: Number(payment.amount),
+        total: paymentAmount,
         currency: payment.currency,
         status: InvoiceStatus.PAID,
         dueDate: new Date(),

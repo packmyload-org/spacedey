@@ -44,8 +44,10 @@ export async function POST(req: Request) {
         }
 
         let storageUnit = null;
+        let requestedSpecificUnit = false;
 
         if (storageUnitId) {
+            requestedSpecificUnit = true;
             storageUnit = await storageUnitRepo.findOne({
                 where: { id: storageUnitId },
                 relations: ['site', 'unitType'],
@@ -54,11 +56,9 @@ export async function POST(req: Request) {
             if (!storageUnit || storageUnit.site.id !== site.id || storageUnit.unitType.id !== unit.id) {
                 return NextResponse.json({ ok: false, message: 'Storage unit not found for this site and unit type' }, { status: 404 });
             }
+        }
 
-            if (storageUnit.status !== StorageUnitStatus.AVAILABLE) {
-                return NextResponse.json({ ok: false, message: 'Selected storage unit is no longer available' }, { status: 409 });
-            }
-        } else {
+        if (!storageUnit || storageUnit.status !== StorageUnitStatus.AVAILABLE) {
             storageUnit = await storageUnitRepo.findOne({
                 where: {
                     site: { id: site.id },
@@ -109,6 +109,8 @@ export async function POST(req: Request) {
             bookingId: booking.id,
             storageUnitId: storageUnit.id,
             unitNumber: storageUnit.unitNumber,
+            requestedSpecificUnit,
+            assignedFallbackUnit: requestedSpecificUnit && storageUnit.id !== storageUnitId,
             breakdown: {
                 monthlyRate,
                 totalAmount,

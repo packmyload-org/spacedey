@@ -5,10 +5,12 @@ import Header from "@/components/layout/Header";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useStorageCart } from "@/contexts/StorageCartContext";
 
 function PaymentCallbackContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const { clearStorageItems } = useStorageCart();
     const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
     const [message, setMessage] = useState("Verifying your payment...");
     const verificationAttempted = useRef(false);
@@ -38,8 +40,21 @@ function PaymentCallbackContent() {
 
                 const data = await res.json();
                 if (data.ok) {
+                    const processedBookings = Array.isArray(data.processedBookings) ? data.processedBookings : [];
+                    const processedCount = processedBookings.length;
+
+                    if (data.checkoutSource === "cart") {
+                        clearStorageItems();
+                    }
+
                     setStatus('success');
-                    setMessage("Payment confirmed! Your storage unit is now active.");
+                    setMessage(
+                        data.recurringEnabled
+                            ? "First monthly payment confirmed. Your storage is active and Paystack recurring billing is now set up."
+                            : processedCount > 1
+                                ? `Payment confirmed! ${processedCount} storage units are now active.`
+                                : "Payment confirmed! Your storage unit is now active."
+                    );
                 } else {
                     setStatus('failed');
                     setMessage(data.message || "Payment verification failed.");
@@ -50,7 +65,7 @@ function PaymentCallbackContent() {
             }
         }
         verify();
-    }, [searchParams]);
+    }, [clearStorageItems, searchParams]);
 
     return (
         <div className="min-h-screen bg-white">
