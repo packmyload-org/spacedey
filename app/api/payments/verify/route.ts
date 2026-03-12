@@ -41,6 +41,16 @@ export async function POST(req: Request) {
             isSuccessful = providerData.data.status === 'success';
         } else if (payment.provider === PaymentProvider.FLUTTERWAVE) {
             const providerTransactionId = transactionId || String(payment.metadata?.data?.id || '');
+
+            // Ensure the transaction ID is a simple, well-formed identifier before using it in a URL path.
+            const transactionIdPattern = /^[A-Za-z0-9_-]{1,128}$/;
+            if (!providerTransactionId || !transactionIdPattern.test(providerTransactionId)) {
+                return NextResponse.json(
+                    { ok: false, message: 'Invalid Flutterwave transaction ID' },
+                    { status: 400 }
+                );
+            }
+
             providerData = await flutterwave.verifyPayment(providerTransactionId);
             isSuccessful = providerData.data.status === 'successful';
         }
