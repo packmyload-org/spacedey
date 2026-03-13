@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import Booking from '@/lib/db/entities/Booking';
-import Payment, { PaymentBookingAllocation, PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
+import Payment, { PaymentBillingType, PaymentBookingAllocation, PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
 import { paystack } from '@/lib/services/paystack';
 import { flutterwave } from '@/lib/services/flutterwave';
 import { cookies } from 'next/headers';
 import * as jwt from 'jsonwebtoken';
 import { env } from '@/config/env';
 import { In } from 'typeorm';
+import {
+    DEFAULT_RECURRING_DURATION_MONTHS,
+    normalizeRecurringDurationMonths,
+} from '@/lib/billing/config';
+import { BookingStatus } from '@/lib/db/entities/Booking';
+import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
 
 interface InitializePaymentBody {
     bookingId?: string;
@@ -18,6 +24,8 @@ interface InitializePaymentBody {
     checkoutSource?: 'cart' | 'direct' | 'bookings';
     paymentMode?: 'monthly' | 'full';
     monthsCovered?: number;
+    billingType?: PaymentBillingType;
+    recurringDurationMonths?: number;
 }
 
 function normalizeAllocations(body: InitializePaymentBody): PaymentBookingAllocation[] {
@@ -42,10 +50,20 @@ function normalizeAllocations(body: InitializePaymentBody): PaymentBookingAlloca
     return [];
 }
 
+function roundCurrency(value: number) {
+    return Math.round(value * 100) / 100;
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json() as InitializePaymentBody;
         const { provider, paymentMode, monthsCovered, checkoutSource } = body;
+        const billingType = body.billingType === PaymentBillingType.RECURRING
+            ? PaymentBillingType.RECURRING
+            : PaymentBillingType.ONE_TIME;
+        const recurringDurationMonths = billingType === PaymentBillingType.RECURRING
+            ? normalizeRecurringDurationMonths(body.recurringDurationMonths) ?? DEFAULT_RECURRING_DURATION_MONTHS
+            : undefined;
         const bookingAllocations = normalizeAllocations(body);
         const bookingIds = bookingAllocations.map((allocation) => allocation.bookingId);
         const paymentAmount = Number(body.amount);
@@ -80,6 +98,7 @@ export async function POST(req: Request) {
         const dataSource = await connectTypeORM();
         const bookingRepo = dataSource.getRepository(Booking);
         const paymentRepo = dataSource.getRepository(Payment);
+        await expireStalePendingBookings(dataSource);
 
         const bookings = await bookingRepo.find({
             where: { id: In(bookingIds), user: { id: userId } },
@@ -95,6 +114,39 @@ export async function POST(req: Request) {
         if (!primaryBooking) {
             return NextResponse.json({ ok: false, message: 'Primary booking not found' }, { status: 404 });
         }
+        const bookingBillingTypes = new Set(bookings.map((booking) => booking.billingMetadata?.billingType ?? PaymentBillingType.ONE_TIME));
+        if (bookingBillingTypes.size > 1) {
+            return NextResponse.json({ ok: false, message: 'Selected bookings must use the same billing type' }, { status: 400 });
+        }
+
+        for (const allocation of bookingAllocations) {
+            const booking = bookingMap.get(allocation.bookingId);
+
+            if (!booking) {
+                return NextResponse.json({ ok: false, message: 'One or more bookings were not found' }, { status: 404 });
+            }
+
+            if (![BookingStatus.PENDING, BookingStatus.PARTIAL].includes(booking.status)) {
+                return NextResponse.json({ ok: false, message: 'Only pending bookings with an outstanding balance can be charged' }, { status: 400 });
+            }
+
+            const outstandingAmount = roundCurrency(Math.max(Number(booking.totalAmount) - Number(booking.amountPaid), 0));
+
+            if (outstandingAmount <= 0) {
+                return NextResponse.json({ ok: false, message: 'One or more bookings no longer have an outstanding balance' }, { status: 400 });
+            }
+
+            if (Math.abs(roundCurrency(Number(allocation.amount)) - outstandingAmount) > 0.01) {
+                return NextResponse.json({
+                    ok: false,
+                    message: 'Payment amount must match the booking balance due',
+                }, { status: 400 });
+            }
+        }
+
+        const recurringEndsAt = typeof primaryBooking.billingMetadata?.recurringEndDate === 'string'
+            ? primaryBooking.billingMetadata.recurringEndDate
+            : null;
 
         // 3. Initialize provider payment using the requested installment/full amount
         const reference = `SPDC-${primaryBooking.id.split('-')[0].toUpperCase()}-${Date.now()}`;
@@ -104,12 +156,12 @@ export async function POST(req: Request) {
 
         let providerResponse;
         let paystackPlan: Awaited<ReturnType<typeof paystack.ensureMonthlyPlan>> | null = null;
+        let flutterwavePlan: Awaited<ReturnType<typeof flutterwave.ensureMonthlyPlan>> | null = null;
         if (provider === PaymentProvider.PAYSTACK) {
             if (!paystack.isConfigured()) {
                 return NextResponse.json({ ok: false, message: 'Paystack is not configured yet' }, { status: 400 });
             }
-            const effectivePaymentMode = paymentMode ?? 'monthly';
-            paystackPlan = effectivePaymentMode === 'monthly'
+            paystackPlan = billingType === PaymentBillingType.RECURRING
                 ? await paystack.ensureMonthlyPlan(paymentAmount)
                 : null;
 
@@ -118,13 +170,18 @@ export async function POST(req: Request) {
                 paymentAmount,
                 reference,
                 callbackUrl,
-                effectivePaymentMode === 'monthly'
+                billingType === PaymentBillingType.RECURRING
                     ? {
                         planCode: paystackPlan?.planCode,
+                        invoiceLimit: recurringDurationMonths,
                         channels: ['card'],
                         metadata: {
                             checkoutSource: checkoutSource ?? 'direct',
-                            paymentMode: effectivePaymentMode,
+                            paymentMode: paymentMode ?? 'monthly',
+                            billingType,
+                            billingInterval: 'monthly',
+                            recurringDurationMonths,
+                            recurringEndsAt,
                         },
                     }
                     : {}
@@ -133,7 +190,29 @@ export async function POST(req: Request) {
             if (!flutterwave.isConfigured()) {
                 return NextResponse.json({ ok: false, message: 'Flutterwave is not configured yet' }, { status: 400 });
             }
-            providerResponse = await flutterwave.initializePayment(primaryBooking.user.email, paymentAmount, reference, callbackUrl);
+            flutterwavePlan = billingType === PaymentBillingType.RECURRING
+                ? await flutterwave.ensureMonthlyPlan(paymentAmount, recurringDurationMonths ?? DEFAULT_RECURRING_DURATION_MONTHS)
+                : null;
+            providerResponse = await flutterwave.initializePayment(
+                primaryBooking.user.email,
+                paymentAmount,
+                reference,
+                callbackUrl,
+                billingType === PaymentBillingType.RECURRING
+                    ? {
+                        paymentPlanId: flutterwavePlan?.paymentPlanId,
+                        paymentOptions: 'card',
+                        meta: {
+                            checkoutSource: checkoutSource ?? 'direct',
+                            paymentMode: paymentMode ?? 'monthly',
+                            billingType,
+                            billingInterval: 'monthly',
+                            recurringDurationMonths,
+                            recurringEndsAt,
+                        },
+                    }
+                    : {}
+            );
         } else {
             return NextResponse.json({ ok: false, message: 'Invalid payment provider' }, { status: 400 });
         }
@@ -151,18 +230,37 @@ export async function POST(req: Request) {
                 bookingIds,
                 bookingAllocations,
                 checkoutSource: checkoutSource ?? 'direct',
-                paymentMode: provider === PaymentProvider.PAYSTACK ? (paymentMode ?? 'monthly') : paymentMode,
+                paymentMode: paymentMode ?? 'monthly',
+                billingType,
+                billingInterval: 'monthly',
                 monthsCovered: monthsCovered ?? 1,
-                paystackPlanCode: provider === PaymentProvider.PAYSTACK && (paymentMode ?? 'monthly') === 'monthly'
+                recurringDurationMonths,
+                recurringEndsAt,
+                paystackPlanCode: provider === PaymentProvider.PAYSTACK && billingType === PaymentBillingType.RECURRING
                     ? paystackPlan?.planCode
                     : undefined,
-                paystackPlanName: provider === PaymentProvider.PAYSTACK && (paymentMode ?? 'monthly') === 'monthly'
+                paystackPlanName: provider === PaymentProvider.PAYSTACK && billingType === PaymentBillingType.RECURRING
                     ? paystackPlan?.planName
+                    : undefined,
+                flutterwavePaymentPlanId: provider === PaymentProvider.FLUTTERWAVE && billingType === PaymentBillingType.RECURRING
+                    ? flutterwavePlan?.paymentPlanId
+                    : undefined,
+                flutterwavePaymentPlanName: provider === PaymentProvider.FLUTTERWAVE && billingType === PaymentBillingType.RECURRING
+                    ? flutterwavePlan?.paymentPlanName
                     : undefined,
             }
         });
 
         await paymentRepo.save(payment);
+        const paymentInitializedAt = new Date().toISOString();
+        await bookingRepo.save(bookings.map((booking) => ({
+            ...booking,
+            billingMetadata: {
+                ...(booking.billingMetadata ?? {}),
+                pendingPaymentReference: reference,
+                pendingPaymentInitializedAt: paymentInitializedAt,
+            },
+        })));
 
         return NextResponse.json({
             ok: true,

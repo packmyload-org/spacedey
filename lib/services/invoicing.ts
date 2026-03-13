@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm';
+import type { DataSource, EntityManager } from 'typeorm';
 import Invoice, { InvoiceStatus } from '../db/entities/Invoice';
 import Payment from '../db/entities/Payment';
 import Booking from '../db/entities/Booking';
@@ -9,12 +9,12 @@ interface InvoiceGenerationOptions {
 }
 
 export async function generateInvoice(
-    dataSource: DataSource,
+    repositorySource: DataSource | EntityManager,
     payment: Payment,
     options: InvoiceGenerationOptions = {}
 ): Promise<Invoice> {
-    const invoiceRepo = dataSource.getRepository(Invoice);
-    const bookingRepo = dataSource.getRepository(Booking);
+    const invoiceRepo = repositorySource.getRepository(Invoice);
+    const bookingRepo = repositorySource.getRepository(Booking);
     const targetBookingId = options.bookingId || payment.booking.id;
     const paymentAmount = Number(options.amount ?? payment.amount);
 
@@ -26,10 +26,14 @@ export async function generateInvoice(
 
     if (!booking) throw new Error("Booking not found for invoice generation");
 
-    // 2. Generate Invoice Number
-    const count = await invoiceRepo.count();
-    const year = new Date().getFullYear();
-    const invoiceNumber = `INV-${year}-${(count + 1).toString().padStart(5, '0')}`;
+    // Use a timestamp + random suffix so concurrent successful payments do not collide.
+    const issuedAt = new Date();
+    const invoiceNumber = [
+        'INV',
+        issuedAt.getFullYear(),
+        issuedAt.getTime(),
+        Math.random().toString(36).slice(2, 6).toUpperCase(),
+    ].join('-');
 
     // 3. Prepare Line Items for Incremental Payment
     // Since it's an installment, the invoice describes the 'Payment Installment'
@@ -54,8 +58,8 @@ export async function generateInvoice(
         total: paymentAmount,
         currency: payment.currency,
         status: InvoiceStatus.PAID,
-        dueDate: new Date(),
-        paidAt: new Date()
+        dueDate: issuedAt,
+        paidAt: issuedAt
     });
 
     return await invoiceRepo.save(invoice);

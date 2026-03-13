@@ -2,14 +2,13 @@
 
 import React from 'react';
 import Link from "next/link";
+import { formatStorageUnitLabel } from '@/lib/pricing/storagePricing';
 
 interface StorageUnit {
   size: string;
-  dimensions: string;
-  squareFeet: string;
+  width: number;
+  depth: number;
   bestFor: string;
-  dimensionsShort?: string;
-  squareFeetShort?: string;
 }
 
 const ComparisonSizes = () => {
@@ -24,51 +23,39 @@ const ComparisonSizes = () => {
     // },
     {
       size: 'Small',
-      dimensions: '5 x 5',
-      squareFeet: '25 SF',
+      width: 5,
+      depth: 5,
       bestFor: 'Large closet',
-      dimensionsShort: "5' x 5'",
-      squareFeetShort: '25 SF',
     },
     {
       size: 'Small',
-      dimensions: '5 x 10',
-      squareFeet: '50 SF',
+      width: 5,
+      depth: 10,
       bestFor: 'Large bedroom',
-      dimensionsShort: "5' x 10'",
-      squareFeetShort: '50 SF',
     },
     {
       size: 'Medium',
-      dimensions: '6 x 10',
-      squareFeet: '60 SF',
+      width: 6,
+      depth: 10,
       bestFor: '2 bedrooms',
-      dimensionsShort: "6' x 10'",
-      squareFeetShort: '60 SF',
     },
     {
       size: 'Medium',
-      dimensions: '10 x 10',
-      squareFeet: '100 SF',
+      width: 10,
+      depth: 10,
       bestFor: '2 bedrooms',
-      dimensionsShort: "10' x 10'",
-      squareFeetShort: '100 SF',
     },
     {
       size: 'Large',
-      dimensions: '10 x 15',
-      squareFeet: '150 SF',
+      width: 10,
+      depth: 15,
       bestFor: '3-4 bedrooms',
-      dimensionsShort: "10' x 15'",
-      squareFeetShort: '150 SF',
     },
     {
       size: 'Large',
-      dimensions: '10 x 20',
-      squareFeet: '200 SF',
+      width: 10,
+      depth: 20,
       bestFor: '4-5 bedrooms',
-      dimensionsShort: "10' x 20'",
-      squareFeetShort: '200 SF',
     },
   ];
 
@@ -111,10 +98,7 @@ const ComparisonSizes = () => {
                     Unit size
                   </th>
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Dimensions
-                  </th>
-                  <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Square feet
+                    Unit Details
                   </th>
                   {/* <th className="text-left py-4 px-4 font-bold text-gray-800">
                     Best for
@@ -125,8 +109,9 @@ const ComparisonSizes = () => {
                 {storageUnits.map((unit, index) => (
                   <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
-                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.dimensions}</td>
-                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.squareFeet}</td>
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
+                      {formatStorageUnitLabel({ width: unit.width, depth: unit.depth, unit: 'ft' })}
+                    </td>
                     {/* <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td> */}
                   </tr>
                 ))}
@@ -147,7 +132,7 @@ const ComparisonSizes = () => {
                     Size
                   </th>
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Dims • SF
+                    Unit Details
                   </th>
                   {/* <th className="text-left py-4 px-4 font-bold text-gray-800">
                     Best for
@@ -159,7 +144,7 @@ const ComparisonSizes = () => {
                   <tr key={index} className="border-b border-gray-200">
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.size}</td>
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
-                      {unit.dimensionsShort} • {unit.squareFeetShort}
+                      {formatStorageUnitLabel({ width: unit.width, depth: unit.depth, unit: 'ft' })}
                     </td>
                     {/* <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td> */}
                   </tr>
@@ -337,4 +322,3 @@ export default ComparisonSizes;
 // };
 
 // export default ComparisonSizes;
-

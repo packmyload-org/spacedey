@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
-import { FileText, Download, Eye, Calendar, Tag } from "lucide-react";
+import { FileText, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 
 interface UserInvoice {
@@ -11,6 +11,9 @@ interface UserInvoice {
     total: number | string;
     createdAt: string;
     booking?: {
+        billingMetadata?: {
+            billingType?: 'one_time' | 'recurring';
+        } | null;
         site?: {
             name?: string;
         };
@@ -44,8 +47,8 @@ export default function UserInvoicesPage() {
 
             <main className="max-w-7xl mx-auto px-4 pt-32 pb-20">
                 <div className="mb-10">
-                    <h1 className="text-3xl font-black text-blue-900">Billing & Invoices</h1>
-                    <p className="text-gray-500">View and download your storage payment records</p>
+                    <h1 className="text-3xl font-black text-blue-900">Billing & Receipts</h1>
+                    <p className="text-gray-500">View your paid storage records and whether each charge was one-time or recurring.</p>
                 </div>
 
                 {loading ? (
@@ -73,9 +76,9 @@ export default function UserInvoicesPage() {
                                     <tr>
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Invoice</th>
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Storage Facility</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Billing</th>
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
-                                        <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -99,6 +102,15 @@ export default function UserInvoicesPage() {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
+                                                <span className={`inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider ${
+                                                    invoice.booking?.billingMetadata?.billingType === 'recurring'
+                                                        ? 'bg-blue-50 text-blue-700'
+                                                        : 'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                    {invoice.booking?.billingMetadata?.billingType === 'recurring' ? 'Recurring' : 'One-time'}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6">
                                                 <div className="flex items-center text-gray-500 text-sm">
                                                     <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                                                     {new Date(invoice.createdAt).toLocaleDateString()}
@@ -106,16 +118,6 @@ export default function UserInvoicesPage() {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <span className="font-bold text-blue-900">₦{Number(invoice.total).toLocaleString()}</span>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end gap-3">
-                                                    <Link href={`/invoices/${invoice.id}`} className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all">
-                                                        <Eye className="w-5 h-5" />
-                                                    </Link>
-                                                    <button className="p-3 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-2xl transition-all">
-                                                        <Download className="w-5 h-5" />
-                                                    </button>
-                                                </div>
                                             </td>
                                         </tr>
                                     ))}

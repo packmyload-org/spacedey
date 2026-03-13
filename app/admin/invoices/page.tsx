@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FileText, Search, Filter, Eye, Download } from "lucide-react";
-import Link from "next/link";
+import { FileText, Search } from "lucide-react";
 
 interface AdminInvoice {
     id: string;
@@ -16,6 +15,9 @@ interface AdminInvoice {
         lastName?: string;
     };
     booking?: {
+        billingMetadata?: {
+            billingType?: 'one_time' | 'recurring';
+        } | null;
         site?: {
             name?: string;
         };
@@ -56,17 +58,7 @@ export default function AdminInvoicesPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 mb-1">Invoices</h1>
-                    <p className="text-gray-500 text-sm">Review all platform transactions and billing records</p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors">
-                        <Filter className="w-4 h-4" />
-                        Filter
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-shadow shadow-sm">
-                        <Download className="w-4 h-4" />
-                        Export All
-                    </button>
+                    <p className="text-gray-500 text-sm">Review paid booking receipts and whether each charge came from one-time or recurring billing.</p>
                 </div>
             </div>
 
@@ -90,7 +82,7 @@ export default function AdminInvoicesPage() {
                 </div>
                 <div className="bg-white p-4 border border-gray-100 rounded-2xl flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Active Invoices</p>
+                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Paid Invoices</p>
                         <p className="text-xl font-black text-blue-900 text-sm">{invoices.length}</p>
                     </div>
                 </div>
@@ -104,10 +96,10 @@ export default function AdminInvoicesPage() {
                             <tr className="border-b border-gray-100 bg-gray-50/50">
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Invoice</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Billing</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -146,6 +138,15 @@ export default function AdminInvoicesPage() {
                                                 <span className="text-xs text-gray-500">{invoice.user?.email}</span>
                                             </div>
                                         </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider ${
+                                                invoice.booking?.billingMetadata?.billingType === 'recurring'
+                                                    ? 'bg-blue-50 text-blue-700'
+                                                    : 'bg-gray-100 text-gray-700'
+                                            }`}>
+                                                {invoice.booking?.billingMetadata?.billingType === 'recurring' ? 'Recurring' : 'One-time'}
+                                            </span>
+                                        </td>
                                         <td className="px-6 py-4 text-sm text-gray-600">
                                             {new Date(invoice.createdAt).toLocaleDateString()}
                                         </td>
@@ -157,16 +158,6 @@ export default function AdminInvoicesPage() {
                                                 }`}>
                                                 {invoice.status}
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link href={`/admin/invoices/${invoice.id}`} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
-                                                    <Eye className="w-5 h-5" />
-                                                </Link>
-                                                <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all">
-                                                    <Download className="w-5 h-5" />
-                                                </button>
-                                            </div>
                                         </td>
                                     </tr>
                                 ))

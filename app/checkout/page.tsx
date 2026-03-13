@@ -6,13 +6,20 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useSitesData } from "@/contexts/SitesContext";
 import { useStorageCart, type CartItem } from "@/contexts/StorageCartContext";
 import { ChevronLeft, CheckCircle2, Loader2, PartyPopper, X } from "lucide-react";
-import { calculateCheckoutPricing, formatSquareFeet, formatStorageUnitLabel, PAY_ONCE_MONTHS } from "@/lib/pricing/storagePricing";
+import {
+  calculateCheckoutPricing,
+  DEFAULT_RECURRING_DURATION_MONTHS,
+  formatSquareFeet,
+  formatStorageUnitLabel,
+  MAX_RECURRING_DURATION_MONTHS,
+  MIN_RECURRING_DURATION_MONTHS,
+} from "@/lib/pricing/storagePricing";
 import type { PaymentBookingAllocation } from "@/lib/db/entities/Payment";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
 import type { ApiSite, ApiStorageUnit, ApiUnitType } from "@/lib/types/local";
 
 type CheckoutSite = ApiSite;
-type PaymentMode = "monthly" | "full";
+type BillingType = "one_time" | "recurring";
 
 interface CheckoutUnit extends ApiUnitType {
   priceAmount?: number;
@@ -48,6 +55,11 @@ const paymentProviders = [
     description: "Card and bank payments with Flutterwave checkout.",
   },
 ] as const;
+
+const recurringDurationOptions = Array.from(
+  { length: MAX_RECURRING_DURATION_MONTHS - MIN_RECURRING_DURATION_MONTHS + 1 },
+  (_, index) => MIN_RECURRING_DURATION_MONTHS + index
+);
 
 function isAddOn(item: CartItem) {
   return item.itemType === "addon";
@@ -122,9 +134,22 @@ function createCheckoutEntry({
       width: Number(unit.dimensions.width || 0),
       depth: Number(unit.dimensions.depth || 0),
       unit: unit.dimensions.unit,
-      payOnceMonths: PAY_ONCE_MONTHS,
     }),
   };
+}
+
+function addMonths(date: Date, months: number) {
+  const nextDate = new Date(date);
+  nextDate.setMonth(nextDate.getMonth() + months);
+  return nextDate;
+}
+
+function formatRecurringEndDate(startDate: Date, durationMonths: number) {
+  return new Intl.DateTimeFormat("en-NG", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(addMonths(startDate, durationMonths));
 }
 
 function buildDirectCheckout({
@@ -242,7 +267,8 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
-  const [paymentMode, setPaymentMode] = useState<PaymentMode>("monthly");
+  const [billingType, setBillingType] = useState<BillingType>("one_time");
+  const [recurringDurationMonths, setRecurringDurationMonths] = useState(DEFAULT_RECURRING_DURATION_MONTHS);
   const [selectedProvider, setSelectedProvider] = useState<PaymentProvider | null>(null);
 
   const storageCartItems = useMemo(
@@ -286,9 +312,10 @@ function CheckoutContent() {
   const checkoutLocations = new Set(checkoutEntries.map((entry) => entry.site.id)).size;
   const totalSquareFootage = checkoutEntries.reduce((sum, entry) => sum + (entry.pricing.squareFootage * entry.quantity), 0);
   const totalMonthlyRate = checkoutEntries.reduce((sum, entry) => sum + (entry.pricing.monthlyRate * entry.quantity), 0);
-  const monthlyPlanAmount = checkoutEntries.reduce((sum, entry) => sum + (entry.pricing.dueTodayForMonthlyPlan * entry.quantity), 0);
-  const fullPlanAmount = checkoutEntries.reduce((sum, entry) => sum + (entry.pricing.dueTodayForPayOncePlan * entry.quantity), 0);
-  const finalAmount = paymentMode === "full" ? fullPlanAmount : monthlyPlanAmount;
+  const firstMonthAmount = checkoutEntries.reduce((sum, entry) => sum + (entry.pricing.dueTodayForFirstMonth * entry.quantity), 0);
+  const recurringScheduleValue = totalMonthlyRate * recurringDurationMonths;
+  const recurringEndDateLabel = formatRecurringEndDate(new Date(), recurringDurationMonths);
+  const finalAmount = firstMonthAmount;
   const cartAddOnMessage = isCartCheckout && addOnItems.length > 0
     ? "Cart add-ons are not included in online checkout yet. Remove add-ons to continue."
     : null;
@@ -315,9 +342,7 @@ function CheckoutContent() {
       const startDate = new Date().toISOString();
 
       for (const entry of checkoutEntries) {
-        const perBookingAmount = paymentMode === "full"
-          ? entry.pricing.dueTodayForPayOncePlan
-          : entry.pricing.dueTodayForMonthlyPlan;
+        const perBookingAmount = entry.pricing.dueTodayForFirstMonth;
 
         for (let index = 0; index < entry.quantity; index += 1) {
           const bookingRes = await fetch("/api/bookings", {
@@ -328,7 +353,8 @@ function CheckoutContent() {
               unitTypeId: entry.unitTypeId,
               storageUnitId: index === 0 ? entry.preferredStorageUnit?.id : undefined,
               startDate,
-              paymentMode,
+              billingType,
+              recurringDurationMonths: billingType === "recurring" ? recurringDurationMonths : undefined,
             }),
           });
 
@@ -356,8 +382,8 @@ function CheckoutContent() {
           provider,
           amount: finalAmount,
           checkoutSource: isCartCheckout ? "cart" : "direct",
-          paymentMode,
-          monthsCovered: paymentMode === "full" ? PAY_ONCE_MONTHS : 1,
+          billingType,
+          recurringDurationMonths: billingType === "recurring" ? recurringDurationMonths : undefined,
         }),
       });
 
@@ -384,7 +410,6 @@ function CheckoutContent() {
       setError(cartAddOnMessage);
       return;
     }
-
     setError(null);
     setIsProviderModalOpen(true);
   };
@@ -422,8 +447,8 @@ function CheckoutContent() {
                 <h1 className="text-4xl font-black text-blue-900 mb-4">Booking Checkout</h1>
                 <p className="text-gray-500 max-w-2xl text-lg">
                   {isCartCheckout
-                    ? `Secure ${storageSelectionCount} storage unit${storageSelectionCount === 1 ? "" : "s"} across ${checkoutLocations} location${checkoutLocations === 1 ? "" : "s"}. Choose one payment plan for the full cart.`
-                    : `Secure your unit at ${primaryEntry?.site.name}. Choose monthly payments or pay once upfront.`}
+                    ? `Secure ${storageSelectionCount} storage unit${storageSelectionCount === 1 ? "" : "s"} across ${checkoutLocations} location${checkoutLocations === 1 ? "" : "s"}. Choose a one-time first month payment or recurring monthly billing for the full cart.`
+                    : `Secure your unit at ${primaryEntry?.site.name}. Pay for the first month only, or set up recurring monthly billing with an end duration.`}
                 </p>
                 {!isCartCheckout && primaryEntry?.preferredStorageUnit?.unitNumber ? (
                   <p className="mt-2 text-sm font-semibold text-blue-600">Preferred unit: {primaryEntry.preferredStorageUnit.unitNumber}</p>
@@ -444,9 +469,7 @@ function CheckoutContent() {
                 <div className="space-y-4">
                   {checkoutEntries.map((entry, index) => {
                     const lineMonthlyRate = entry.pricing.monthlyRate * entry.quantity;
-                    const lineTodayAmount = (paymentMode === "full"
-                      ? entry.pricing.dueTodayForPayOncePlan
-                      : entry.pricing.dueTodayForMonthlyPlan) * entry.quantity;
+                    const lineTodayAmount = entry.pricing.dueTodayForFirstMonth * entry.quantity;
 
                     return (
                       <div key={entry.key} className="flex items-center justify-between gap-4 p-6 rounded-3xl bg-gray-50/50 border border-gray-100">
@@ -485,49 +508,82 @@ function CheckoutContent() {
               <section className="space-y-6">
                 <h2 className="text-xl font-black text-blue-900 flex items-center gap-2">
                   <div className="w-2 h-8 bg-blue-600 rounded-full" />
-                  Select Payment Plan
+                  Select Billing Option
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <button
-                    onClick={() => setPaymentMode("monthly")}
-                    className={`p-8 rounded-[2rem] border-2 transition-all text-left ${paymentMode === "monthly"
+                    onClick={() => setBillingType("one_time")}
+                    className={`p-8 rounded-[2rem] border-2 transition-all text-left ${billingType === "one_time"
                       ? "border-blue-600 bg-blue-50 shadow-lg"
                       : "border-gray-100 bg-white hover:border-gray-200"
                       }`}
                   >
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${paymentMode === "monthly" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${billingType === "one_time" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>
                       <CheckCircle2 className="w-6 h-6" />
                     </div>
-                    <span className="block font-black text-blue-900 text-lg">Monthly Payment</span>
-                    <span className="text-sm text-gray-500">Pay the first month today for every selected unit, then continue on your recurring billing cycle.</span>
+                    <span className="block font-black text-blue-900 text-lg">One-Time First Month</span>
+                    <span className="text-sm text-gray-500">Pay for the first month today. You can decide later whether to renew manually.</span>
                   </button>
 
                   <button
-                    onClick={() => setPaymentMode("full")}
-                    className={`p-8 rounded-[2rem] border-2 transition-all text-left ${paymentMode === "full"
+                    onClick={() => {
+                      setBillingType("recurring");
+                    }}
+                    className={`p-8 rounded-[2rem] border-2 transition-all text-left ${billingType === "recurring"
                       ? "border-blue-600 bg-blue-50 shadow-lg"
                       : "border-gray-100 bg-white hover:border-gray-200"
                       }`}
                   >
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${paymentMode === "full" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${billingType === "recurring" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}>
                       <PartyPopper className="w-6 h-6" />
                     </div>
-                    <span className="block font-black text-blue-900 text-lg">Pay Once</span>
-                    <span className="text-sm text-gray-500">Pay {PAY_ONCE_MONTHS} months upfront for every selected unit in one checkout.</span>
+                    <span className="block font-black text-blue-900 text-lg">Recurring Monthly</span>
+                    <span className="text-sm text-gray-500">Pay the first month today, then continue monthly until your selected duration ends.</span>
                   </button>
                 </div>
+
+                {billingType === "recurring" ? (
+                  <div className="rounded-[2rem] border border-blue-100 bg-white p-8">
+                    <label htmlFor="recurringDurationMonths" className="block text-sm font-black uppercase tracking-[0.2em] text-blue-500">
+                      Recurring duration
+                    </label>
+                    <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="text-2xl font-black text-blue-900">
+                          {recurringDurationMonths} month{recurringDurationMonths === 1 ? "" : "s"}
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-gray-500">
+                          The first month is charged now. Recurring billing will renew monthly and end around {recurringEndDateLabel}.
+                        </p>
+                      </div>
+                      <select
+                        id="recurringDurationMonths"
+                        value={recurringDurationMonths}
+                        onChange={(event) => setRecurringDurationMonths(Number(event.target.value))}
+                        className="rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm font-bold text-blue-900 outline-none transition focus:border-blue-500"
+                      >
+                        {recurringDurationOptions.map((months) => (
+                          <option key={months} value={months}>
+                            {months} month{months === 1 ? "" : "s"}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <p className="mt-4 text-xs font-semibold leading-5 text-amber-700">
+                      Recurring monthly billing charges the first month now, then continues monthly until the selected duration ends. Card-based recurring renewals are handled by your chosen provider.
+                    </p>
+                  </div>
+                ) : null}
 
                 <div className="mt-6 p-8 bg-white rounded-[2rem] border-2 border-blue-100 animate-in slide-in-from-top-4 duration-500">
                   <p className="text-sm font-black text-blue-900 uppercase tracking-widest">Selected plan</p>
                   <p className="mt-4 text-2xl font-black text-blue-900">
-                    {paymentMode === "monthly"
-                      ? `₦${monthlyPlanAmount.toLocaleString()} due today`
-                      : `₦${fullPlanAmount.toLocaleString()} due today`}
+                    ₦{firstMonthAmount.toLocaleString()} due today
                   </p>
                   <p className="mt-3 text-sm leading-6 text-blue-700/80">
-                    {paymentMode === "monthly"
-                      ? `This covers one month for ${storageSelectionCount} unit${storageSelectionCount === 1 ? "" : "s"} totaling ${formatSquareFeet(totalSquareFootage)} at ₦${totalMonthlyRate.toLocaleString()} per month.`
-                      : `This covers ${PAY_ONCE_MONTHS} months upfront for ${storageSelectionCount} unit${storageSelectionCount === 1 ? "" : "s"} at a combined monthly value of ₦${totalMonthlyRate.toLocaleString()}.`}
+                    {billingType === "one_time"
+                      ? `This covers the first month for ${storageSelectionCount} unit${storageSelectionCount === 1 ? "" : "s"} totaling ${formatSquareFeet(totalSquareFootage)} at ₦${totalMonthlyRate.toLocaleString()} per month.`
+                      : `This charges the first month now and schedules up to ${recurringDurationMonths} month${recurringDurationMonths === 1 ? "" : "s"} of recurring billing worth ₦${recurringScheduleValue.toLocaleString()} in total if all renewals complete.`}
                   </p>
                 </div>
               </section>
@@ -564,9 +620,9 @@ function CheckoutContent() {
                       Last selected: {selectedProvider}
                     </p>
                   ) : null}
-                  {paymentMode === "monthly" && selectedProvider === PaymentProvider.PAYSTACK ? (
+                  {billingType === "recurring" ? (
                     <p className="mt-4 text-xs font-semibold leading-5 text-blue-700">
-                      Paystack monthly billing charges the first month now, then renews automatically on the saved card.
+                      Recurring billing charges the first month now, then renews automatically until the selected duration ends.
                     </p>
                   ) : null}
                 </div>
@@ -604,9 +660,9 @@ function CheckoutContent() {
                 <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">
                   We&apos;ll create your booking{storageSelectionCount === 1 ? "" : "s"} with the selected plan first, then redirect you to your chosen payment provider.
                 </p>
-                {paymentMode === "monthly" ? (
+                {billingType === "recurring" ? (
                   <p className="mt-2 max-w-xl text-xs leading-5 text-blue-700">
-                    Monthly billing charges the first month now. If you choose Paystack, future monthly renewals will be charged automatically on the authorized card.
+                    Recurring monthly billing charges the first month now, then renews monthly for up to {recurringDurationMonths} month{recurringDurationMonths === 1 ? "" : "s"} in total.
                   </p>
                 ) : null}
               </div>

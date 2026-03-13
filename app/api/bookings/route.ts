@@ -10,14 +10,45 @@ import type { JwtPayload } from 'jsonwebtoken';
 import { env } from '@/config/env';
 import { syncUnitTypeAvailability } from '@/lib/db/storageUnits';
 import { calculateCheckoutPricing } from '@/lib/pricing/storagePricing';
+import { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
+import {
+    DEFAULT_RECURRING_DURATION_MONTHS,
+    getRecurringEndDate,
+    normalizeRecurringDurationMonths,
+} from '@/lib/billing/config';
 
 interface AuthTokenPayload extends JwtPayload {
     userId: string;
 }
 
+function normalizeBillingType(value: unknown) {
+    return value === PaymentBillingType.RECURRING
+        ? PaymentBillingType.RECURRING
+        : PaymentBillingType.ONE_TIME;
+}
+
+function addMonths(date: Date, months: number) {
+    const nextDate = new Date(date);
+    nextDate.setMonth(nextDate.getMonth() + months);
+    return nextDate;
+}
+
 export async function POST(req: Request) {
     try {
-        const { siteId, unitTypeId, storageUnitId, startDate, paymentMode } = await req.json();
+        const {
+            siteId,
+            unitTypeId,
+            storageUnitId,
+            startDate,
+            paymentMode,
+            billingType: rawBillingType,
+            recurringDurationMonths: rawRecurringDurationMonths,
+        } = await req.json();
+        const billingType = normalizeBillingType(rawBillingType ?? (paymentMode === 'monthly' ? PaymentBillingType.RECURRING : PaymentBillingType.ONE_TIME));
+        const recurringDurationMonths = billingType === PaymentBillingType.RECURRING
+            ? normalizeRecurringDurationMonths(rawRecurringDurationMonths) ?? DEFAULT_RECURRING_DURATION_MONTHS
+            : null;
 
         // 1. Auth check
         const cookieStore = await cookies();
@@ -34,6 +65,7 @@ export async function POST(req: Request) {
         const unitRepo = dataSource.getRepository(UnitType);
         const storageUnitRepo = dataSource.getRepository(StorageUnit);
         const bookingRepo = dataSource.getRepository(Booking);
+        await expireStalePendingBookings(dataSource);
 
         // 2. Fetch dependencies
         const site = await siteRepo.findOne({ where: { id: siteId } });
@@ -81,7 +113,11 @@ export async function POST(req: Request) {
             unit: unit.unit,
         });
         const monthlyRate = pricing.monthlyRate;
-        const totalAmount = paymentMode === 'full' ? pricing.dueTodayForPayOncePlan : pricing.dueTodayForMonthlyPlan;
+        const bookingStartDate = new Date(startDate || Date.now());
+        const totalAmount = monthlyRate;
+        const endDate = billingType === PaymentBillingType.RECURRING
+            ? getRecurringEndDate(bookingStartDate, recurringDurationMonths ?? DEFAULT_RECURRING_DURATION_MONTHS)
+            : addMonths(bookingStartDate, 1);
 
         // 4. Create Booking
         const booking = bookingRepo.create({
@@ -90,13 +126,20 @@ export async function POST(req: Request) {
             unitType: unit,
             storageUnit,
             status: BookingStatus.PENDING,
-            startDate: new Date(startDate || Date.now()),
+            startDate: bookingStartDate,
+            endDate,
             monthlyRate,
             registrationFee: 0,
             annualDues: 0,
             totalAmount,
             amountPaid: 0,
-            currency: 'NGN'
+            currency: 'NGN',
+            billingMetadata: {
+                billingType,
+                billingInterval: 'monthly',
+                recurringDurationMonths: recurringDurationMonths ?? undefined,
+                recurringEndDate: endDate.toISOString(),
+            },
         });
 
         storageUnit.status = StorageUnitStatus.RESERVED;
@@ -114,7 +157,9 @@ export async function POST(req: Request) {
             breakdown: {
                 monthlyRate,
                 totalAmount,
-                paymentMode: paymentMode === 'full' ? 'full' : 'monthly'
+                billingType,
+                recurringDurationMonths,
+                endDate: endDate.toISOString(),
             }
         });
 
@@ -138,6 +183,7 @@ export async function GET() {
 
         const dataSource = await connectTypeORM();
         const bookingRepo = dataSource.getRepository(Booking);
+        await expireStalePendingBookings(dataSource);
 
         const bookings = await bookingRepo.find({
             where: { user: { id: userId } },

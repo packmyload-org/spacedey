@@ -3,10 +3,12 @@ import Site from '@/lib/db/entities/Site';
 import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
+import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
 
 async function getSiteByIdFromDB(siteId: string) {
   try {
     const appDataSource = await connectTypeORM();
+    await expireStalePendingBookings(appDataSource);
     const repo = appDataSource.getRepository(Site);
     const site = await repo.findOne({ where: { id: siteId }, relations: ['unitTypes', 'units', 'units.unitType'] });
     return site;

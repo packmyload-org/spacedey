@@ -5,6 +5,7 @@ const PAYSTACK_MONTHLY_PLAN_PREFIX = 'Spacedey Monthly NGN';
 
 interface InitializePaymentOptions {
     channels?: string[];
+    invoiceLimit?: number;
     metadata?: Record<string, unknown>;
     planCode?: string;
 }
@@ -34,6 +35,7 @@ export const paystack = {
                     reference,
                     callback_url: callbackUrl,
                     channels: options.channels,
+                    invoice_limit: options.invoiceLimit,
                     metadata: options.metadata,
                     plan: options.planCode,
                 },

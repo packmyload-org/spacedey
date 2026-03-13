@@ -1,30 +1,31 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import { formatStorageUnitLabel } from "@/lib/pricing/storagePricing";
 
 // Using your provided data structure
 const storageData = {
   small: {
     sizes: [
-      { label: "3 x 5", image: "/images/Size1a.jpg" },
-      { label: "5 x 5", image: "/images/Size1b.jpg" },
-      { label: "5 x 10", image: "/images/Size1c.jpg" },
+      { width: 3, depth: 5, image: "/images/Size1a.jpg" },
+      { width: 5, depth: 5, image: "/images/Size1b.jpg" },
+      { width: 5, depth: 10, image: "/images/Size1c.jpg" },
     ],
     description:
       "About the size of a hall closet or small walk-in closet, these storage units are great for clearing out a little extra space at home. Common uses include storing seasonal decorations, yard tools, kids’ clothing and toys, or serving as summer storage for college students.",
   },
   medium: {
     sizes: [
-      { label: "6 x 10", image: "/images/Size2a.jpg" },
-      { label: "10 x 10", image: "/images/Size2b.jpg" },
+      { width: 6, depth: 10, image: "/images/Size2a.jpg" },
+      { width: 10, depth: 10, image: "/images/Size2b.jpg" },
     ],
     description:
       "About the size of a small bedroom or large walk-in closet, medium storage units are great for storing the contents of a one-bedroom apartment. Common uses include holding furniture like a bed, sofa, and dining set, storing boxes of household items, or keeping things organized during a move or home renovation.",
   },
   large: {
     sizes: [
-      { label: "10 x 15", image: "/images/Size3a.jpg" },
-      { label: "10 x 20", image: "/images/Size3b.jpg" },
+      { width: 10, depth: 15, image: "/images/Size3a.jpg" },
+      { width: 10, depth: 20, image: "/images/Size3b.jpg" },
     ],
     description:
       "About the size of a standard one-car garage, large storage units are perfect for storing the contents of a two- to three-bedroom home. They can hold big items like living room furniture, multiple mattresses, kitchen appliances, and dozens of boxes—ideal for moving, remodeling, or business storage needs.",
@@ -68,7 +69,7 @@ export default function StorageUnitSizes() {
               <Image
                 // NOTE: Use the placeholder image path from the data structure
                 src={selectedSize.image}
-                alt={selectedSize.label}
+                alt={formatStorageUnitLabel({ width: selectedSize.width, depth: selectedSize.depth, unit: "ft" })}
                 // Use fill layout to make the image occupy the full left container
                 layout="fill"
                 objectFit="cover"
@@ -109,16 +110,16 @@ export default function StorageUnitSizes() {
             <div className="flex justify-start gap-3 mb-8 flex-wrap">
               {category.sizes.map((s) => (
                 <button
-                  key={s.label}
+                  key={`${s.width}-${s.depth}`}
                   onClick={() => setSelectedSize(s)}
                   // Styling to match the screenshot: Blue border, white BG for inactive; Solid Blue BG for active.
                   className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedSize.label === s.label
+                    selectedSize.width === s.width && selectedSize.depth === s.depth
                       ? "bg-blue-600 text-white border-blue-600" // Active style
                       : "bg-white text-blue-600 border-blue-600 hover:bg-blue-50" // Inactive style
                   }`}
                 >
-                  {s.label}
+                  {formatStorageUnitLabel({ width: s.width, depth: s.depth, unit: "ft" })}
                 </button>
               ))}
             </div>

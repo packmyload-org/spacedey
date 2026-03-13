@@ -5,6 +5,7 @@ import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { STORAGE_UNIT_TYPES } from '@/lib/data/storageCatalog';
 import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
+import { formatStorageUnitLabel } from '@/lib/pricing/storagePricing';
 import {
     Loader,
     ArrowLeft,
@@ -82,6 +83,14 @@ const presetUnitTypes: UnitType[] = STORAGE_UNIT_TYPES.map((unitType) => ({
     ...unitType,
     priceCurrency: 'NGN',
 }));
+
+function formatUnitTypeLabel(unit: Pick<UnitType, 'width' | 'depth' | 'unit'>) {
+    return formatStorageUnitLabel({
+        width: Number(unit.width),
+        depth: Number(unit.depth),
+        unit: unit.unit,
+    });
+}
 
 export default function SiteEditorPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
@@ -630,7 +639,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                                     >
                                                         <p className="font-semibold text-gray-900">{preset.name}</p>
                                                         <p className="mt-1 text-sm text-gray-500">
-                                                            {preset.width} x {preset.depth} {preset.unit} | ₦{preset.priceAmount.toLocaleString()} / mo
+                                                            {formatUnitTypeLabel(preset)} | ₦{preset.priceAmount.toLocaleString()} / mo
                                                         </p>
                                                     </button>
                                                 );
@@ -647,7 +656,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                                     <div>
                                                         <p className="font-bold text-gray-900">{unit.name}</p>
                                                         <p className="text-sm text-gray-500">
-                                                            {unit.width} x {unit.depth} {unit.unit} | ₦{unit.priceAmount.toLocaleString()} / mo
+                                                            {formatUnitTypeLabel(unit)} | ₦{unit.priceAmount.toLocaleString()} / mo
                                                         </p>
                                                     </div>
                                                     <button
@@ -736,7 +745,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                                     <div>
                                                         <p className="font-bold text-gray-900">{unit.name}</p>
                                                         <p className="text-sm text-gray-500">
-                                                            {unit.width} x {unit.depth} {unit.unit} | ₦{unit.priceAmount.toLocaleString()} / mo
+                                                            {formatUnitTypeLabel(unit)} | ₦{unit.priceAmount.toLocaleString()} / mo
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-4 text-sm">
@@ -793,7 +802,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                                 <option value="">Select type</option>
                                                 {site.unitTypes.map((unitType) => (
                                                     <option key={unitType.id} value={unitType.id}>
-                                                        {unitType.name} ({unitType.width} x {unitType.depth} {unitType.unit})
+                                                        {unitType.name} ({formatUnitTypeLabel(unitType)})
                                                     </option>
                                                 ))}
                                             </select>

@@ -1,5 +1,7 @@
 export const NAIRA_PER_SQUARE_FOOT_PER_MONTH = 3000;
-export const PAY_ONCE_MONTHS = 12;
+export const DEFAULT_RECURRING_DURATION_MONTHS = 6;
+export const MIN_RECURRING_DURATION_MONTHS = 2;
+export const MAX_RECURRING_DURATION_MONTHS = 24;
 const SQUARE_FEET_PER_SQUARE_METER = 10.7639;
 
 interface StorageDimensions {
@@ -9,7 +11,7 @@ interface StorageDimensions {
 }
 
 interface CheckoutPricingInput extends StorageDimensions {
-  payOnceMonths?: number;
+  recurringDurationMonths?: number;
 }
 
 function normalizeNumber(value: number) {
@@ -80,18 +82,18 @@ export function calculateCheckoutPricing({
   width,
   depth,
   unit,
-  payOnceMonths = PAY_ONCE_MONTHS,
+  recurringDurationMonths = DEFAULT_RECURRING_DURATION_MONTHS,
 }: CheckoutPricingInput) {
   const monthlyRate = calculateMonthlyStorageRate({ width, depth, unit });
   const squareFootage = calculateStorageAreaSquareFeet({ width, depth, unit });
-  const dueTodayForMonthlyPlan = monthlyRate;
-  const dueTodayForPayOncePlan = monthlyRate * payOnceMonths;
+  const dueTodayForFirstMonth = monthlyRate;
+  const recurringTotal = monthlyRate * recurringDurationMonths;
 
   return {
     monthlyRate,
     squareFootage,
-    dueTodayForMonthlyPlan,
-    dueTodayForPayOncePlan,
-    payOnceMonths,
+    dueTodayForFirstMonth,
+    recurringDurationMonths,
+    recurringTotal,
   };
 }

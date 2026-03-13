@@ -6,6 +6,7 @@ import Image from "next/image";
 import Card from "../ui/Card";
 import { useStorageCart } from "../../contexts/StorageCartContext";
 import { getLocationDetails } from "../../lib/utils/sampleLocations";
+import { formatStorageUnitLabel } from "../../lib/pricing/storagePricing";
 
 interface LocationCardProps {
   name: string;
@@ -101,9 +102,9 @@ function LocationCard({
     }
 
     return [
-        { id: 1, size: "Small (6×8)", originalPrice: "7200", currentPrice: "5004.00" },
-        { id: 2, size: "Medium (5×9)", originalPrice: "6800", currentPrice: "4706.00" },
-        { id: 3, size: "Large (18×9)", originalPrice: "24300", currentPrice: "17001.00" },
+        { id: 1, size: formatStorageUnitLabel({ width: 6, depth: 8, unit: "ft" }), originalPrice: "7200", currentPrice: "5004.00" },
+        { id: 2, size: formatStorageUnitLabel({ width: 5, depth: 9, unit: "ft" }), originalPrice: "6800", currentPrice: "4706.00" },
+        { id: 3, size: formatStorageUnitLabel({ width: 18, depth: 9, unit: "ft" }), originalPrice: "24300", currentPrice: "17001.00" },
     ];
   }, [pricing, units]);
 

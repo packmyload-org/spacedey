@@ -10,6 +10,11 @@ export interface PaymentBookingAllocation {
     amount: number;
 }
 
+export enum PaymentBillingType {
+    ONE_TIME = "one_time",
+    RECURRING = "recurring"
+}
+
 export interface PaymentMetadata {
     data?: {
         id?: string | number;
@@ -20,9 +25,15 @@ export interface PaymentMetadata {
     bookingAllocations?: PaymentBookingAllocation[];
     checkoutSource?: "cart" | "direct" | "bookings" | "recurring";
     paymentMode?: "monthly" | "full";
+    billingType?: PaymentBillingType;
+    billingInterval?: "monthly";
     monthsCovered?: number;
+    recurringDurationMonths?: number;
+    recurringEndsAt?: string | null;
     paystackPlanCode?: string;
     paystackPlanName?: string;
+    flutterwavePaymentPlanId?: number | string;
+    flutterwavePaymentPlanName?: string;
     [key: string]: unknown;
 }
 

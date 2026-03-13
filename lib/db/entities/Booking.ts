@@ -9,6 +9,8 @@ import type { UnitType as UnitTypeModel } from "./UnitType";
 import StorageUnitEntity from "./StorageUnit";
 import type { StorageUnit as StorageUnitModel } from "./StorageUnit";
 
+export type BookingBillingType = "one_time" | "recurring";
+
 export enum BookingStatus {
     PENDING = "pending",
     PARTIAL = "partial", // Paid something but not the selected billing amount
@@ -18,6 +20,12 @@ export enum BookingStatus {
 }
 
 export interface BookingBillingMetadata {
+    billingType?: BookingBillingType;
+    billingInterval?: "monthly";
+    recurringDurationMonths?: number;
+    recurringEndDate?: string | null;
+    pendingPaymentReference?: string;
+    pendingPaymentInitializedAt?: string | null;
     paystack?: {
         allocationAmount?: number;
         authorizationCode?: string;
@@ -29,6 +37,15 @@ export interface BookingBillingMetadata {
         planCode?: string;
         planName?: string;
         subscriptionCode?: string;
+        invoiceLimit?: number;
+    };
+    flutterwave?: {
+        allocationAmount?: number;
+        customerEmail?: string;
+        lastSuccessfulReference?: string;
+        paymentPlanId?: number | string;
+        paymentPlanName?: string;
+        subscriptionId?: number | string;
     };
     [key: string]: unknown;
 }
