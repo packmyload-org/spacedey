@@ -160,10 +160,10 @@ function SearchContent() {
             {sitesError}
           </div>
         ) : null}
-        <div className="lg:flex lg:flex-col lg:flex-1 lg:bg-brand-page-bg">
+        <div className="lg:flex lg:flex-col lg:flex-1 lg:bg-white">
           <div className="lg:flex lg:flex-1">
-            <div className="lg:w-1/2 max-h-[calc(100vh-82px)] overflow-y-scroll">
-              <div>
+            <div className="lg:w-1/2 lg:h-[calc(100vh-82px)] lg:overflow-hidden bg-white">
+              <div className="flex h-full min-h-0 flex-col bg-white">
                 <SearchBar
                   value={searchQuery}
                   onChange={setSearchQuery}
