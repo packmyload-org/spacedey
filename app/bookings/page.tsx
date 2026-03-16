@@ -7,6 +7,7 @@ import { Tag, CreditCard, Loader2, MapPin, CalendarClock, RefreshCcw } from "luc
 import Link from "next/link";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
 import { formatStorageUnitLabel } from "@/lib/pricing/storagePricing";
+import type { PaymentMethodsResponse } from "@/lib/types/local";
 
 interface BookingItem {
     id: string;
@@ -62,10 +63,25 @@ function formatDateLabel(dateString?: string | null) {
     }).format(date);
 }
 
+function getProviderLabel(provider: PaymentProvider | null) {
+    if (provider === PaymentProvider.PAYSTACK) {
+        return 'Paystack';
+    }
+
+    if (provider === PaymentProvider.FLUTTERWAVE) {
+        return 'Flutterwave';
+    }
+
+    return null;
+}
+
 export default function UserBookingsPage() {
     const [bookings, setBookings] = useState<BookingItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const [defaultProvider, setDefaultProvider] = useState<PaymentProvider | null>(null);
+    const [paymentMethodError, setPaymentMethodError] = useState<string | null>(null);
+    const defaultProviderLabel = getProviderLabel(defaultProvider);
 
     useEffect(() => {
         async function fetchBookings() {
@@ -84,9 +100,42 @@ export default function UserBookingsPage() {
         fetchBookings();
     }, []);
 
+    useEffect(() => {
+        let cancelled = false;
+
+        async function fetchPaymentMethods() {
+            try {
+                const res = await fetch('/api/payment-methods');
+                const data = await res.json() as Partial<PaymentMethodsResponse & { error?: string }>;
+
+                if (!res.ok || !Array.isArray(data.methods)) {
+                    throw new Error(data.error || 'Failed to load payment methods');
+                }
+
+                if (cancelled) {
+                    return;
+                }
+
+                setDefaultProvider(data.defaultProvider ?? data.methods.find((method) => method.available)?.provider ?? null);
+                setPaymentMethodError(null);
+            } catch (error) {
+                if (!cancelled) {
+                    setDefaultProvider(null);
+                    setPaymentMethodError(error instanceof Error ? error.message : 'Failed to load payment methods');
+                }
+            }
+        }
+
+        void fetchPaymentMethods();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const handlePayBalance = async (booking: BookingItem) => {
         const amountDue = Math.max(Number(booking.totalAmount) - Number(booking.amountPaid), 0);
-        if (amountDue <= 0) return;
+        if (amountDue <= 0 || !defaultProvider) return;
 
         setProcessingId(booking.id);
         try {
@@ -95,7 +144,7 @@ export default function UserBookingsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     bookingId: booking.id,
-                    provider: PaymentProvider.PAYSTACK,
+                    provider: defaultProvider,
                     amount: amountDue
                 })
             });
@@ -231,11 +280,11 @@ export default function UserBookingsPage() {
                                             {!isRecurring && (
                                                 <button
                                                     onClick={() => handlePayBalance(booking)}
-                                                    disabled={processingId === booking.id || balance <= 0}
+                                                    disabled={processingId === booking.id || balance <= 0 || !defaultProvider}
                                                     className="flex items-center justify-center gap-2 bg-[#1642F0] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-blue-600/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                                                 >
                                                     {processingId === booking.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                                                    Complete Payment
+                                                    {defaultProviderLabel ? `Complete Payment with ${defaultProviderLabel}` : 'Payment unavailable'}
                                                 </button>
                                             )}
                                             <Link href="/invoices" className="flex items-center justify-center gap-2 bg-white border-2 border-gray-100 text-blue-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all">
@@ -248,6 +297,11 @@ export default function UserBookingsPage() {
                         })}
                     </div>
                 )}
+                {paymentMethodError ? (
+                    <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                        {paymentMethodError}
+                    </div>
+                ) : null}
             </main>
         </div>
     );

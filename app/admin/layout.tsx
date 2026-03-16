@@ -13,6 +13,7 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Newspaper,
   Users,
   X,
 } from 'lucide-react';
@@ -46,6 +47,12 @@ const navItems = [
     icon: FileText,
     description: 'Billing operations and records',
   },
+  {
+    name: 'Blogs',
+    href: '/admin/blogs',
+    icon: Newspaper,
+    description: 'Publish and manage blog content',
+  },
 ];
 
 const sectionMeta = {
@@ -68,6 +75,11 @@ const sectionMeta = {
     eyebrow: 'Billing',
     title: 'Invoices',
     description: 'Review invoice records and track payment-related activity.',
+  },
+  '/admin/blogs': {
+    eyebrow: 'Content',
+    title: 'Blogs',
+    description: 'Create, edit, and publish articles for the public site.',
   },
 } as const;
 

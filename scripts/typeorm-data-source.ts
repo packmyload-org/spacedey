@@ -10,6 +10,10 @@ import SubscriptionPlan from '../lib/db/entities/SubscriptionPlan';
 import Payment from '../lib/db/entities/Payment';
 import Invoice from '../lib/db/entities/Invoice';
 import StorageUnit from '../lib/db/entities/StorageUnit';
+import PaymentMethodSetting from '../lib/db/entities/PaymentMethodSetting';
+import BlogPost from '../lib/db/entities/BlogPost';
+import NewsletterSubscriber from '../lib/db/entities/NewsletterSubscriber';
+import ReferralSubmission from '../lib/db/entities/ReferralSubmission';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();
@@ -49,13 +53,26 @@ if (!selectedDatabaseUrl) {
   );
 }
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: 'postgres',
   url: useDirectUrl && directDatabaseUrl ? directDatabaseUrl : selectedDatabaseUrl,
   ssl,
   synchronize: false,
   logging: false,
-  entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
+  entities: [
+    User,
+    UnitType,
+    Site,
+    StorageUnit,
+    Booking,
+    SubscriptionPlan,
+    Payment,
+    Invoice,
+    PaymentMethodSetting,
+    BlogPost,
+    NewsletterSubscriber,
+    ReferralSubmission,
+  ],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 

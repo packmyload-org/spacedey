@@ -1,6 +1,7 @@
 import { In, type DataSource } from 'typeorm';
 import Booking, { BookingBillingMetadata, BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
+import Invoice from '@/lib/db/entities/Invoice';
 import { isRecurringBilling } from '@/lib/billing/config';
 import { generateInvoice } from '@/lib/services/invoicing';
 
@@ -186,7 +187,7 @@ export async function applySuccessfulPayment({
       relations: ['site', 'unitType', 'user'],
     });
     const bookingsById = new Map(bookings.map((booking) => [booking.id, booking]));
-    const updatedBookings: Booking[] = [];
+    const updatedBookings: Array<{ booking: Booking; invoice: Invoice }> = [];
 
     payment.status = PaymentStatus.SUCCESS;
     payment.metadata = { ...payment.metadata, verification: providerData ?? payment.metadata?.verification };
@@ -214,11 +215,11 @@ export async function applySuccessfulPayment({
       });
 
       await bookingRepo.save(booking);
-      await generateInvoice(manager, payment, {
+      const invoice = await generateInvoice(manager, payment, {
         bookingId: booking.id,
         amount: allocation.amount,
       });
-      updatedBookings.push(booking);
+      updatedBookings.push({ booking, invoice });
     }
 
     await paymentRepo.save(payment);

@@ -16,6 +16,10 @@ export default function SignupForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signupResult, setSignupResult] = useState<{
+    email: string;
+    verificationEmailSent: boolean;
+  } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +43,7 @@ export default function SignupForm() {
     }
 
     setIsSubmitting(true);
+    setSignupResult(null);
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -61,7 +66,10 @@ export default function SignupForm() {
       }
 
       setAuth(data.user, data.accessToken, rememberMe);
-      router.push('/');
+      setSignupResult({
+        email: data?.user?.email || email,
+        verificationEmailSent: data?.verificationEmailSent === true,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Something went wrong.';
       if (message.toLowerCase().includes('recaptcha')) {
@@ -87,6 +95,40 @@ export default function SignupForm() {
         : 'border-gray-300 focus:border-[#1642F0] focus:ring-1 focus:ring-[#1642F0]'
       }`;
   };
+
+  if (signupResult) {
+    return (
+      <div className="bg-white rounded-2xl shadow-md p-8 max-w-lg mx-auto">
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Account created</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              You&apos;re signed in and your account is ready.
+            </p>
+          </div>
+
+          {signupResult.verificationEmailSent ? (
+            <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              We sent a verification email to <span className="font-semibold">{signupResult.email}</span>.
+              Open that message to verify your account.
+            </div>
+          ) : (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Your account was created, but we could not send the verification email right now.
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="w-full bg-[#1642F0] text-white font-semibold py-3 rounded-2xl"
+          >
+            Continue to homepage
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-8 max-w-lg mx-auto">

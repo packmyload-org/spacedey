@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Header from "@/components/layout/Header";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSitesData } from "@/contexts/SitesContext";
@@ -16,7 +16,7 @@ import {
 } from "@/lib/pricing/storagePricing";
 import type { PaymentBookingAllocation } from "@/lib/db/entities/Payment";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
-import type { ApiSite, ApiStorageUnit, ApiUnitType } from "@/lib/types/local";
+import type { ApiSite, ApiStorageUnit, ApiUnitType, PaymentMethodsResponse, PaymentMethodStatus } from "@/lib/types/local";
 
 type CheckoutSite = ApiSite;
 type BillingType = "one_time" | "recurring";
@@ -270,6 +270,8 @@ function CheckoutContent() {
   const [billingType, setBillingType] = useState<BillingType>("one_time");
   const [recurringDurationMonths, setRecurringDurationMonths] = useState(DEFAULT_RECURRING_DURATION_MONTHS);
   const [selectedProvider, setSelectedProvider] = useState<PaymentProvider | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodStatus[]>([]);
+  const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(true);
 
   const storageCartItems = useMemo(
     () => cartItems.filter((item) => !isAddOn(item)),
@@ -306,6 +308,10 @@ function CheckoutContent() {
   }, [hasLoaded, siteId, sites, storageUnitId, sitesError, storageCartItems, unitTypeId]);
 
   const checkoutEntries = checkout.entries;
+  const availablePaymentProviders = paymentMethods.filter((method) => method.available);
+  const availableProviderOptions = paymentProviders.filter((provider) =>
+    availablePaymentProviders.some((method) => method.provider === provider.value)
+  );
   const isCartCheckout = checkout.mode === "cart";
   const primaryEntry = checkoutEntries[0] ?? null;
   const storageSelectionCount = checkoutEntries.reduce((sum, entry) => sum + entry.quantity, 0);
@@ -320,7 +326,61 @@ function CheckoutContent() {
     ? "Cart add-ons are not included in online checkout yet. Remove add-ons to continue."
     : null;
   const blockingError = checkout.error ?? cartAddOnMessage;
-  const visibleError = error ?? blockingError;
+  const paymentMethodError = !paymentMethodsLoading && availableProviderOptions.length === 0
+    ? "No payment methods are currently available. Please contact support or try again later."
+    : null;
+  const visibleError = error ?? blockingError ?? paymentMethodError;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchPaymentMethods() {
+      try {
+        setPaymentMethodsLoading(true);
+        const response = await fetch("/api/payment-methods");
+        const data = await response.json() as Partial<PaymentMethodsResponse & { error?: string }>;
+
+        if (!response.ok || !Array.isArray(data.methods)) {
+          throw new Error(data.error || "Failed to load payment methods.");
+        }
+
+        const methods = data.methods;
+
+        if (cancelled) {
+          return;
+        }
+
+        setPaymentMethods(methods);
+        setSelectedProvider((currentProvider) => {
+          if (currentProvider && methods.some((method) => method.provider === currentProvider && method.available)) {
+            return currentProvider;
+          }
+
+          return data.defaultProvider ?? methods.find((method) => method.available)?.provider ?? null;
+        });
+      } catch (paymentMethodError) {
+        if (!cancelled) {
+          setError(
+            paymentMethodError instanceof Error
+              ? paymentMethodError.message
+              : "Failed to load payment methods."
+          );
+          setPaymentMethods([]);
+          setSelectedProvider(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setPaymentMethodsLoading(false);
+        }
+      }
+    }
+
+    void fetchPaymentMethods();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleCheckout = async (provider: PaymentProvider) => {
     if (checkoutEntries.length === 0) {
@@ -330,6 +390,11 @@ function CheckoutContent() {
 
     if (cartAddOnMessage) {
       setError(cartAddOnMessage);
+      return;
+    }
+
+    if (!availableProviderOptions.some((option) => option.value === provider)) {
+      setError("The selected payment provider is not currently available.");
       return;
     }
 
@@ -408,6 +473,11 @@ function CheckoutContent() {
 
     if (cartAddOnMessage) {
       setError(cartAddOnMessage);
+      return;
+    }
+
+    if (paymentMethodError) {
+      setError(paymentMethodError);
       return;
     }
     setError(null);
@@ -613,7 +683,7 @@ function CheckoutContent() {
                     Choose your payment provider at checkout
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-gray-500">
-                    When you continue, we&apos;ll create your booking{storageSelectionCount === 1 ? "" : "s"} first, then redirect you to Paystack or Flutterwave.
+                    When you continue, we&apos;ll create your booking{storageSelectionCount === 1 ? "" : "s"} first, then redirect you to one of the currently available payment providers.
                   </p>
                   {selectedProvider ? (
                     <p className="mt-4 text-xs font-bold uppercase tracking-[0.2em] text-blue-700">
@@ -638,10 +708,10 @@ function CheckoutContent() {
 
                 <button
                   onClick={handleBeginCheckout}
-                  disabled={submitting || Boolean(blockingError)}
+                  disabled={submitting || Boolean(blockingError) || Boolean(paymentMethodError) || paymentMethodsLoading}
                   className="w-full bg-[#1642F0] text-white py-6 rounded-2xl font-black text-lg shadow-xl shadow-blue-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
                 >
-                  {submitting ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "CONTINUE TO CHECKOUT"}
+                  {submitting || paymentMethodsLoading ? <Loader2 className="w-6 h-6 animate-spin mx-auto" /> : "CONTINUE TO CHECKOUT"}
                 </button>
 
               </div>
@@ -676,7 +746,7 @@ function CheckoutContent() {
             </div>
 
             <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {paymentProviders.map((provider) => {
+              {availableProviderOptions.map((provider) => {
                 const isActive = selectedProvider === provider.value;
 
                 return (
@@ -702,6 +772,12 @@ function CheckoutContent() {
                 );
               })}
             </div>
+
+            {availableProviderOptions.length === 0 ? (
+              <p className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                No payment providers are available right now.
+              </p>
+            ) : null}
 
             <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button

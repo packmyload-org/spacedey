@@ -7,7 +7,7 @@ import ReferralStorageFeatures from "@/components/refer/ReferralStorageFeatures"
 
 export default function Page() {
     return (
-        <div>
+        <div className="bg-[#F5F8FF]">
             <Header />
             <ReferralHero />
             <ReferralStorageFeatures />

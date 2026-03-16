@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Spacedey payment was successful</title>
+  </head>
+  <body style="margin:0;padding:0;background-color:#f4f7ff;font-family:Arial,Helvetica,sans-serif;color:#102a72;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      Your Spacedey payment was successful and your storage booking is confirmed.
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f4f7ff;margin:0;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background-color:#ffffff;border-radius:28px;overflow:hidden;box-shadow:0 16px 40px rgba(16,42,114,0.08);">
+            <tr>
+              <td style="background:linear-gradient(135deg,#1642f0 0%,#0f2b82 100%);padding:40px 32px 32px;text-align:left;">
+                <div style="display:inline-block;padding:8px 14px;border-radius:999px;background-color:rgba(255,255,255,0.14);font-size:12px;letter-spacing:1.8px;font-weight:700;text-transform:uppercase;color:#ffffff;">
+                  Payment confirmed
+                </div>
+                <h1 style="margin:20px 0 10px;font-size:34px;line-height:1.15;font-weight:800;color:#ffffff;">
+                  Your booking is active
+                </h1>
+                <p style="margin:0;font-size:16px;line-height:1.7;color:rgba(255,255,255,0.88);">
+                  We have successfully received your payment and updated your Spacedey account.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:36px 32px 20px;">
+                <p style="margin:0 0 18px;font-size:17px;line-height:1.8;color:#233357;">
+                  Hi {{firstName}},
+                </p>
+                <p style="margin:0 0 24px;font-size:16px;line-height:1.8;color:#465577;">
+                  Thanks for your payment. Your booking at <strong style="color:#102a72;">{{siteName}}</strong> is now confirmed.
+                </p>
+
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 28px;border-collapse:separate;border-spacing:0 12px;">
+                  <tr>
+                    <td style="width:50%;padding:16px 18px;border-radius:18px;background-color:#f6f8ff;border:1px solid #d9e3ff;">
+                      <p style="margin:0 0 6px;font-size:12px;letter-spacing:1.4px;font-weight:700;text-transform:uppercase;color:#5d74b0;">Amount paid</p>
+                      <p style="margin:0;font-size:20px;font-weight:800;color:#102a72;">{{amountPaid}}</p>
+                    </td>
+                    <td style="width:16px;"></td>
+                    <td style="width:50%;padding:16px 18px;border-radius:18px;background-color:#f6f8ff;border:1px solid #d9e3ff;">
+                      <p style="margin:0 0 6px;font-size:12px;letter-spacing:1.4px;font-weight:700;text-transform:uppercase;color:#5d74b0;">Billing type</p>
+                      <p style="margin:0;font-size:20px;font-weight:800;color:#102a72;">{{billingType}}</p>
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="margin:0 0 28px;padding:22px 20px;border-radius:22px;background-color:#ffffff;border:1px solid #d9e3ff;">
+                  <p style="margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#5d74b0;">
+                    Receipt details
+                  </p>
+                  <p style="margin:0 0 8px;font-size:15px;line-height:1.8;color:#465577;">
+                    Invoice number: <strong style="color:#102a72;">{{invoiceNumber}}</strong>
+                  </p>
+                  <p style="margin:0;font-size:15px;line-height:1.8;color:#465577;">
+                    Site: <strong style="color:#102a72;">{{siteName}}</strong>
+                  </p>
+                </div>
+
+                <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 28px;">
+                  <tr>
+                    <td align="center" style="border-radius:999px;background-color:#1642f0;">
+                      <a href="{{bookingsUrl}}" style="display:inline-block;padding:16px 24px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">
+                        View my bookings
+                      </a>
+                    </td>
+                    <td style="width:12px;"></td>
+                    <td align="center" style="border-radius:999px;background-color:#f0f4ff;border:1px solid #d9e3ff;">
+                      <a href="{{invoicesUrl}}" style="display:inline-block;padding:16px 24px;font-size:15px;font-weight:700;color:#1642f0;text-decoration:none;border-radius:999px;">
+                        View invoices
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:0;font-size:15px;line-height:1.8;color:#465577;">
+                  Questions about your billing? Reach us at <a href="mailto:{{supportEmail}}" style="color:#1642f0;text-decoration:none;font-weight:700;">{{supportEmail}}</a>.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 32px 32px;border-top:1px solid #edf1ff;">
+                <p style="margin:0 0 8px;font-size:13px;line-height:1.7;color:#6d7ca4;">
+                  This payment confirmation was sent because a successful charge was recorded on your Spacedey account.
+                </p>
+                <p style="margin:0;font-size:12px;line-height:1.7;color:#8a96b5;">
+                  This is a transactional email about your booking and billing.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/lib/store/useAuthStore';
 
 interface FormData {
   firstName: string;
@@ -28,6 +29,7 @@ const LOCATIONS = [
 ];
 
 export default function ReferralHero() {
+  const { isAuthenticated, user } = useAuthStore();
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -43,6 +45,19 @@ export default function ReferralHero() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState('/images/referHero.png');
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      firstName: user.firstName || current.firstName,
+      lastName: user.lastName || current.lastName,
+      email: user.email || current.email,
+    }));
+  }, [isAuthenticated, user]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -77,9 +92,9 @@ export default function ReferralHero() {
 
       setSubmitted(true);
       setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
+        firstName: isAuthenticated && user ? user.firstName : '',
+        lastName: isAuthenticated && user ? user.lastName : '',
+        email: isAuthenticated && user ? user.email : '',
         refereeFirstName: '',
         refereeLastName: '',
         refereeEmail: '',
@@ -97,28 +112,33 @@ export default function ReferralHero() {
   };
 
   return (
-    <section className="py-20  px-5 lg:px-24 my-10 bg-[#1642F0]">
+    <section className="bg-[#1642F0] px-4 py-16 sm:px-5 lg:px-24 lg:pb-16 lg:pt-20">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] lg:gap-12 lg:items-center">
           {/* Left Content */}
-          <div>
-            <div className="bg-[#D9DDF0] p-6 rounded-t-3xl">
-              <h1 className="text-3xl lg:text-4xl font-bold bg-[#D9DDF0] text-blue-900 my-6">
+          <div className="min-w-0 lg:max-w-[560px]">
+            <div className="rounded-t-[28px] bg-[#D9DDF0] px-5 py-5 sm:px-6 sm:py-6">
+              <h1 className="my-3 text-[1.85rem] font-bold leading-tight text-blue-900 sm:my-4 sm:text-[2.25rem] lg:text-[2.6rem]">
                 Refer a friend to Spacedey and get rewarded
               </h1>
-              <p className="text-lg text-gray-700">
+              <p className="max-w-xl text-[0.95rem] text-gray-700 sm:text-base">
              Earn ₦50 when any one you refer moves in — and they&apos;ll save 50% too.
               </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6 bg-white p-5 rounded-b-3xl">
+            <form onSubmit={handleSubmit} className="space-y-5 rounded-b-[28px] bg-white p-4 sm:p-5">
               {/* Your Info Section */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Your info</h3>
+                <h3 className="mb-4 text-base font-bold text-gray-900 sm:text-lg">Your info</h3>
+                {isAuthenticated && user ? (
+                  <p className="mb-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    We pre-filled your details from your Spacedey account.
+                  </p>
+                ) : null}
                 
                 {/* Name Row */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <input
                     type="text"
                     name="firstName"
@@ -126,7 +146,7 @@ export default function ReferralHero() {
                     value={formData.firstName}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                   <input
                     type="text"
@@ -135,7 +155,7 @@ export default function ReferralHero() {
                     value={formData.lastName}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
 
@@ -147,16 +167,16 @@ export default function ReferralHero() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
               </div>
 
               {/* Their Info Section */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Their info</h3>
+                <h3 className="mb-4 text-base font-bold text-gray-900 sm:text-lg">Their info</h3>
 
                 {/* Referee Name Row */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <input
                     type="text"
                     name="refereeFirstName"
@@ -164,7 +184,7 @@ export default function ReferralHero() {
                     value={formData.refereeFirstName}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                   <input
                     type="text"
@@ -172,12 +192,12 @@ export default function ReferralHero() {
                     placeholder="Last Name"
                     value={formData.refereeLastName}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
 
                 {/* Referee Email & Phone Row */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <input
                     type="email"
                     name="refereeEmail"
@@ -185,7 +205,7 @@ export default function ReferralHero() {
                     value={formData.refereeEmail}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                   <input
                     type="tel"
@@ -193,7 +213,7 @@ export default function ReferralHero() {
                     placeholder="Phone"
                     value={formData.refereePhone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
 
@@ -203,7 +223,7 @@ export default function ReferralHero() {
                   value={formData.refereeLocation}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-700"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 >
                   <option value="">Please Select Location*</option>
                   {LOCATIONS.map((location) => (
@@ -218,7 +238,7 @@ export default function ReferralHero() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-full font-bold text-md transition-colors"
+                className="w-full rounded-full bg-blue-600 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400 sm:text-base"
               >
                 {isLoading ? 'Submitting...' : 'Submit Referral'}
               </button>
@@ -239,13 +259,14 @@ export default function ReferralHero() {
 
           {/* Right Image */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-full">
+            <div className="relative w-full max-w-[520px]">
               <Image
                 src={imageSrc}
                 alt="Referral hero image"
                 width={964}
                 height={886}
-                style={{ width: '100%', height: 'auto', minHeight: '600px', minWidth: '650px' }}
+                sizes="(max-width: 1024px) 100vw, 520px"
+                className="h-auto w-full"
                 priority
                 unoptimized
                 onError={() => setImageSrc('/images/hero1.jpg')}

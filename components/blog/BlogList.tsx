@@ -1,644 +1,328 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState } from "react";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 
 interface BlogPost {
   id: string;
   title: string;
-  date: string;
+  slug: string;
   excerpt: string;
-  image: string;
+  image: string | null;
   author: string;
-  href: string;
+  publishedAt: string | null;
 }
 
-const allBlogPosts = [
-  // Page 1
-  {
-    id: "1",
-    title:
-      "Creating a Self-Storage Inventory Checklist: Best Tips to Keep Your Storage Organized",
-    date: "July 24, 2025",
-    excerpt:
-      "Learn tips to organise and manage your storage inventory with ease. Discover strategies for tracking, categorizing, and maintaining items long-term.",
-    image: "https://images.unsplash.com/photo-1453460891917-8ff8ee9165d4?w=600&h=400&fit=crop",
-    author: "Samara Gofran",
-    href: "#",
-  },
-  {
-    id: "2",
-    title: "Self-Storage for Furniture: Best Practices and Common Mistakes",
-    date: "July 15, 2025",
-    excerpt:
-      "Learn the essential do's and don'ts of furniture storage to keep your pieces safe, clean, and damage-free in long-term storage.",
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop",
-    author: "Liezel",
-    href: "#",
-  },
-  {
-    id: "3",
-    title: "Best Practices for Bicycle Storage in a Self-Storage Unit",
-    date: "July 10, 2025",
-    excerpt:
-      "Get expert tips on bicycle storage solutions in self storage units. Learn how to prep, protect, and store your bike safely for the long term.",
-    image: "https://www.storagecafe.com/blog/wp-content/uploads/sites/44/2022/03/storage-facility.jpg",
-    author: "Samara Gofran",
-    href: "#",
-  },
-  {
-    id: "4",
-    title:
-      "Living With Roommates? Here's What to Store Offsite to Make Room for Peace",
-    date: "July 2, 2025",
-    excerpt:
-      "Living with a roommate and running out of space? Discover smart offsite storage tips to stay organized and reduce clutter.",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=400&fit=crop",
-    author: "Samara Gofran",
-    href: "#",
-  },
-  {
-    id: "5",
-    title:
-      "Warehouse or Business Storage Units? How to Choose the Right Fit for Your Business",
-    date: "June 26, 2025",
-    excerpt:
-      "Learn the key differences, pros and cons, and what to consider before choosing between warehouses or business storage units.",
-    image:
-      "/images/hero4.jpg",
-    author: "David Thompson",
-    href: "#",
-  },
-  {
-    id: "6",
-    title:
-      "What to Store In Your Self Storage Units Before Your Summer Vacation",
-    date: "June 19, 2025",
-    excerpt:
-      "Heading off on a summer getaway? Discover what to safely keep in self storage units before you travel.",
-    image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&h=400&fit=crop",
-    author: "Spacedey",
-    href: "#",
-  },
-  {
-    id: "7",
-    title: "How to Use Summer Storage to Make Your Vacation Hassle-Free",
-    date: "June 11, 2025",
-    excerpt:
-      "Planning a summer getaway? Discover how summer storage helps protect your belongings and streamline your travel plans.",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
-    author: "Spacedey",
-    href: "#",
-  },
-  // Page 2
-  {
-    id: "8",
-    title: "Smart Packing Strategies for Long-Term Storage Success",
-    date: "June 5, 2025",
-    excerpt:
-      "Master the art of packing for storage with our comprehensive guide on maximizing space and protecting your items.",
-    image: "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=600&h=400&fit=crop",
-    author: "John Smith",
-    href: "#",
-  },
-  {
-    id: "9",
-    title: "Climate Control in Storage: Why It Matters for Your Valuables",
-    date: "May 28, 2025",
-    excerpt:
-      "Understand how temperature and humidity control can protect your most precious possessions from damage.",
-    image: "/images/hero5.jpg",
-    author: "Sarah Johnson",
-    href: "#",
-  },
-  {
-    id: "10",
-    title: "Storage Solutions for Small Spaces: Apartment Living Tips",
-    date: "May 20, 2025",
-    excerpt:
-      "Maximize your apartment space with creative storage solutions and organizational techniques.",
-    image: "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&h=400&fit=crop",
-    author: "Mike Chen",
-    href: "#",
-  },
-  {
-    id: "11",
-    title: "Moving Guide: How to Store Your Belongings During Transition",
-    date: "May 12, 2025",
-    excerpt:
-      "Learn the best practices for storing items during your move to ensure nothing gets damaged.",
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=400&fit=crop",
-    author: "Emma Wilson",
-    href: "#",
-  },
-  {
-    id: "12",
-    title: "Seasonal Storage: Preparing Your Items for Different Climates",
-    date: "May 5, 2025",
-    excerpt:
-      "Discover how to properly store seasonal items to keep them in perfect condition year after year.",
-    image:
-      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&h=400&fit=crop",
-    author: "Robert Lee",
-    href: "#",
-  },
-  {
-    id: "13",
-    title: "Business Inventory Management: Storage Solutions for Entrepreneurs",
-    date: "April 28, 2025",
-    excerpt:
-      "Explore affordable and efficient storage options for your growing business inventory.",
-    image: "https://images.unsplash.com/photo-1553531889-e6cf89870f18?w=600&h=400&fit=crop",
-    author: "Lisa Anderson",
-    href: "#",
-  },
-  {
-    id: "14",
-    title: "Budget-Friendly Storage Tips: Save Money While Keeping Items Safe",
-    date: "April 21, 2025",
-    excerpt:
-      "Get practical advice on how to store your items affordably without compromising on quality and safety.",
-    image: "https://images.unsplash.com/photo-1518571669914-479d2b496eef?w=600&h=400&fit=crop",
-    author: "Tom Brown",
-    href: "#",
-  },
-  // Page 3
-  {
-    id: "15",
-    title: "Wine and Art Storage: Preserving Your Valuable Collections",
-    date: "April 14, 2025",
-    excerpt:
-      "Professional tips for storing valuable items like wine, art, and collectibles safely.",
-    image: "https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=600&h=400&fit=crop",
-    author: "Victoria Green",
-    href: "#",
-  },
-  {
-    id: "16",
-    title: "Document Storage and Organization: Keeping Records Safe",
-    date: "April 7, 2025",
-    excerpt:
-      "Learn best practices for storing important documents and maintaining organized records.",
-    image: "https://images.unsplash.com/photo-1450101499163-c8917c7b0c1b?w=600&h=400&fit=crop",
-    author: "David Martinez",
-    href: "#",
-  },
-  {
-    id: "17",
-    title:
-      "Storage Insurance: Protecting Your Belongings from Unexpected Events",
-    date: "March 31, 2025",
-    excerpt:
-      "Understand storage insurance options and how to ensure your items are fully protected.",
-    image: "/images/insurance.png",
-    author: "Jennifer White",
-    href: "#",
-  },
-  {
-    id: "18",
-    title: "Vehicle Storage: Winter Preparation and Long-Term Care",
-    date: "March 24, 2025",
-    excerpt:
-      "Complete guide to preparing and storing your vehicle for winter or extended periods.",
-    image: "public/images/image2.png",
-    author: "Carlos Rodriguez",
-    href: "#",
-  },
-  {
-    id: "19",
-    title: "RV and Boat Storage: Adventure Gear Protection",
-    date: "March 17, 2025",
-    excerpt:
-      "Expert advice on storing recreational vehicles and boats to maintain their condition.",
-    image:
-      "https://images.unsplash.com/photo-1527618120215-5935a3246b09?w=600&h=400&fit=crop",
-    author: "Nicole Thompson",
-    href: "#",
-  },
-  {
-    id: "20",
-    title: "Family Heirloom Storage: Preserving Your Heritage",
-    date: "March 10, 2025",
-    excerpt:
-      "Learn how to properly store family treasures and heirlooms for future generations.",
-    image: "images/image1.png",
-    author: "George Peterson",
-    href: "#",
-  },
-  {
-    id: "21",
-    title: "Storage for Students: Semester Break Solutions",
-    date: "March 3, 2025",
-    excerpt:
-      "/images/hero4.jpg",
-    image: "31224c94?w=600&h=400&fit=crop",
-    author: "Rachel Adams",
-    href: "#",
-  },
-  // Page 4
-  {
-    id: "22",
-    title: "Organizing Your Storage Unit: Layout and Access Tips",
-    date: "February 24, 2025",
-    excerpt:
-      "Maximize your storage unit efficiency with smart organization and layout strategies.",
-    image: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=600&h=400&fit=crop",
-    author: "Marcus Johnson",
-    href: "#",
-  },
-  {
-    id: "23",
-    title: "Security Features: What to Look for in a Storage Facility",
-    date: "February 17, 2025",
-    excerpt:
-      "Essential security features every storage facility should have to protect your belongings.",
-    image: "/images/insurance.png",
-    author: "Sophia Williams",
-    href: "#",
-  },
-  {
-    id: "24",
-    title: "Storage Myths Debunked: Common Misconceptions Explained",
-    date: "February 10, 2025",
-    excerpt:
-      "Separate fact from fiction with the truth about common storage facility concerns.",
-    image: "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=600&h=400&fit=crop",
-    author: "Nathan Brooks",
-    href: "#",
-  },
-  {
-    id: "25",
-    title: "Emergency Preparedness: Using Storage for Disaster Recovery",
-    date: "February 3, 2025",
-    excerpt:
-      "How storage units can play a crucial role in emergency preparedness and disaster recovery.",
-    image: "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&h=400&fit=crop",
-    author: "Patricia Clarke",
-    href: "#",
-  },
-  {
-    id: "26",
-    title: "Storage Unit Downsizing: Making the Most of Smaller Spaces",
-    date: "January 27, 2025",
-    excerpt:
-      "Smart tips for efficiently using smaller storage units and maximizing every square foot.",
-    image:
-      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&h=400&fit=crop",
-    author: "Kevin Foster",
-    href: "#",
-  },
-  {
-    id: "27",
-    title: "Eco-Friendly Storage: Sustainable Practices for Your Items",
-    date: "January 20, 2025",
-    excerpt:
-      "Learn about sustainable and environmentally friendly storage options and practices.",
-    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=400&fit=crop",
-    author: "Amanda Green",
-    href: "#",
-  },
-  {
-    id: "28",
-    title: "Storage Unit Maintenance: Keeping Your Space Clean and Organized",
-    date: "January 13, 2025",
-    excerpt:
-      "Regular maintenance tips to keep your storage unit in optimal condition year-round.",
-    image: "/images/StorageUnitSizes.jpg",
-    author: "Daniel Harris",
-    href: "#",
-  },
-];
+function formatBlogDate(value: string | null) {
+  if (!value) {
+    return 'Draft';
+  }
+
+  return new Intl.DateTimeFormat('en-NG', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(value));
+}
 
 function BlogCard({ post }: { post: BlogPost }) {
-  const [imgFailed, setImgFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageSrc = !imageFailed && post.image ? post.image : '/images/blogpost1.png';
+
   return (
-    <a
-      href={post.href}
-      className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow h-full"
+    <Link
+      href={`/blog/${post.slug}`}
+      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#D8E2FF] bg-white shadow-[0_18px_45px_rgba(17,56,216,0.08)] transition-transform duration-300 hover:-translate-y-1"
     >
-      {/* Image */}
-      <div className="relative h-72 overflow-hidden bg-gray-200">
-        {post.image && post.image.startsWith("http") ? (
-          // Use a plain <img> for external blog images as a quick fallback
+      <div className="relative h-64 overflow-hidden bg-[#EAF0FF]">
+        {imageSrc.startsWith('http') ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={imgFailed ? "/images/blogpost1.png" : post.image}
+            src={imageSrc}
             alt={post.title}
-            onError={(e) => {
-              const el = e.currentTarget as HTMLImageElement;
-              if (el.src !== "/images/blogpost1.png") {
-                console.warn("External image failed to load:", post.image);
-                el.src = "/images/blogpost1.png";
-                setImgFailed(true);
-              }
-            }}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageFailed(true)}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          imgFailed ? (
-            // fallback for local images if Next Image fails
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/images/blogpost1.png"
-              alt={post.title}
-              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <Image
-              src={post.image}
-              alt={post.title}
-              fill
-              unoptimized
-              onError={() => {
-                console.warn("Next/Image failed to load:", post.image);
-                setImgFailed(true);
-              }}
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          )
+          <Image
+            src={imageSrc}
+            alt={post.title}
+            fill
+            onError={() => setImageFailed(true)}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col flex-1 p-6">
-        <p className="text-sm text-gray-500 mb-3">{post.date}</p>
-        <h2 className="text-xl font-bold text-blue-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight">
+      <div className="flex flex-1 flex-col p-6">
+        <p className="text-sm font-medium text-[#5D74B0]">{formatBlogDate(post.publishedAt)}</p>
+        <h2 className="mt-3 text-2xl font-black leading-tight text-[#0F172A] transition-colors group-hover:text-[#1642F0]">
           {post.title}
         </h2>
-        <p className="text-gray-600 text-sm mb-6 flex-1 leading-relaxed">
-          {post.excerpt}
-        </p>
+        <p className="mt-4 flex-1 text-sm leading-6 text-[#475569]">{post.excerpt}</p>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <span className="text-sm font-semibold text-blue-900">
-            {post.author}
-          </span>
-          <span className="flex items-center gap-1 text-blue-600 font-semibold group-hover:gap-2 transition-all">
-            Learn more
-            <ChevronRight size={20} />
-          </span>
+        <div className="mt-6 flex items-center justify-between border-t border-[#E5ECFF] pt-4">
+          <span className="text-sm font-semibold text-[#1138D8]">{post.author}</span>
+          <span className="text-sm font-bold text-[#1642F0]">Read article</span>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 
 export default function BlogList() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [newsletterMessage, setNewsletterMessage] = useState<string | null>(null);
+  const [newsletterError, setNewsletterError] = useState<string | null>(null);
+  const [isSubmittingNewsletter, setIsSubmittingNewsletter] = useState(false);
 
-  const totalPages = 4;
-  const postsPerPage = 7;
+  const postsPerPage = 6;
 
-  // Get posts for current page
-  const startIndex = (currentPage - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  const currentPosts = allBlogPosts.slice(startIndex, endIndex);
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail("");
-      setTimeout(() => setSubscribed(false), 3000);
+        const response = await fetch('/api/blog/posts');
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to load blog posts.');
+        }
+
+        setPosts(Array.isArray(data.posts) ? data.posts : []);
+      } catch (fetchError) {
+        setError(fetchError instanceof Error ? fetchError.message : 'Failed to load blog posts.');
+        setPosts([]);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  };
+
+    fetchPosts();
+  }, []);
+
+  const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  const currentPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * postsPerPage;
+    return posts.slice(startIndex, startIndex + postsPerPage);
+  }, [currentPage, posts]);
+  const featuredPosts = currentPosts.slice(0, 3);
+  const remainingPosts = currentPosts.slice(3);
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (page < 1 || page > totalPages) {
+      return;
+    }
+
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubscribe = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmittingNewsletter(true);
+    setNewsletterError(null);
+    setNewsletterMessage(null);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to subscribe.');
+      }
+
+      setNewsletterMessage(
+        data?.alreadySubscribed
+          ? 'You are already subscribed to updates.'
+          : 'Thanks for subscribing to Spacedey updates.'
+      );
+      setEmail('');
+    } catch (submitError) {
+      setNewsletterError(submitError instanceof Error ? submitError.message : 'Failed to subscribe.');
+    } finally {
+      setIsSubmittingNewsletter(false);
     }
   };
 
   return (
-    <section className="py-12 px-6 lg:px-24">
-      <div className="max-w-7xl mx-auto">
-        {/* Blog Cards Grid */}
-        <div className="space-y-8 mb-16">
-          {/* Row 1: 2 Cards (First 2 Posts) */}
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {currentPosts.slice(0, 2).map((post, index) => (
-              <div
-                key={post.id}
-                className={index === 0 ? "lg:col-span-2" : "lg:col-span-1"}
-              >
-                <BlogCard post={post} />
-              </div>
-            ))}
+    <section className="bg-[#F5F8FF] px-6 py-14 lg:px-24">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">Storage Journal</p>
+            <h2 className="mt-3 text-3xl font-black text-[#0F172A] md:text-4xl">Fresh advice from the Spacedey team</h2>
           </div>
-
-          {/* Row 2: 3 Cards (Next 3 Posts) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentPosts.slice(2, 5).map((post) => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-          </div>
-
-          {/* Row 3: 2 Cards + Newsletter */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {currentPosts.slice(5, 7).map((post) => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-
-            {/* Newsletter Card */}
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 flex flex-col justify-between h-4/6">
-              <div>
-                <h2 className="text-2xl font-bold text-blue-900 mb-3">
-                  Subscribe to our Newsletter Updates
-                </h2>
-                <p className="text-gray-600 text-sm">
-                  Subscribe to our Newsletter Updates
-                  <br />
-                  Additional text to convince them to subscribe
-                </p>
-              </div>
-
-              <form
-                onSubmit={handleSubscribe}
-                className="flex flex-col gap-4 mt-6"
-              >
-                <input
-                  type="email"
-                  placeholder="Email*"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-sm placeholder-gray-400"
-                />
-                <button
-                  type="submit"
-                  className="w-full bg-white border-2 border-blue-600 hover:bg-blue-50 text-blue-600 px-4 py-3 rounded-full font-bold text-base transition-colors"
-                >
-                  Subscribe
-                </button>
-                {subscribed && (
-                  <p className="text-green-600 text-sm text-center">
-                    Thanks for subscribing!
-                  </p>
-                )}
-              </form>
-            </div>
-          </div>
+          <p className="max-w-2xl text-sm leading-6 text-[#475569]">
+            Find packing ideas, business storage tips, and practical answers for making the most of your space.
+          </p>
         </div>
 
-        {/* Pagination */}
-        <nav className="flex items-center justify-center gap-2 flex-wrap">
-          {/* Previous */}
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-            aria-label="Previous page"
-          >
-            <ChevronLeft size={20} />
-          </button>
-
-          {/* Page Numbers */}
-          <div className="flex gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`w-10 h-10 flex items-center justify-center rounded-full font-bold text-sm transition-colors ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : "border border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
-                aria-label={`Go to page ${page}`}
-                aria-current={page === currentPage ? "page" : undefined}
-              >
-                {page}
-              </button>
-            ))}
+        {isLoading ? (
+          <div className="rounded-3xl border border-[#D8E2FF] bg-white px-6 py-20 text-center text-[#5D74B0]">
+            Loading articles...
           </div>
+        ) : error ? (
+          <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-6 text-sm text-red-700">
+            {error}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="rounded-3xl border border-[#D8E2FF] bg-white px-6 py-16 text-center">
+            <h3 className="text-2xl font-black text-[#0F172A]">No blog posts yet</h3>
+            <p className="mt-3 text-sm text-[#5D74B0]">Published posts from the admin dashboard will show up here.</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+              {featuredPosts.map((post, index) => (
+                <div key={post.id} className={index === 0 ? 'lg:col-span-2' : ''}>
+                  <BlogCard post={post} />
+                </div>
+              ))}
+            </div>
 
-          {/* Next */}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-            aria-label="Next page"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </nav>
-      </div>
-      {/* Related Posts & Resources Section */}
-        <div className="mt-20 pt-12 ">
+            <div className="my-10 overflow-hidden rounded-[36px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_38%,#0F2FA5_100%)] text-white shadow-[0_26px_80px_rgba(17,56,216,0.22)]">
+              <div className="grid gap-8 px-6 py-8 md:px-10 md:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-12">
+                <div className="relative">
+                  <div className="absolute -left-12 top-0 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
+                  <div className="absolute bottom-0 right-8 h-28 w-28 rounded-full bg-[#8FB0FF]/20 blur-2xl" />
 
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Related Post 1 */}
-            <a
-              href="#"
-              className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="relative h-56 overflow-hidden bg-gray-200">
-                <Image
-                  src="https://images.unsplash.com/photo-1556746753-b2406de998e8?w=500&h=400&fit=crop"
-                  alt="Spring storage guide"
-                  fill
-                  unoptimized
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="flex flex-col flex-1 p-6">
-                <p className="text-sm text-gray-500 mb-3">April 26, 2025</p>
-                <h3 className="text-xl font-bold text-blue-900 group-hover:text-blue-600 transition-colors">
-                  What to Store This Spring: A Guide for First-Time Renters
-                </h3>
-                <p className="text-gray-600 text-sm mt-3">
-                  Spring cleaning in NYC? Discover what to store as a first-time renter of self storage units.
-                </p>
-              </div>
-            </a>
-
-            {/* Related Post 2 */}
-            <a
-              href="#"
-              className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              <div className="relative h-56 overflow-hidden bg-gray-200">
-                <Image
-                  src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=500&h=400&fit=crop"
-                  alt="Storage facilities guide"
-                  fill
-                  unoptimized
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="flex flex-col flex-1 p-6">
-                <p className="text-sm text-gray-500 mb-3">April 30, 2025</p>
-                <h3 className="text-xl font-bold text-blue-900 group-hover:text-blue-600 transition-colors">
-                  When to Use Self Storage Facilities: Smart Reasons to Rent
-                </h3>
-                <p className="text-gray-600 text-sm mt-3">
-                  Discover when to use home storage facilities and how storage units can support various life transitions.
-                </p>
-              </div>
-            </a>
-
-            {/* Find the Right Size Card */}
-            <div className="bg-gradient-to-br from-blue-600 to-blue-700  rounded-2xl p-6 flex flex-col justify-between lg:justify-start text-white shadow-lg h-4/5">
-              <div>
-                <h3 className="text-2xl font-bold mb-3">Find the Right Size</h3>
-                
-                <div className="space-y-2">
-                  {/* Small */}
-                  <div className=" bg-opacity-10 backdrop-blur-sm rounded-lg p-3 border border-white border-opacity-20">
-                    <div className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 25 25" fill="none" className="flex-shrink-0 mt-1">
-                        <path d="M21.6148 6.58036L13.3648 2.0663C13.1444 1.9445 12.8967 1.88062 12.6448 1.88062C12.393 1.88062 12.1453 1.9445 11.9248 2.0663L3.67484 6.58224C3.43923 6.71115 3.24256 6.90095 3.10535 7.13182C2.96815 7.3627 2.89545 7.62617 2.89484 7.89474V16.861C2.89545 17.1296 2.96815 17.393 3.10535 17.6239C3.24256 17.8548 3.43923 18.0446 3.67484 18.1735L11.9248 22.6894C12.1453 22.8112 12.393 22.8751 12.6448 22.8751C12.8967 22.8751 13.1444 22.8112 13.3648 22.6894L21.6148 18.1735C21.8504 18.0446 22.0471 17.8548 22.1843 17.6239C22.3215 17.393 22.3942 17.1296 22.3948 16.861V7.89568C22.3947 7.62663 22.3223 7.36257 22.185 7.13116C22.0478 6.89975 21.8509 6.7095 21.6148 6.58036ZM12.6448 11.6288L5.11202 7.5038L12.6448 3.3788L20.1777 7.5038L12.6448 11.6288ZM13.3948 20.9701V12.9254L20.8948 8.82099V16.861L13.3948 20.9701Z" fill="white"/>
-                      </svg>
-                      <div>
-                        <p className="font-semibold">Small</p>
-                        <p className="text-sm text-blue-100">3 x 3 and smaller</p>
-                      </div>
+                  <div className="relative">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.26em] text-white/90">
+                      <Mail className="h-3.5 w-3.5" />
+                      Newsletter
                     </div>
-                  </div>
+                    <h3 className="mt-5 max-w-2xl text-3xl font-black leading-tight md:text-4xl">
+                      Get storage ideas, moving checklists, and smart space tips before everyone else.
+                    </h3>
+                    <p className="mt-4 max-w-2xl text-sm leading-7 text-[#DCE6FF] md:text-base">
+                      Subscribe for practical guides from the Spacedey team, from move-day prep and business storage to decluttering, packing, and getting more value from every square foot.
+                    </p>
 
-                  {/* Medium */}
-                  <div className=" backdrop-blur-sm rounded-lg p-3 border border-white border-opacity-20">
-                    <div className="flex items-start gap-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 25 25" fill="none" className="flex-shrink-0 mt-1">
-                        <path d="M21.6148 6.58036L13.3648 2.0663C13.1444 1.9445 12.8967 1.88062 12.6448 1.88062C12.393 1.88062 12.1453 1.9445 11.9248 2.0663L3.67484 6.58224C3.43923 6.71115 3.24256 6.90095 3.10535 7.13182C2.96815 7.3627 2.89545 7.62617 2.89484 7.89474V16.861C2.89545 17.1296 2.96815 17.393 3.10535 17.6239C3.24256 17.8548 3.43923 18.0446 3.67484 18.1735L11.9248 22.6894C12.1453 22.8112 12.393 22.8751 12.6448 22.8751C12.8967 22.8751 13.1444 22.8112 13.3648 22.6894L21.6148 18.1735C21.8504 18.0446 22.0471 17.8548 22.1843 17.6239C22.3215 17.393 22.3942 17.1296 22.3948 16.861V7.89568C22.3947 7.62663 22.3223 7.36257 22.185 7.13116C22.0478 6.89975 21.8509 6.7095 21.6148 6.58036ZM12.6448 11.6288L5.11202 7.5038L12.6448 3.3788L20.1777 7.5038L12.6448 11.6288ZM13.3948 20.9701V12.9254L20.8948 8.82099V16.861L13.3948 20.9701Z" fill="white"/>
-                      </svg>
-                      <div>
-                        <p className="font-semibold">Medium</p>
-                        <p className="text-sm text-blue-100">3 x 3 to 6 x 7</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Large */}
-                  <div className=" backdrop-blur-sm rounded-lg p-3 border border-white border-opacity-20">
-                    <div className="flex items-start gap-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 25 25" fill="none" className="flex-shrink-0 mt-1">
-                        <path d="M21.6148 6.58036L13.3648 2.0663C13.1444 1.9445 12.8967 1.88062 12.6448 1.88062C12.393 1.88062 12.1453 1.9445 11.9248 2.0663L3.67484 6.58224C3.43923 6.71115 3.24256 6.90095 3.10535 7.13182C2.96815 7.3627 2.89545 7.62617 2.89484 7.89474V16.861C2.89545 17.1296 2.96815 17.393 3.10535 17.6239C3.24256 17.8548 3.43923 18.0446 3.67484 18.1735L11.9248 22.6894C12.1453 22.8112 12.393 22.8751 12.6448 22.8751C12.8967 22.8751 13.1444 22.8112 13.3648 22.6894L21.6148 18.1735C21.8504 18.0446 22.0471 17.8548 22.1843 17.6239C22.3215 17.393 22.3942 17.1296 22.3948 16.861V7.89568C22.3947 7.62663 22.3223 7.36257 22.185 7.13116C22.0478 6.89975 21.8509 6.7095 21.6148 6.58036ZM12.6448 11.6288L5.11202 7.5038L12.6448 3.3788L20.1777 7.5038L12.6448 11.6288ZM13.3948 20.9701V12.9254L20.8948 8.82099V16.861L13.3948 20.9701Z" fill="white"/>
-                      </svg>
-                      <div>
-                        <p className="font-semibold">Large</p>
-                        <p className="text-sm text-blue-100">6 x 7 and larger</p>
-                      </div>
+                    <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-white/90">
+                      <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Moving guides</span>
+                      <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Storage planning</span>
+                      <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Business inventory tips</span>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <a
-                href="#"
-                className="mt-4 lg:mt-4 inline-block text-center text-white font-bold transition-colors"
-              >
-                Explore all unit sizes
-              </a>
+                <div className="rounded-[28px] border border-white/12 bg-white p-5 text-[#0F172A] shadow-[0_22px_50px_rgba(9,26,92,0.2)] md:p-6">
+                  <p className="text-sm font-bold text-[#1138D8]">Join the Spacedey update list</p>
+                  <p className="mt-2 text-sm leading-6 text-[#5D74B0]">
+                    One strong email address gets you first access to fresh articles and storage insights.
+                  </p>
+
+                  <form onSubmit={handleSubscribe} className="mt-6 space-y-4">
+                    <label className="block">
+                      <span className="mb-2 block text-xs font-black uppercase tracking-[0.2em] text-[#7386B9]">
+                        Email Address
+                      </span>
+                      <input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        required
+                        className="w-full rounded-2xl border border-[#C4D5FF] bg-[#F8FAFF] px-4 py-3 text-sm text-[#0F172A] outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D7E3FF]"
+                      />
+                    </label>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmittingNewsletter}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1642F0] px-4 py-3 text-sm font-black text-white transition hover:bg-[#1138D8] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {isSubmittingNewsletter ? 'Subscribing...' : 'Subscribe to Updates'}
+                      {!isSubmittingNewsletter ? <ArrowRight className="h-4 w-4" /> : null}
+                    </button>
+
+                    {newsletterMessage ? (
+                      <p className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+                        {newsletterMessage}
+                      </p>
+                    ) : null}
+
+                    {newsletterError ? (
+                      <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                        {newsletterError}
+                      </p>
+                    ) : null}
+                  </form>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+
+            {remainingPosts.length > 0 ? (
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+                {remainingPosts.map((post) => (
+                  <BlogCard key={post.id} post={post} />
+                ))}
+              </div>
+            ) : null}
+
+            {totalPages > 1 ? (
+              <nav className="mt-12 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C9D8FF] bg-white text-[#1138D8] transition hover:bg-[#F0F4FF] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-black transition ${
+                      page === currentPage
+                        ? 'bg-[#1642F0] text-white'
+                        : 'border border-[#C9D8FF] bg-white text-[#1138D8] hover:bg-[#F0F4FF]'
+                    }`}
+                    aria-current={page === currentPage ? 'page' : undefined}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C9D8FF] bg-white text-[#1138D8] transition hover:bg-[#F0F4FF] disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </nav>
+            ) : null}
+          </>
+        )}
+      </div>
     </section>
   );
 }

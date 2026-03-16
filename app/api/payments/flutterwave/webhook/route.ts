@@ -3,6 +3,7 @@ import { In } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
+import { sendBillingSuccessEmailBatch } from '@/lib/email/resend';
 import { flutterwave } from '@/lib/services/flutterwave';
 import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
 
@@ -130,6 +131,19 @@ export async function POST(req: Request) {
         providerData: verifiedPayment,
       });
 
+      await sendBillingSuccessEmailBatch({
+        source: 'payments/flutterwave-webhook-existing',
+        emails: updatedBookings.map(({ booking, invoice }) => ({
+          to: booking.user.email,
+          firstName: booking.user.firstName,
+          siteName: booking.site.name,
+          invoiceNumber: invoice.invoiceNumber,
+          amountPaid: Number(invoice.total),
+          currency: invoice.currency,
+          billingType: PaymentBillingType.RECURRING,
+        })),
+      });
+
       return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
     }
 
@@ -188,6 +202,19 @@ export async function POST(req: Request) {
       dataSource,
       payment: recurringPayment,
       providerData: verifiedPayment,
+    });
+
+    await sendBillingSuccessEmailBatch({
+      source: 'payments/flutterwave-webhook-recurring',
+      emails: updatedBookings.map(({ booking, invoice }) => ({
+        to: booking.user.email,
+        firstName: booking.user.firstName,
+        siteName: booking.site.name,
+        invoiceNumber: invoice.invoiceNumber,
+        amountPaid: Number(invoice.total),
+        currency: invoice.currency,
+        billingType: PaymentBillingType.RECURRING,
+      })),
     });
 
     return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });

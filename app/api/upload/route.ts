@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/admin';
-import { uploadFile } from '@/lib/services/gcp-storage';
+import { isCloudinaryConfigured, uploadFileToCloudinary } from '@/lib/services/cloudinary';
 
 export async function POST(request: NextRequest) {
     const adminCheck = await requireAdmin(request);
@@ -13,6 +13,13 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+        if (!isCloudinaryConfigured()) {
+            return NextResponse.json(
+                { ok: false, error: 'Cloudinary is not configured.' },
+                { status: 503 }
+            );
+        }
+
         const formData = await request.formData();
         const file = formData.get('file') as File;
         const folder = (formData.get('folder') as string) || 'sites';
@@ -22,12 +29,17 @@ export async function POST(request: NextRequest) {
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
-        const publicUrl = await uploadFile(buffer, file.name, folder);
+        const uploadedFile = await uploadFileToCloudinary({
+            fileBuffer: buffer,
+            fileName: file.name,
+            folder,
+            contentType: file.type,
+        });
 
         return NextResponse.json({
             ok: true,
-            url: publicUrl,
-            fileName: file.name
+            url: uploadedFile.url,
+            fileName: uploadedFile.fileName
         });
     } catch (error) {
         console.error('File upload error:', error);

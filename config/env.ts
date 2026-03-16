@@ -91,6 +91,10 @@ export const env = {
     port: readNumber(process.env.PORT, 3000),
     isDevelopment,
     isProduction,
+    url:
+      process.env.PUBLIC_APP_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      'http://localhost:3000',
   },
 };
 

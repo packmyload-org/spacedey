@@ -3,6 +3,7 @@
  * Shared frontend API types for the current relational data model
  */
 import { UserRole } from '@/lib/types/roles';
+import { PaymentProvider } from '@/lib/db/entities/Payment';
 
 export interface User {
   id: string;
@@ -141,4 +142,40 @@ export interface UserResponse {
   lastName: string;
   phone?: string;
   role: UserRole;
+  emailVerifiedAt?: string | null;
+}
+
+export interface PaymentMethodStatus {
+  provider: PaymentProvider;
+  label: string;
+  enabled: boolean;
+  configured: boolean;
+  available: boolean;
+  updatedAt: string | null;
+}
+
+export interface PaymentMethodsResponse {
+  ok: boolean;
+  methods: PaymentMethodStatus[];
+  defaultProvider: PaymentProvider | null;
+}
+
+export interface ApiBlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image: string | null;
+  author: string;
+  published: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiBlogPostsResponse {
+  ok: boolean;
+  posts: ApiBlogPost[];
+  total: number;
 }
