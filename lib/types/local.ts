@@ -159,3 +159,23 @@ export interface PaymentMethodsResponse {
   methods: PaymentMethodStatus[];
   defaultProvider: PaymentProvider | null;
 }
+
+export interface ApiBlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image: string | null;
+  author: string;
+  published: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiBlogPostsResponse {
+  ok: boolean;
+  posts: ApiBlogPost[];
+  total: number;
+}

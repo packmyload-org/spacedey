@@ -137,16 +137,16 @@ export default function ReferralReviewsCarousel() {
   };
 
   return (
-    <div className="w-full py-12 px-4 bg-white">
+    <div className="w-full bg-white px-4 py-12 sm:px-5 lg:px-24">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-8">What Our Customers Say</h2>
+        <h2 className="mb-8 text-center text-3xl font-bold">What Our Customers Say</h2>
         
         <div className="relative">
           {/* Navigation Arrows */}
           <button
             onClick={prevSlide}
             disabled={safeCurrentSlide === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all -ml-4"
+            className="absolute left-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 sm:-ml-4"
             aria-label="Previous"
           >
             <ChevronLeft className="w-5 h-5 text-gray-700" />
@@ -155,14 +155,14 @@ export default function ReferralReviewsCarousel() {
           <button
             onClick={nextSlide}
             disabled={safeCurrentSlide === totalSlides - 1}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all -mr-4"
+            className="absolute right-0 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-md transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 sm:-mr-4"
             aria-label="Next"
           >
             <ChevronRight className="w-5 h-5 text-gray-700" />
           </button>
 
           {/* Reviews Container */}
-          <div className="overflow-hidden px-2">
+          <div className="overflow-hidden px-8 sm:px-2">
             <div className="flex gap-5 transition-transform duration-300 ease-in-out">
               {getVisibleReviews().map((review) => (
                 <div

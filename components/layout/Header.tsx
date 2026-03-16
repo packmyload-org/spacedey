@@ -50,6 +50,7 @@ export default function Header() {
   }, []);
 
   const navLinkClass = "flex items-center py-1 border-b-2 border-transparent text-white transition-colors duration-200 hover:text-white hover:border-white focus:text-white focus:border-white focus:outline-none focus:ring-0";
+  const reserveButtonLabel = isAuthenticated ? 'Reserve Now' : 'Sign In to Reserve';
 
   const handleReserveNow = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -154,7 +155,7 @@ export default function Header() {
                 onClick={handleReserveNow}
                 className="font-bold inline-flex text-center items-center hover:cursor-pointer bg-[#D96541] text-white rounded-full text-xs lg:text-xs xl:text-base truncate py-3.5 px-6"
               >
-                Reserve Now
+                {reserveButtonLabel}
               </button>
             </div>
 
@@ -367,7 +368,7 @@ export default function Header() {
                 handleReserveNow(e);
               }}
             >
-              Reserve Now
+              {reserveButtonLabel}
             </PrimaryButton>
 
             {isAuthenticated ? (

@@ -66,9 +66,11 @@ export default function SearchLeafletMap({
   zoom,
   sites,
 }: Readonly<SearchLeafletMapProps>) {
+  const initialCenter: [number, number] = [center.lat, center.lng];
+
   return (
     <MapContainer
-      center={[center.lat, center.lng]}
+      center={initialCenter}
       zoom={zoom}
       maxZoom={19}
       scrollWheelZoom

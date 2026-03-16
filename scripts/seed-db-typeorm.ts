@@ -4,7 +4,9 @@ import User from '../lib/db/entities/User.js';
 import Site from '../lib/db/entities/Site.js';
 import UnitType from '../lib/db/entities/UnitType.js';
 import StorageUnit, { StorageUnitStatus } from '../lib/db/entities/StorageUnit.js';
+import BlogPost from '../lib/db/entities/BlogPost.js';
 import { STORAGE_SITES, STORAGE_UNIT_TYPES, getStorageUnitSeedKey } from '../lib/data/storageCatalog.js';
+import { BLOG_SEED_POSTS } from '../lib/data/blogSeed.js';
 import { UserRole } from '../lib/types/roles.js';
 
 const DEFAULT_USERS = [
@@ -32,6 +34,7 @@ async function seed() {
     const siteRepo = AppDataSource.getRepository(Site);
     const unitTypeRepo = AppDataSource.getRepository(UnitType);
     const storageUnitRepo = AppDataSource.getRepository(StorageUnit);
+    const blogPostRepo = AppDataSource.getRepository(BlogPost);
 
     for (const u of DEFAULT_USERS) {
       const exists = await userRepo.findOne({ where: { email: u.email } });
@@ -149,6 +152,44 @@ async function seed() {
           await unitTypeRepo.save(savedUnitType);
         }
       }
+    }
+
+    for (const postSeed of BLOG_SEED_POSTS) {
+      const existingPost = await blogPostRepo.findOne({
+        where: { slug: postSeed.slug },
+      });
+
+      if (existingPost) {
+        existingPost.title = postSeed.title;
+        existingPost.excerpt = postSeed.excerpt;
+        existingPost.content = postSeed.content;
+        existingPost.image = postSeed.image;
+        existingPost.author = postSeed.author;
+        existingPost.published = postSeed.published;
+        existingPost.publishedAt = postSeed.published
+          ? new Date(postSeed.publishedAt)
+          : null;
+
+        await blogPostRepo.save(existingPost);
+        console.debug(`Updated blog post ${postSeed.slug}`);
+        continue;
+      }
+
+      const blogPost = blogPostRepo.create({
+        title: postSeed.title,
+        slug: postSeed.slug,
+        excerpt: postSeed.excerpt,
+        content: postSeed.content,
+        image: postSeed.image,
+        author: postSeed.author,
+        published: postSeed.published,
+        publishedAt: postSeed.published
+          ? new Date(postSeed.publishedAt)
+          : null,
+      });
+
+      await blogPostRepo.save(blogPost);
+      console.debug(`Created blog post ${postSeed.slug}`);
     }
 
     console.debug('Seeding complete');

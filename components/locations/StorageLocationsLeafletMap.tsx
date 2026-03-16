@@ -48,9 +48,11 @@ function MapViewport({ sites }: Readonly<{ sites: ApiSite[] }>) {
 export default function StorageLocationsLeafletMap({
   mapSites,
 }: Readonly<StorageLocationsLeafletMapProps>) {
+  const initialCenter: [number, number] = [defaultMapCenter.lat, defaultMapCenter.lng];
+
   return (
     <MapContainer
-      center={[defaultMapCenter.lat, defaultMapCenter.lng]}
+      center={initialCenter}
       zoom={6}
       maxZoom={19}
       scrollWheelZoom

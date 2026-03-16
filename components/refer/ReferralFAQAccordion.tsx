@@ -42,12 +42,26 @@ export default function ReferralFAQAccordion() {
   };
 
   return (
-    <div className="w-full py-12 px-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col justify-center lg:flex-row gap-8 lg:gap-12 items-start">
+    <section className="w-full bg-[#FBFCFF] px-4 py-14 sm:px-5 lg:px-24 lg:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-10 max-w-3xl">
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#7386B9]">
+            Frequently Asked Questions
+          </p>
+          <h2 className="mt-4 text-3xl font-black text-[#0F172A] md:text-4xl">
+            Everything people ask before they refer someone
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-[#475569] md:text-base">
+            A quick breakdown of the reward, when it applies, and how the referral process works from submission to move-in.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-start justify-center gap-8 lg:flex-row lg:gap-12">
           {/* Image Column */}
-          <div className="flex sm:self-center md:self-start">
-            <div className="relative w-full h-auto max-w-sm">
+          <div className="flex w-full sm:self-center md:self-start lg:w-[340px]">
+            <div className="relative w-full overflow-hidden rounded-[28px] border border-[#D9E4FF] bg-[linear-gradient(180deg,#EEF4FF_0%,#FFFFFF_100%)] p-6 shadow-[0_20px_50px_rgba(17,56,216,0.06)]">
+              <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-[#DDE8FF] blur-3xl" />
+              <div className="relative aspect-[4/5] w-full">
               <Image
                 src="https://lp.stufstorage.com/hubfs/faqs-content-img.png"
                 alt="faqs-content-img"
@@ -55,46 +69,56 @@ export default function ReferralFAQAccordion() {
                 unoptimized
                 className="object-contain"
               />
+              </div>
+              <div className="relative mt-5 rounded-2xl bg-white px-4 py-4">
+                <p className="text-sm font-bold text-[#1138D8]">Fast answer</p>
+                <p className="mt-2 text-sm leading-6 text-[#5D74B0]">
+                  Refer first, then let Spacedey handle the outreach and qualification.
+                </p>
+              </div>
             </div>
           </div>
 
           {/* FAQ Content Column */}
-          <div className="w-full lg:w-1/2">
-            <h2 className="text-3xl font-bold mb-6">FAQ</h2>
+          <div className="w-full lg:flex-1">
             
             <div className="space-y-4">
               {faqs.map((faq, index) => (
                 <div 
                   key={index}
-                  className={`border border-gray-200 rounded-lg overflow-hidden ${
-                    activeIndex === index ? 'shadow-md' : ''
+                  className={`overflow-hidden rounded-[22px] border border-[#D9E4FF] bg-white ${
+                    activeIndex === index ? 'shadow-[0_18px_40px_rgba(17,56,216,0.08)]' : 'shadow-sm'
                   }`}
                 >
                   <button
                     onClick={() => toggleAccordion(index)}
-                    className="w-full flex items-center justify-between p-4 text-left bg-white hover:bg-gray-50 transition-colors"
+                    className="flex w-full items-center justify-between gap-4 bg-white px-4 py-5 text-left transition-[background-color,transform] duration-300 hover:bg-[#F8FAFF] sm:px-5"
                   >
-                    <span className="font-semibold text-gray-900 pr-4">
+                    <span className="pr-2 text-sm font-bold text-[#0F172A] sm:pr-4 sm:text-base">
                       {faq.question}
                     </span>
                     <ChevronDown 
-                      className={`w-5 h-5 text-gray-600 flex-shrink-0 transition-transform duration-300 ${
+                      className={`h-5 w-5 flex-shrink-0 text-[#5D74B0] transition-transform duration-500 ease-out ${
                         activeIndex === index ? 'rotate-180' : ''
                       }`}
                     />
                   </button>
                   
                   <div 
-                    className={`transition-all duration-300 ease-in-out ${
+                    className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                       activeIndex === index 
-                        ? 'max-h-96 opacity-100' 
-                        : 'max-h-0 opacity-0'
-                    } overflow-hidden`}
+                        ? 'grid-rows-[1fr] opacity-100' 
+                        : 'grid-rows-[0fr] opacity-0'
+                    }`}
                   >
-                    <div className="p-4 pt-0 bg-white">
-                      <p className="text-gray-700">
+                    <div className="min-h-0 bg-white">
+                      <div className={`px-5 pb-5 pt-0 transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                        activeIndex === index ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+                      }`}>
+                      <p className="text-sm leading-7 text-[#475569] md:text-base">
                         {faq.answer}
                       </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -103,6 +127,6 @@ export default function ReferralFAQAccordion() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

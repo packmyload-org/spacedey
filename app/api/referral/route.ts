@@ -1,4 +1,10 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { connectTypeORM } from '@/lib/db';
+import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
+import { verifyToken } from '@/lib/auth/jwt';
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type ReferralRequest = {
   firstName?: string;
@@ -19,7 +25,9 @@ export async function POST(request: Request) {
     const lastName = String(body?.lastName || '').trim();
     const email = String(body?.email || '').trim();
     const refereeFirstName = String(body?.refereeFirstName || '').trim();
+    const refereeLastName = String(body?.refereeLastName || '').trim();
     const refereeEmail = String(body?.refereeEmail || '').trim();
+    const refereePhone = String(body?.refereePhone || '').trim();
     const refereeLocation = String(body?.refereeLocation || '').trim();
 
     if (!firstName || !lastName || !email || !refereeFirstName || !refereeEmail || !refereeLocation) {
@@ -29,24 +37,70 @@ export async function POST(request: Request) {
       );
     }
 
-    // No downstream integration exists in this repo yet (Zendesk/Storeganise/etc).
-    // Log for now so we can wire it to an email/CRM later without breaking the UI.
-    console.log('[Referral] Submission received', {
+    const normalizedEmail = email.toLowerCase();
+    const normalizedRefereeEmail = refereeEmail.toLowerCase();
+
+    if (!EMAIL_PATTERN.test(normalizedEmail) || !EMAIL_PATTERN.test(normalizedRefereeEmail)) {
+      return NextResponse.json(
+        { ok: false, error: 'A valid email address is required for both people.' },
+        { status: 400 }
+      );
+    }
+
+    if (normalizedEmail === normalizedRefereeEmail) {
+      return NextResponse.json(
+        { ok: false, error: 'You cannot refer your own email address.' },
+        { status: 400 }
+      );
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth-token')?.value;
+    const decoded = token ? verifyToken(token) : null;
+
+    const dataSource = await connectTypeORM();
+    const repo = dataSource.getRepository(ReferralSubmission);
+
+    const existingSubmission = await repo.findOne({
+      where: {
+        email: normalizedEmail,
+        refereeEmail: normalizedRefereeEmail,
+      },
+    });
+
+    if (existingSubmission) {
+      return NextResponse.json(
+        { ok: false, error: 'This referral has already been submitted.' },
+        { status: 409 }
+      );
+    }
+
+    const submission = repo.create({
+      referrerUserId: decoded?.userId ?? null,
       firstName,
       lastName,
-      email,
+      email: normalizedEmail,
       refereeFirstName,
-      refereeLastName: String(body?.refereeLastName || '').trim(),
-      refereeEmail,
-      refereePhone: String(body?.refereePhone || '').trim(),
+      refereeLastName: refereeLastName || null,
+      refereeEmail: normalizedRefereeEmail,
+      refereePhone: refereePhone || null,
       refereeLocation,
     });
 
-    return NextResponse.json({ ok: true });
+    await repo.save(submission);
+
+    return NextResponse.json({
+      ok: true,
+      referral: {
+        id: submission.id,
+        email: submission.email,
+        refereeEmail: submission.refereeEmail,
+        createdAt: submission.createdAt.toISOString(),
+      },
+    });
   } catch (error: unknown) {
     console.error('API Route /api/referral Error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
-
