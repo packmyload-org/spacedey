@@ -979,14 +979,14 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                     <section className="bg-blue-900 text-white rounded-xl shadow-sm border border-blue-900 p-6">
                         <h3 className="text-lg font-bold mb-2">Admin Help</h3>
                         <p className="text-blue-100 text-sm mb-4">
-                            Need to add coordinates? Use Google Maps to find the latitude and longitude of the facility.
+                            Need to add coordinates? Use OpenStreetMap to find the latitude and longitude of the facility.
                         </p>
                         <a
-                            href="https://www.google.com/maps"
+                            href="https://www.openstreetmap.org"
                             target="_blank"
                             className="inline-flex items-center text-xs font-bold underline hover:text-white transition-colors"
                         >
-                            Open Google Maps <Box className="ml-1 w-3 h-3" />
+                            Open OpenStreetMap <Box className="ml-1 w-3 h-3" />
                         </a>
                     </section>
                 </div>

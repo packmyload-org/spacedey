@@ -1,9 +1,10 @@
 'use client';
 
-import { Component, type ErrorInfo, type ReactNode, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { APIProvider, Map, Marker, useMap } from '@vis.gl/react-google-maps';
+import { useMemo } from 'react';
 import { env } from '@/config';
+import { defaultMapCenter, getValidCoordinates } from '@/lib/maps/shared';
 import { ApiSite } from '@/lib/types/local';
 import { cityMatchesSite, formatSiteCount, stateMatchesSite } from '@/lib/utils/siteLocations';
 
@@ -13,66 +14,9 @@ interface MapViewProps {
   sites: ApiSite[];
 }
 
-interface MapErrorBoundaryProps {
-  children: ReactNode;
-  fallback: ReactNode;
-  onError?: () => void;
-}
-
-interface MapErrorBoundaryState {
-  hasError: boolean;
-}
-
-class MapErrorBoundary extends Component<MapErrorBoundaryProps, MapErrorBoundaryState> {
-  state: MapErrorBoundaryState = {
-    hasError: false,
-  };
-
-  static getDerivedStateFromError(): MapErrorBoundaryState {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('Map rendering error:', error, info);
-    this.props.onError?.();
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-
-    return this.props.children;
-  }
-}
-
-function getValidCoordinates(site: ApiSite): { lat: number; lng: number } | null {
-  const lat = Number(site?.coordinates?.lat);
-  const lng = Number(site?.coordinates?.lng);
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return null;
-  }
-
-  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-    return null;
-  }
-
-  return { lat, lng };
-}
-
-function MapUpdater({ center, zoom }: { center: { lat: number; lng: number }; zoom: number }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (map && center) {
-      map.panTo(center);
-      map.setZoom(zoom);
-    }
-  }, [map, center, zoom]);
-
-  return null;
-}
+const SearchLeafletMap = dynamic(() => import('@/components/search/SearchLeafletMap'), {
+  ssr: false,
+});
 
 function SearchMapFallback({
   sites,
@@ -115,9 +59,6 @@ function SearchMapFallback({
 }
 
 export default function MapView({ selectedState, selectedCity, sites }: Readonly<MapViewProps>) {
-  const apiKey = env.googleMaps.apiKey;
-  const hasGoogleMaps = env.googleMaps.enabled;
-  const [mapLoadFailed, setMapLoadFailed] = useState(false);
   const safeSites = useMemo(() => (Array.isArray(sites) ? sites : []), [sites]);
   const selectedLabel = selectedCity || selectedState;
   const hasSelection = Boolean(selectedLabel);
@@ -149,11 +90,11 @@ export default function MapView({ selectedState, selectedCity, sites }: Readonly
 
   const centerLocation = useMemo(() => {
     const sitesWithCoordinates = activeSites
-      .map((site) => getValidCoordinates(site))
+      .map((site) => getValidCoordinates(Number(site?.coordinates?.lat), Number(site?.coordinates?.lng)))
       .filter((coords): coords is { lat: number; lng: number } => coords !== null);
 
     if (sitesWithCoordinates.length === 0) {
-      return { lat: 9.082, lng: 8.6753 };
+      return defaultMapCenter;
     }
 
     const total = sitesWithCoordinates.reduce(
@@ -171,7 +112,7 @@ export default function MapView({ selectedState, selectedCity, sites }: Readonly
   }, [activeSites]);
 
   const zoomLevel = hasSelection && !showAllSites ? (selectedCity ? 11 : 8) : 6;
-  const showStaticFallback = !hasGoogleMaps || mapLoadFailed;
+  const showStaticFallback = !env.maps.enabled;
 
   if (showStaticFallback) {
     return (
@@ -198,51 +139,7 @@ export default function MapView({ selectedState, selectedCity, sites }: Readonly
             </p>
           </div>
         )}
-        <MapErrorBoundary
-          fallback={
-            <SearchMapFallback
-              sites={activeSites}
-              selectedLabel={selectedLabel}
-              showAllSites={showAllSites || !hasSelection}
-            />
-          }
-          onError={() => {
-            setMapLoadFailed(true);
-          }}
-        >
-          <APIProvider
-            apiKey={apiKey!}
-            onError={() => {
-              setMapLoadFailed(true);
-            }}
-          >
-            <Map
-              defaultCenter={centerLocation}
-              defaultZoom={zoomLevel}
-              gestureHandling={'greedy'}
-              disableDefaultUI={false}
-              className="w-full h-full"
-              mapId="spacedey-map-id"
-            >
-              {activeSites.map((site, index) => {
-                const coordinates = getValidCoordinates(site);
-
-                if (!coordinates) {
-                  return null;
-                }
-
-                return (
-                  <Marker
-                    key={`${site.id}-${index}`}
-                    position={coordinates}
-                    title={site.name}
-                  />
-                );
-              })}
-              <MapUpdater center={centerLocation} zoom={zoomLevel} />
-            </Map>
-          </APIProvider>
-        </MapErrorBoundary>
+        <SearchLeafletMap center={centerLocation} zoom={zoomLevel} sites={activeSites} />
       </div>
     </div>
   );
