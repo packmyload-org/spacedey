@@ -1,5 +1,3 @@
-import L from 'leaflet';
-
 const siteMarkerSvg = `
   <svg width="36" height="48" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
@@ -20,10 +18,16 @@ const siteMarkerSvg = `
   </svg>
 `;
 
-export const siteMarkerIcon = L.divIcon({
-  className: '',
-  html: siteMarkerSvg,
-  iconSize: [36, 48],
-  iconAnchor: [18, 42],
-  popupAnchor: [0, -36],
-});
+export function createSiteMarkerElement(title: string) {
+  const markerElement = document.createElement('div');
+
+  markerElement.className = 'spacedey-map-marker';
+  markerElement.setAttribute('aria-label', title);
+  markerElement.style.width = '36px';
+  markerElement.style.height = '48px';
+  markerElement.style.transform = 'translateY(-42px)';
+  markerElement.style.cursor = 'pointer';
+  markerElement.innerHTML = siteMarkerSvg;
+
+  return markerElement;
+}

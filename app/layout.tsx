@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "leaflet/dist/leaflet.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { Analytics } from '@vercel/analytics/next';
 import ZendeskWidget from "@/components/ZendeskWidget";
 import { SitesProvider } from "@/contexts/SitesContext";
