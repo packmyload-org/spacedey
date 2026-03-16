@@ -6,12 +6,16 @@ import { useRouter } from 'next/navigation';
 
 interface ResetPasswordFormProps {
   initialToken?: string;
+  initialEmail?: string;
 }
 
-export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFormProps) {
+export default function ResetPasswordForm({
+  initialToken = '',
+  initialEmail = '',
+}: ResetPasswordFormProps) {
   const router = useRouter();
   const [token, setToken] = useState(initialToken);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +68,7 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
     <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Set a new password</h1>
-        <p className="text-gray-600">Enter the reset token, your email, and a new password.</p>
+        <p className="text-gray-600">Enter your new password to finish resetting your account.</p>
       </div>
 
       {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
@@ -75,15 +79,17 @@ export default function ResetPasswordForm({ initialToken = '' }: ResetPasswordFo
       )}
 
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <input
-            type="text"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            placeholder="Reset token"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
-          />
-        </div>
+        {!initialToken && (
+          <div className="mb-4">
+            <input
+              type="text"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="Reset token"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            />
+          </div>
+        )}
 
         <div className="mb-4">
           <input

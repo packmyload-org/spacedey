@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
+import { PaymentProvider } from '@/lib/db/entities/Payment';
 import { UserRole } from '@/lib/types/roles';
+import type { PaymentMethodsResponse, PaymentMethodStatus } from '@/lib/types/local';
 import { Loader, Users, MapPin, Box, FileText, TrendingUp } from 'lucide-react';
 
 interface DashboardUser {
@@ -30,20 +32,25 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodStatus[]>([]);
+  const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null);
+  const [savingProvider, setSavingProvider] = useState<PaymentProvider | null>(null);
 
   useEffect(() => {
     async function fetchStats() {
       try {
         setLoading(true);
-        // In a real app, we'd have a single /api/admin/stats endpoint
-        // For now, let's fetch users to get user counts
         const userRes = await fetch('/api/admin/users', {
           headers: { Authorization: `Bearer ${authStore.accessToken}` },
         });
         const siteRes = await fetch('/api/sites');
+        const paymentMethodRes = await fetch('/api/admin/payment-methods', {
+          headers: { Authorization: `Bearer ${authStore.accessToken}` },
+        });
 
         const userData: { users?: DashboardUser[] } = await userRes.json();
         const siteData: { sites?: DashboardSite[] } = await siteRes.json();
+        const paymentMethodData = await paymentMethodRes.json() as Partial<PaymentMethodsResponse & { error?: string }>;
 
         const users = userData.users || [];
         const sites = siteData.sites || [];
@@ -54,6 +61,14 @@ export default function AdminDashboard() {
           totalSites: sites.length,
           totalUnitTypes: sites.reduce((acc, site) => acc + (site.unitTypes?.length || 0), 0),
         });
+
+        if (paymentMethodRes.ok && Array.isArray(paymentMethodData.methods)) {
+          setPaymentMethods(paymentMethodData.methods);
+          setPaymentMethodsError(null);
+        } else {
+          setPaymentMethods([]);
+          setPaymentMethodsError(paymentMethodData.error || 'Failed to load payment methods');
+        }
       } catch {
         setError('Failed to load dashboard stats');
       } finally {
@@ -65,6 +80,36 @@ export default function AdminDashboard() {
       fetchStats();
     }
   }, [authStore]);
+
+  const handleTogglePaymentMethod = async (provider: PaymentProvider, enabled: boolean) => {
+    try {
+      setSavingProvider(provider);
+      setPaymentMethodsError(null);
+
+      const response = await fetch('/api/admin/payment-methods', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authStore.accessToken}`,
+        },
+        body: JSON.stringify({
+          methods: [{ provider, enabled }],
+        }),
+      });
+
+      const data = await response.json() as Partial<PaymentMethodsResponse & { error?: string }>;
+
+      if (!response.ok || !Array.isArray(data.methods)) {
+        throw new Error(data.error || 'Failed to update payment method');
+      }
+
+      setPaymentMethods(data.methods);
+    } catch (toggleError) {
+      setPaymentMethodsError(toggleError instanceof Error ? toggleError.message : 'Failed to update payment method');
+    } finally {
+      setSavingProvider(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -169,6 +214,61 @@ export default function AdminDashboard() {
               </button>
             </li>
           </ul>
+        </div>
+      </div>
+
+      <div className="bg-white shadow rounded-lg p-6">
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Payment Methods</h2>
+        <p className="mb-6 text-sm text-gray-500">
+          Control which payment providers the checkout flow can offer. Disabled methods stay hidden from customers and are blocked server-side.
+        </p>
+
+        {paymentMethodsError ? (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {paymentMethodsError}
+          </div>
+        ) : null}
+
+        <div className="space-y-4">
+          {paymentMethods.map((method) => {
+            const isSaving = savingProvider === method.provider;
+
+            return (
+              <div key={method.provider} className="flex flex-col gap-4 rounded-2xl border border-gray-100 p-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-base font-semibold text-gray-900">{method.label}</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {method.available
+                      ? 'Available in checkout.'
+                      : method.enabled
+                        ? 'Configured status is preventing checkout availability.'
+                        : 'Disabled by admin.'}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                    <span className={`rounded-full px-3 py-1 ${method.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {method.enabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                    <span className={`rounded-full px-3 py-1 ${method.configured ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                      {method.configured ? 'Configured' : 'Not configured'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleTogglePaymentMethod(method.provider, !method.enabled)}
+                  disabled={isSaving}
+                  className={`rounded-full px-5 py-3 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                    method.enabled
+                      ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-[#1642F0] text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {isSaving ? 'Saving...' : method.enabled ? 'Disable' : 'Enable'}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

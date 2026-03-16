@@ -59,6 +59,7 @@ export async function POST(request: Request) {
       lastName: user.lastName,
       phone: user.phone,
       role: user.role,
+      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
     };
 
     const response = NextResponse.json({

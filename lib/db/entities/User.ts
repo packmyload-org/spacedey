@@ -34,6 +34,9 @@ export class User extends BaseEntity {
   @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
   role!: UserRole;
 
+  @Column({ type: 'timestamp', nullable: true })
+  emailVerifiedAt!: Date | null;
+
   // Deprecated - kept for compatibility
   get isAdmin(): boolean {
     return this.role === UserRole.ADMIN;

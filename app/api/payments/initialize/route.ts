@@ -14,6 +14,7 @@ import {
 } from '@/lib/billing/config';
 import { BookingStatus } from '@/lib/db/entities/Booking';
 import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
+import { getPaymentMethodStatuses } from '@/lib/services/paymentMethodSettings';
 
 interface InitializePaymentBody {
     bookingId?: string;
@@ -98,7 +99,21 @@ export async function POST(req: Request) {
         const dataSource = await connectTypeORM();
         const bookingRepo = dataSource.getRepository(Booking);
         const paymentRepo = dataSource.getRepository(Payment);
+        const paymentMethods = await getPaymentMethodStatuses(dataSource);
+        const selectedMethod = paymentMethods.find((method) => method.provider === provider);
         await expireStalePendingBookings(dataSource);
+
+        if (!selectedMethod) {
+            return NextResponse.json({ ok: false, message: 'Invalid payment provider' }, { status: 400 });
+        }
+
+        if (!selectedMethod.enabled) {
+            return NextResponse.json({ ok: false, message: `${selectedMethod.label} is currently disabled by the admin.` }, { status: 403 });
+        }
+
+        if (!selectedMethod.configured) {
+            return NextResponse.json({ ok: false, message: `${selectedMethod.label} is not configured yet.` }, { status: 400 });
+        }
 
         const bookings = await bookingRepo.find({
             where: { id: In(bookingIds), user: { id: userId } },

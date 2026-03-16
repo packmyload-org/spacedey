@@ -938,7 +938,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                         </>
                                     )}
                                 </div>
-                                <p className="mt-2 text-[10px] text-gray-400">Recommended: 16:9 aspect ratio, at least 1200x675px</p>
+                                <p className="mt-2 text-[10px] text-gray-400">Recommended: 16:9 aspect ratio, at least 1200x675px. Uploaded to Cloudinary and saved as the site image URL.</p>
                             </div>
 
                             <div>
@@ -972,6 +972,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                         </>
                                     )}
                                 </div>
+                                <p className="mt-2 text-[10px] text-gray-400">Blueprint uploads are stored in Cloudinary and saved to the site map URL field.</p>
                             </div>
                         </div>
                     </section>

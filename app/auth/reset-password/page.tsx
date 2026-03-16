@@ -7,13 +7,14 @@ export const metadata = {
 export default function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams?: { token?: string };
+  searchParams?: { token?: string; email?: string };
 }) {
   const token = typeof searchParams?.token === 'string' ? searchParams.token : '';
+  const email = typeof searchParams?.email === 'string' ? searchParams.email : '';
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <ResetPasswordForm initialToken={token} />
+      <ResetPasswordForm initialToken={token} initialEmail={email} />
     </main>
   );
 }

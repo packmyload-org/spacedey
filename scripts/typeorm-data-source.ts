@@ -10,6 +10,7 @@ import SubscriptionPlan from '../lib/db/entities/SubscriptionPlan';
 import Payment from '../lib/db/entities/Payment';
 import Invoice from '../lib/db/entities/Invoice';
 import StorageUnit from '../lib/db/entities/StorageUnit';
+import PaymentMethodSetting from '../lib/db/entities/PaymentMethodSetting';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();
@@ -49,13 +50,13 @@ if (!selectedDatabaseUrl) {
   );
 }
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: 'postgres',
   url: useDirectUrl && directDatabaseUrl ? directDatabaseUrl : selectedDatabaseUrl,
   ssl,
   synchronize: false,
   logging: false,
-  entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
+  entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice, PaymentMethodSetting],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });
 

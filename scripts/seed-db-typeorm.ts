@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { AppDataSource } from './typeorm-data-source.js';
+import AppDataSource from './typeorm-data-source.js';
 import User from '../lib/db/entities/User.js';
 import Site from '../lib/db/entities/Site.js';
 import UnitType from '../lib/db/entities/UnitType.js';

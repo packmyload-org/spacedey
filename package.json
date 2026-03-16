@@ -13,7 +13,8 @@
     "db:migrate:show": "pnpm typeorm migration:show",
     "db:baseline": "tsx --tsconfig tsconfig.json scripts/baseline-migrations.ts",
     "db:setup": "pnpm db:migrate && pnpm run seed:data",
-    "seed:data": "tsx --tsconfig tsconfig.json scripts/seed-db-typeorm.ts"
+    "seed:data": "tsx --tsconfig tsconfig.json scripts/seed-db-typeorm.ts",
+    "email:test": "node --import tsx scripts/send-test-emails.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
@@ -32,6 +33,7 @@
     "react-dom": "19.1.0",
     "react-leaflet": "^5.0.0",
     "reflect-metadata": "^0.1.13",
+    "resend": "^6.9.3",
     "typeorm": "^0.3.28",
     "zustand": "^5.0.10"
   },

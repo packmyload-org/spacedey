@@ -9,6 +9,7 @@ import SubscriptionPlan from './entities/SubscriptionPlan';
 import Payment from './entities/Payment';
 import Invoice from './entities/Invoice';
 import StorageUnit from './entities/StorageUnit';
+import PaymentMethodSetting from './entities/PaymentMethodSetting';
 
 const ssl = env.postgres.ssl
   ? { rejectUnauthorized: env.postgres.sslRejectUnauthorized }
@@ -33,7 +34,7 @@ function getAppDataSource(): DataSource {
     ssl,
     synchronize: env.postgres.synchronize,
     logging: env.postgres.logging,
-    entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice],
+    entities: [User, UnitType, Site, StorageUnit, Booking, SubscriptionPlan, Payment, Invoice, PaymentMethodSetting],
   });
 
   return appDataSource;

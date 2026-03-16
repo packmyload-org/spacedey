@@ -3,6 +3,7 @@ import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 import { env } from '@/config/env';
+import { sendSignupVerificationEmail } from '@/lib/email/resend';
 
 const REMEMBER_ME_MAX_AGE = 60 * 60 * 24 * 30;
 const SESSION_TOKEN_EXPIRES_IN = '1d';
@@ -59,13 +60,27 @@ export async function POST(request: Request) {
       lastName: newUser.lastName,
       phone: newUser.phone,
       role: newUser.role,
+      emailVerifiedAt: newUser.emailVerifiedAt ? newUser.emailVerifiedAt.toISOString() : null,
     };
+
+    let verificationEmailSent = false;
+
+    try {
+      verificationEmailSent = await sendSignupVerificationEmail({
+        userId: newUser.id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+      });
+    } catch (mailError) {
+      console.error('Signup verification email error:', mailError);
+    }
 
     const response = NextResponse.json(
       {
         ok: true,
         accessToken,
         user: userResponse,
+        verificationEmailSent,
       },
       { status: 201 }
     );
