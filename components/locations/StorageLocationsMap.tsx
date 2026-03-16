@@ -1,16 +1,9 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  APILoadingStatus,
-  APIProvider,
-  Map,
-  Marker,
-  useApiLoadingStatus,
-  useMap,
-} from '@vis.gl/react-google-maps';
 import { env } from '@/config';
 import { useSitesData } from '@/contexts/SitesContext';
 import type { ApiSite } from '@/lib/types/local';
@@ -20,6 +13,13 @@ import { MapPin, Phone, Mail, Box } from 'lucide-react';
 interface StorageMapSectionProps {
   mapHeight?: string;
 }
+
+const StorageLocationsLeafletMap = dynamic(
+  () => import('@/components/locations/StorageLocationsLeafletMap'),
+  {
+    ssr: false,
+  }
+);
 
 const defaultCities = [
   'Lagos',
@@ -82,107 +82,6 @@ function extractCity(address: string) {
 
 function cityMatchesSite(site: ApiSite, city: string) {
   return extractCity(site.address).toLowerCase() === city.toLowerCase();
-}
-
-function MapViewport({ sites }: Readonly<{ sites: ApiSite[] }>) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map || sites.length === 0) {
-      return;
-    }
-
-    const validSites = sites.filter(
-      (site) => Number.isFinite(site.coordinates.lat) && Number.isFinite(site.coordinates.lng)
-    );
-
-    if (validSites.length === 0) {
-      return;
-    }
-
-    if (validSites.length === 1) {
-      map.setCenter({
-        lat: validSites[0].coordinates.lat,
-        lng: validSites[0].coordinates.lng,
-      });
-      map.setZoom(12);
-      return;
-    }
-
-    const bounds = validSites.reduce(
-      (currentBounds, site) => ({
-        north: Math.max(currentBounds.north, site.coordinates.lat),
-        south: Math.min(currentBounds.south, site.coordinates.lat),
-        east: Math.max(currentBounds.east, site.coordinates.lng),
-        west: Math.min(currentBounds.west, site.coordinates.lng),
-      }),
-      {
-        north: validSites[0].coordinates.lat,
-        south: validSites[0].coordinates.lat,
-        east: validSites[0].coordinates.lng,
-        west: validSites[0].coordinates.lng,
-      }
-    );
-
-    map.fitBounds(bounds, 80);
-  }, [map, sites]);
-
-  return null;
-}
-
-function LiveMapContent({
-  mapHeight,
-  mapSites,
-  onMapLoadFailed,
-}: Readonly<{
-  mapHeight: string;
-  mapSites: ApiSite[];
-  onMapLoadFailed: () => void;
-}>) {
-  const loadingStatus = useApiLoadingStatus();
-
-  useEffect(() => {
-    if (loadingStatus === APILoadingStatus.AUTH_FAILURE || loadingStatus === APILoadingStatus.FAILED) {
-      onMapLoadFailed();
-    }
-  }, [loadingStatus, onMapLoadFailed]);
-
-  if (loadingStatus !== APILoadingStatus.LOADED) {
-    return (
-      <div
-        className="overflow-hidden rounded-[32px] border border-[#D6E2FF] bg-white shadow-[0_24px_70px_rgba(17,42,114,0.12)]"
-        style={{ height: mapHeight }}
-      />
-    );
-  }
-
-  return (
-    <div
-      className="overflow-hidden rounded-[32px] border border-[#D6E2FF] bg-white shadow-[0_24px_70px_rgba(17,42,114,0.12)]"
-      style={{ height: mapHeight }}
-    >
-      <Map
-        defaultCenter={{ lat: 6.5244, lng: 3.3792 }}
-        defaultZoom={6}
-        gestureHandling="greedy"
-        disableDefaultUI={false}
-        className="h-full w-full"
-        mapId="storage-locations-map"
-      >
-        {mapSites.map((site) => (
-          <Marker
-            key={site.id}
-            position={{
-              lat: site.coordinates.lat,
-              lng: site.coordinates.lng,
-            }}
-            title={site.name}
-          />
-        ))}
-        <MapViewport sites={mapSites} />
-      </Map>
-    </div>
-  );
 }
 
 function MockMap({
@@ -300,7 +199,6 @@ export default function StorageMapSection({
 }: Readonly<StorageMapSectionProps>) {
   const { sites, isLoading } = useSitesData();
   const [selectedCity, setSelectedCity] = useState('');
-  const [mapLoadFailed, setMapLoadFailed] = useState(false);
   const selectedSitesRef = React.useRef<HTMLDivElement | null>(null);
   const cities = useMemo(() => {
     const nextCities = getUniqueSiteCities(sites);
@@ -328,8 +226,7 @@ export default function StorageMapSection({
 
   const featuredCities = useMemo(() => cities.slice(0, 8), [cities]);
   const selectedCityHref = selectedCity ? `/search?city=${encodeURIComponent(selectedCity)}` : '/search';
-  const hasGoogleMaps = env.googleMaps.enabled;
-  const shouldShowLiveMap = Boolean(selectedCity) && hasGoogleMaps && !mapLoadFailed;
+  const shouldShowLiveMap = Boolean(selectedCity) && env.maps.enabled;
   const showUnavailableMessage = Boolean(selectedCity) && !shouldShowLiveMap;
 
   useEffect(() => {
@@ -361,7 +258,7 @@ export default function StorageMapSection({
               Select a city first
             </h3>
             <p className="mt-3 text-sm leading-6 text-[#5E6C91]">
-              The live map appears only when Google Maps is configured. Selecting a city also reveals the storage sites available under it.
+              The live map appears when a city is selected. Selecting a city also reveals the storage sites available under it.
             </p>
 
             <div className="mt-6">
@@ -432,23 +329,17 @@ export default function StorageMapSection({
                   ? 'Select a city to activate the map and reveal matching locations'
                   : shouldShowLiveMap
                   ? `${cities.length} cities currently listed`
-                  : 'Showing mock coverage preview until Google Maps is configured with an API key.'}
+                  : 'Showing coverage preview until live maps are enabled.'}
             </p>
           </div>
 
           {shouldShowLiveMap ? (
-            <APIProvider
-              apiKey={env.googleMaps.apiKey!}
-              onError={() => {
-                setMapLoadFailed(true);
-              }}
+            <div
+              className="overflow-hidden rounded-[32px] border border-[#D6E2FF] bg-white shadow-[0_24px_70px_rgba(17,42,114,0.12)]"
+              style={{ height: mapHeight }}
             >
-              <LiveMapContent
-                mapHeight={mapHeight}
-                mapSites={mapSites}
-                onMapLoadFailed={() => setMapLoadFailed(true)}
-              />
-            </APIProvider>
+              <StorageLocationsLeafletMap mapSites={mapSites} />
+            </div>
           ) : (
             <MockMap
               selectedCity={selectedCity}

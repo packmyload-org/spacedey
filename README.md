@@ -10,7 +10,7 @@ Spacedey is a full-stack web platform that connects individuals and businesses w
 
 | Feature | Description |
 |---|---|
-| 🗺️ **Location Search** | Map-based search (Google Maps) to discover storage units in Lagos, Abuja, and more |
+| 🗺️ **Location Search** | Map-based search (OpenStreetMap + Leaflet) to discover storage units in Lagos, Abuja, and more |
 | 📐 **Unit Sizing Guides** | Visual size comparisons to help users pick the right unit |
 | 📅 **Booking** | Streamlined reservation and checkout flow |
 | 🛒 **Products Store** | Integrated store for moving and packing supplies |
@@ -31,7 +31,7 @@ Spacedey is a full-stack web platform that connects individuals and businesses w
 | **Database** | PostgreSQL via [TypeORM](https://typeorm.io/) |
 | **State Management** | [Zustand](https://zustand-demo.pmnd.rs/) |
 | **Auth** | JWT (`jsonwebtoken` + `bcryptjs`) |
-| **Maps** | Google Maps API (`@vis.gl/react-google-maps`) |
+| **Maps** | OpenStreetMap tiles via `react-leaflet` + `leaflet` |
 | **Icons** | [Lucide React](https://lucide.dev/) |
 | **Container** | Optional Docker + Docker Compose |
 
@@ -78,8 +78,9 @@ JWT_SECRET=your-secure-secret-key
 PASSWORD_SALT=your-salt-value
 TOKEN_SECRET=your-token-secret
 
-# Google Maps
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+# Maps
+NEXT_PUBLIC_MAPS_ENABLED=true
+NEXT_PUBLIC_MAP_TILE_URL=https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
 
 # App
 NODE_ENV=development
