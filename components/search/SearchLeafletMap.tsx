@@ -6,6 +6,7 @@ import { env } from '@/config';
 import { siteMarkerIcon } from '@/lib/maps/leaflet';
 import { getValidCoordinates } from '@/lib/maps/shared';
 import type { ApiSite } from '@/lib/types/local';
+import type { MapContainerProps } from 'react-leaflet';
 
 interface SearchLeafletMapProps {
   center: {
@@ -67,15 +68,16 @@ export default function SearchLeafletMap({
   sites,
 }: Readonly<SearchLeafletMapProps>) {
   const initialCenter: [number, number] = [center.lat, center.lng];
+  const mapContainerProps = {
+    center: initialCenter,
+    zoom,
+    maxZoom: 19,
+    scrollWheelZoom: true,
+    className: 'h-full w-full',
+  } as unknown as MapContainerProps;
 
   return (
-    <MapContainer
-      center={initialCenter}
-      zoom={zoom}
-      maxZoom={19}
-      scrollWheelZoom
-      className="h-full w-full"
-    >
+    <MapContainer {...mapContainerProps}>
       <TileLayer attribution={env.maps.attribution} url={env.maps.tileUrl} maxZoom={19} />
 
       {sites.map((site, index) => {
