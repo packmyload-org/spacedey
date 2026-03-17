@@ -52,11 +52,12 @@ function VerifyEmailContent() {
         <p className={`text-sm ${status === 'failed' ? 'text-red-600' : status === 'success' ? 'text-green-600' : 'text-gray-600'}`}>
           {message}
         </p>
-        <div className="mt-6 text-sm text-gray-600">
-          <Link href="/auth/signin" className="font-semibold text-[#1642F0] hover:underline">
-            Back to login
-          </Link>
-        </div>
+        {status === 'success' &&
+          (<div className="mt-6 text-sm text-gray-600">
+            <Link href="/auth/signin" className="font-semibold text-[#1642F0] hover:underline">
+              Back to login
+            </Link>
+          </div>)}
       </div>
     </main>
   );

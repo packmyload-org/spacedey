@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 import { getFieldErrors, resetPasswordFormSchema } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 interface ResetPasswordFormProps {
   initialToken?: string;
@@ -104,11 +105,7 @@ export default function ResetPasswordForm({
                 }
               }}
               placeholder="Reset token"
-              className={`w-full rounded-lg border px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent ${
-                fieldErrors.token
-                  ? 'border-red-500 focus:ring-red-200'
-                  : 'border-gray-300 focus:ring-[#D96541]'
-              }`}
+              className={getAuthInputClass(Boolean(fieldErrors.token))}
             />
             {fieldErrors.token ? (
               <div className="mt-1 text-xs text-red-500">{fieldErrors.token}</div>
@@ -127,11 +124,7 @@ export default function ResetPasswordForm({
               }
             }}
             placeholder="Email Address"
-            className={`w-full rounded-lg border px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent ${
-              fieldErrors.email
-                ? 'border-red-500 focus:ring-red-200'
-                : 'border-gray-300 focus:ring-[#D96541]'
-            }`}
+            className={getAuthInputClass(Boolean(fieldErrors.email))}
             {...EMAIL_INPUT_PROPS}
           />
           {fieldErrors.email ? (
@@ -158,7 +151,7 @@ export default function ResetPasswordForm({
             error={fieldErrors.password}
             placeholder="New password"
             autoComplete="new-password"
-            inputClassName="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#D96541]"
+            inputClassName={`${getAuthInputClass(Boolean(fieldErrors.password)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
             showRequirements
           />
         </div>
@@ -182,7 +175,7 @@ export default function ResetPasswordForm({
             error={fieldErrors.confirm}
             placeholder="Confirm new password"
             autoComplete="new-password"
-            inputClassName="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#D96541]"
+            inputClassName={`${getAuthInputClass(Boolean(fieldErrors.confirm)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
           />
         </div>
 

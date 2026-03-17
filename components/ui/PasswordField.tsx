@@ -46,10 +46,10 @@ export default function PasswordField({
 
   const resolvedInputClassName =
     inputClassName ||
-    `w-full rounded-lg border px-4 py-3 pr-12 text-gray-700 outline-none transition-colors ${
+    `w-full rounded-lg border px-4 py-3 pr-12 text-gray-700 outline-none transition-colors focus:outline-none focus:ring-2 ${
       error
-        ? 'border-red-500 focus:border-gray-300 focus:ring-1 focus:ring-gray-300'
-        : 'border-gray-300 focus:border-[#1642F0] focus:ring-1 focus:ring-[#1642F0]'
+        ? 'border-red-500 focus:border-red-400 focus:ring-red-100'
+        : 'border-gray-300 focus:border-[#1642F0] focus:ring-[#D8E2FF]'
     }`;
   const passwordManagerProps =
     autoComplete === 'new-password'
@@ -63,7 +63,6 @@ export default function PasswordField({
           <span className="text-sm font-medium text-gray-700">{label}</span>
         </div>
       ) : null}
-      {error ? <div className="text-xs text-red-500 mb-1">{error}</div> : null}
       <div className="relative">
         <input
           id={inputId}
@@ -90,13 +89,18 @@ export default function PasswordField({
           {isVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </button>
       </div>
+      {error ? <div className="mt-1 text-xs text-red-500">{error}</div> : null}
 
       {showRequirements ? (
-        <div className="mt-3 grid gap-1 text-xs">
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-2 text-xs">
           {(Object.keys(PASSWORD_POLICY_MESSAGES) as Array<keyof typeof PASSWORD_POLICY_MESSAGES>).map((key) => (
             <div
               key={key}
-              className={requirements[key] ? 'text-green-600' : 'text-gray-500'}
+              className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 ${
+                requirements[key]
+                  ? 'bg-green-50 text-green-700'
+                  : 'bg-slate-100 text-gray-500'
+              }`}
             >
               {requirements[key] ? '✓' : '○'} {PASSWORD_POLICY_MESSAGES[key]}
             </div>

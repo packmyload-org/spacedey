@@ -63,3 +63,6 @@ AGENTS.md
 # IDEs
 .vscode/
 .idea/
+
+# tasks folder
+/docs/tasks/**

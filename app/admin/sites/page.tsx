@@ -15,6 +15,7 @@ import {
     Phone
 } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 interface UnitTypeSummary {
     id: string;
@@ -89,8 +90,9 @@ export default function AdminSitesPage() {
             }
 
             setSites(sites.filter(s => s.id !== id));
+            toast.success(`Deleted ${name}`);
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to delete site');
+            toast.error(err instanceof Error ? err.message : 'Failed to delete site');
         }
     };
 

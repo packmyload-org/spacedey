@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 import { getFieldErrors, signupFormSchema } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -87,11 +88,7 @@ export default function SignupForm() {
   };
 
   const getInputClass = (fieldName: string) => {
-    const isError = Boolean(errors[fieldName]);
-    return `mt-1 block w-full border rounded-lg px-3 py-2 outline-none transition-colors ${isError
-        ? 'border-red-500 focus:border-gray-300 focus:ring-1 focus:ring-gray-300'
-        : 'border-gray-300 focus:border-[#1642F0] focus:ring-1 focus:ring-[#1642F0]'
-      }`;
+    return `mt-1 block ${getAuthInputClass(Boolean(errors[fieldName])).replace('px-4 py-3', 'px-3 py-2')}`;
   };
 
   if (signupResult) {

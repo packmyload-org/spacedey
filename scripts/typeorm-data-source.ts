@@ -14,6 +14,9 @@ import PaymentMethodSetting from '../lib/db/entities/PaymentMethodSetting';
 import BlogPost from '../lib/db/entities/BlogPost';
 import NewsletterSubscriber from '../lib/db/entities/NewsletterSubscriber';
 import ReferralSubmission from '../lib/db/entities/ReferralSubmission';
+import LandlordInquiry from '../lib/db/entities/LandlordInquiry';
+import EmailNotification from '../lib/db/entities/EmailNotification';
+import SupportConversation from '../lib/db/entities/SupportConversation';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();
@@ -72,6 +75,9 @@ const AppDataSource = new DataSource({
     BlogPost,
     NewsletterSubscriber,
     ReferralSubmission,
+    LandlordInquiry,
+    EmailNotification,
+    SupportConversation,
   ],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });

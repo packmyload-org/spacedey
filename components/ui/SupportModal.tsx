@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import { Bot, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import SpaceyConversationPanel from "@/components/chat/SpaceyConversationPanel";
+import type { ConversationMessage } from "@/lib/conversations/messages";
 import { EMAIL_INPUT_PROPS, normalizeEmail } from "@/lib/utils/email";
 
 interface SupportModalProps {
@@ -20,7 +22,6 @@ interface SupportFormData {
   message: string;
 }
 
-const SUPPORT_EMAIL = "info@mailing.spaceday.con";
 const TOPIC_OPTIONS = [
   "Booking help",
   "Billing question",
@@ -45,15 +46,17 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
   const { user } = useAuthStore();
   const [formData, setFormData] = useState<SupportFormData>(buildInitialForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
+  const [isSendingReply, setIsSendingReply] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ConversationMessage[]>([]);
 
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    setSubmittedEmail(null);
     setIsSubmitting(false);
+    setIsSendingReply(false);
     setFormData((current) => ({
       ...current,
       firstName: user?.firstName || current.firstName,
@@ -62,6 +65,15 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
       phone: user?.phone || current.phone,
     }));
   }, [isOpen, user?.email, user?.firstName, user?.lastName, user?.phone]);
+
+  useEffect(() => {
+    if (isOpen) {
+      return;
+    }
+
+    setConversationId(null);
+    setMessages([]);
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
@@ -96,23 +108,49 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
         throw new Error(data?.error || "Unable to start a support conversation right now.");
       }
 
-      setSubmittedEmail(formData.email);
-      setFormData({
-        ...buildInitialForm(),
-        firstName: user?.firstName || "",
-        lastName: user?.lastName || "",
-        email: user?.email ? normalizeEmail(user.email) : "",
-        phone: user?.phone || "",
-      });
+      setConversationId(data?.conversation?.conversationId || null);
+      setMessages(Array.isArray(data?.conversation?.messages) ? data.conversation.messages : []);
 
       toast.success("Spacey started your support conversation.", {
-        description: `Watch ${formData.email} for the first reply.`,
+        description: "You can keep chatting here with follow-up details.",
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Something went wrong.";
       toast.error(message);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSendReply = async (message: string) => {
+    if (!conversationId) {
+      return;
+    }
+
+    setIsSendingReply(true);
+
+    try {
+      const response = await fetch(`/api/support/conversation/${conversationId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Unable to send your message right now.");
+      }
+
+      setMessages(Array.isArray(data?.conversation?.messages) ? data.conversation.messages : []);
+    } catch (error) {
+      const nextMessage = error instanceof Error ? error.message : "Something went wrong.";
+      toast.error(nextMessage);
+      throw error;
+    } finally {
+      setIsSendingReply(false);
     }
   };
 
@@ -126,7 +164,9 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">Spacey</p>
-              <p className="truncate text-xs text-slate-300">{SUPPORT_EMAIL}</p>
+              <p className="truncate text-xs text-slate-300">
+                {conversationId ? "In-app support thread" : "Start a support chat"}
+              </p>
             </div>
           </div>
           <button
@@ -138,28 +178,26 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto bg-slate-100 px-4 py-4 sm:px-5">
-          <div className="space-y-3">
-            <div className="max-w-[85%] rounded-3xl rounded-bl-md bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm">
-              Hi, I&apos;m Spacey. Tell me what&apos;s going on and I&apos;ll start a
-              support thread for you.
-            </div>
-
-            <div className="max-w-[85%] rounded-3xl rounded-bl-md bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm">
-              Use the form below and I&apos;ll continue with you by email so the whole
-              conversation stays in one place.
-            </div>
-
-            {submittedEmail ? (
-              <div className="ml-auto max-w-[85%] rounded-3xl rounded-br-md bg-blue-600 px-4 py-3 text-sm leading-6 text-white shadow-sm">
-                I&apos;ve emailed <span className="font-semibold">{submittedEmail}</span>.
-                Reply there and I&apos;ll keep the thread moving.
-              </div>
-            ) : null}
-          </div>
-        </div>
-
+        {conversationId ? (
+          <SpaceyConversationPanel
+            messages={messages}
+            onSendMessage={handleSendReply}
+            isSending={isSendingReply}
+            className="flex-1"
+            emptyLabel="In-app support thread"
+            helperText="Reply here with any extra detail, screenshots, booking email, location, or invoice number."
+          />
+        ) : (
         <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white px-4 py-4 sm:px-5">
+          <div className="mb-4 space-y-3 bg-slate-100 px-0 py-0">
+            <div className="max-w-[85%] rounded-3xl rounded-bl-md bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm">
+              Hi, I&apos;m Spacey. Tell me what&apos;s going on and I&apos;ll open a support thread right here in the app.
+            </div>
+
+            <div className="max-w-[85%] rounded-3xl rounded-bl-md bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm">
+              Once you send the first message, the form will turn into a live chat so you can keep adding details without leaving this page.
+            </div>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               type="text"
@@ -225,7 +263,7 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
 
           <div className="mt-3 flex items-center justify-between gap-3">
             <p className="text-xs text-slate-500">
-              Spacey replies from {SUPPORT_EMAIL}
+              Spacey will keep this support thread active in-app.
             </p>
             <button
               type="submit"
@@ -237,6 +275,7 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

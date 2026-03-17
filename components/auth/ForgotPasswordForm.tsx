@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 import { forgotPasswordFormSchema, getFieldErrors } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -76,11 +77,7 @@ export default function ForgotPasswordForm() {
               }
             }}
             placeholder="Email Address"
-            className={`w-full rounded-lg border px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent ${
-              fieldErrors.email
-                ? 'border-red-500 focus:ring-red-200'
-                : 'border-gray-300 focus:ring-[#D96541]'
-            }`}
+            className={getAuthInputClass(Boolean(fieldErrors.email))}
             {...EMAIL_INPUT_PROPS}
           />
           {fieldErrors.email ? (

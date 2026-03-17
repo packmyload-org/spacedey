@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import LandlordInquiry from '@/lib/db/entities/LandlordInquiry';
-import {
-  isLandlordInquiryChatConfigured,
-  sendLandlordInquiryIntroEmail,
-} from '@/lib/services/landlordInquiryChat';
+import { initializeLandlordConversation } from '@/lib/services/landlordConversationService';
 import { normalizeEmail } from '@/lib/utils/email';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,42 +61,17 @@ export async function POST(request: Request) {
 
     await repo.save(inquiry);
 
-    let emailThreadStarted = false;
-
-    if (isLandlordInquiryChatConfigured()) {
-      try {
-        inquiry.chatThreadId = await sendLandlordInquiryIntroEmail({
-          inquiryId: inquiry.id,
-          firstName: inquiry.firstName,
-          email: inquiry.email,
-          streetAddress: inquiry.streetAddress,
-          region: inquiry.region,
-          squareFootage: inquiry.squareFootage,
-          details: inquiry.details,
-        });
-        inquiry.botReplyCount = 1;
-        inquiry.lastOutboundAt = new Date();
-        inquiry.status = 'contacted';
-        await repo.save(inquiry);
-        emailThreadStarted = true;
-      } catch (error) {
-        console.error('Landlord inquiry intro email failed', {
-          inquiryId: inquiry.id,
-          email: inquiry.email,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
+    const conversation = await initializeLandlordConversation(inquiry.id);
 
     return NextResponse.json({
       ok: true,
       inquiry: {
         id: inquiry.id,
         email: inquiry.email,
-        status: inquiry.status,
+        status: conversation.status,
         createdAt: inquiry.createdAt.toISOString(),
       },
-      emailThreadStarted,
+      conversation,
     });
   } catch (error: unknown) {
     console.error('API Route /api/landlord/inquiry Error:', error);

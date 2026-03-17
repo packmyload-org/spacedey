@@ -4,7 +4,7 @@ import { PaymentBillingType } from '@/lib/db/entities/Payment';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Spacedey <onboarding@resend.dev>';
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@spacedey.com';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@mailing.spacedey.com';
 const PUBLIC_APP_URL = process.env.PUBLIC_APP_URL || 'http://localhost:3000';
 
 const RESEND_TEMPLATE_IDS = {
@@ -76,6 +76,32 @@ async function sendEmail(args: {
       id: args.templateId,
       variables: args.variables,
     },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to send email through Resend.');
+  }
+}
+
+export async function sendDirectEmail(args: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  from?: string;
+}) {
+  const client = getResendClient();
+
+  if (!client) {
+    throw new Error('Resend is not configured.');
+  }
+
+  const { error } = await client.emails.send({
+    from: args.from || RESEND_FROM_EMAIL,
+    to: [args.to],
+    subject: args.subject,
+    html: args.html,
+    text: args.text,
   });
 
   if (error) {

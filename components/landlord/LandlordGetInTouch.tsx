@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import { FormEvent, useState } from 'react';
+import SpaceyConversationPanel from '@/components/chat/SpaceyConversationPanel';
+import type { ConversationMessage } from '@/lib/conversations/messages';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface FormData {
@@ -38,8 +40,11 @@ export default function LandlordGetInTouch({
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingFollowUp, setIsSendingFollowUp] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -71,25 +76,20 @@ export default function LandlordGetInTouch({
         const payload = (await response.json().catch(() => null)) as {
           ok?: boolean;
           error?: string;
+          conversation?: {
+            conversationId?: string;
+            messages?: ConversationMessage[];
+          };
         } | null;
 
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error || 'We could not submit your request right now.');
         }
+        setConversationId(payload?.conversation?.conversationId || null);
+        setConversationMessages(Array.isArray(payload?.conversation?.messages) ? payload.conversation.messages : []);
       }
 
       setSubmitted(true);
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        streetAddress: '',
-        region: '',
-        squareFootage: '',
-        details: '',
-      });
-      setTimeout(() => setSubmitted(false), 3000);
     } catch (error) {
       console.error('Form submission error:', error);
       setErrorMessage(
@@ -97,6 +97,45 @@ export default function LandlordGetInTouch({
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendFollowUp = async (message: string) => {
+    if (!conversationId) {
+      return;
+    }
+
+    setIsSendingFollowUp(true);
+
+    try {
+      const response = await fetch(`/api/landlord/inquiry/${conversationId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        error?: string;
+        conversation?: {
+          messages?: ConversationMessage[];
+        };
+      } | null;
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || 'We could not send your update right now.');
+      }
+
+      setConversationMessages(Array.isArray(payload?.conversation?.messages) ? payload.conversation.messages : []);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'We could not send your update right now.'
+      );
+      throw error;
+    } finally {
+      setIsSendingFollowUp(false);
     }
   };
 
@@ -135,6 +174,20 @@ export default function LandlordGetInTouch({
 
           {/* Right Column - Form */}
           <div className="flex flex-col justify-center">
+            {conversationId ? (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-blue-800">
+                  Spacey has started your landlord enquiry thread. Keep chatting here with any property details, access notes, photos, or preferred callback window.
+                </div>
+                <SpaceyConversationPanel
+                  messages={conversationMessages}
+                  onSendMessage={handleSendFollowUp}
+                  isSending={isSendingFollowUp}
+                  emptyLabel="Landlord enquiry"
+                  helperText="Add availability, access notes, floor-plan context, or any details the partnerships team should see."
+                />
+              </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Name Row */}
@@ -245,7 +298,7 @@ export default function LandlordGetInTouch({
               {/* Success Message */}
               {submitted && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-                  Thanks. Your enquiry is in, and we&apos;ve started the partnership follow-up by email.
+                  Spacey started your landlord conversation.
                 </div>
               )}
 
@@ -256,6 +309,7 @@ export default function LandlordGetInTouch({
               )}
 
             </form>
+            )}
           </div>
 
         </div>

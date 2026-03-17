@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { startSupportConversation, isSupportEmailChatConfigured } from '@/lib/services/supportEmailChat';
+import { startSupportConversation } from '@/lib/services/supportConversationService';
 import { normalizeEmail } from '@/lib/utils/email';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,13 +15,6 @@ type SupportConversationRequest = {
 
 export async function POST(request: Request) {
   try {
-    if (!isSupportEmailChatConfigured()) {
-      return NextResponse.json(
-        { ok: false, error: 'Support email is not configured right now.' },
-        { status: 503 }
-      );
-    }
-
     const body = (await request.json().catch(() => null)) as SupportConversationRequest | null;
     const firstName = String(body?.firstName || '').trim();
     const lastName = String(body?.lastName || '').trim();
@@ -44,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const threadId = await startSupportConversation({
+    const conversation = await startSupportConversation({
       firstName,
       lastName: lastName || null,
       email,
@@ -55,8 +48,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      threadId,
-      message: 'Spacey started your support conversation by email.',
+      conversation,
+      message: 'Spacey started your support conversation.',
     });
   } catch (error: unknown) {
     console.error('API Route /api/support/conversation Error:', error);

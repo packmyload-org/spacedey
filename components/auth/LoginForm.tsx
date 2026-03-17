@@ -7,6 +7,7 @@ import { useAuthStore } from '@/lib/store/useAuthStore';
 import PasswordField from '@/components/ui/PasswordField';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 import { getFieldErrors, loginFormSchema } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -106,11 +107,7 @@ export default function LoginForm() {
                 }
               }}
               placeholder="Email Address"
-              className={`w-full rounded-lg border px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent ${
-                fieldErrors.email
-                  ? 'border-red-500 focus:ring-red-200'
-                  : 'border-gray-300 focus:ring-[#D96541]'
-              }`}
+              className={getAuthInputClass(Boolean(fieldErrors.email))}
               {...EMAIL_INPUT_PROPS}
             />
             {fieldErrors.email ? (
@@ -137,7 +134,7 @@ export default function LoginForm() {
               error={fieldErrors.password}
               placeholder="Enter your password"
               autoComplete="current-password"
-              inputClassName="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#D96541]"
+              inputClassName={`${getAuthInputClass(Boolean(fieldErrors.password)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
             />
           </div>
 

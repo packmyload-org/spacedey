@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
+import SpaceyConversationPanel from '@/components/chat/SpaceyConversationPanel';
+import type { ConversationMessage } from '@/lib/conversations/messages';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface FormData {
@@ -44,8 +46,11 @@ export default function ReferralHero() {
 
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingFollowUp, setIsSendingFollowUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState('/images/referHero.png');
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -91,24 +96,48 @@ export default function ReferralHero() {
         throw new Error(data?.error || 'Failed to submit referral.');
       }
 
+      setConversationId(data?.conversation?.conversationId || null);
+      setConversationMessages(Array.isArray(data?.conversation?.messages) ? data.conversation.messages : []);
       setSubmitted(true);
-      setFormData({
-        firstName: isAuthenticated && user ? user.firstName : '',
-        lastName: isAuthenticated && user ? user.lastName : '',
-        email: isAuthenticated && user?.email ? normalizeEmail(user.email) : '',
-        refereeFirstName: '',
-        refereeLastName: '',
-        refereeEmail: '',
-        refereePhone: '',
-        refereeLocation: '',
-      });
-      setTimeout(() => setSubmitted(false), 3000);
     } catch (error) {
       console.error('Error submitting referral:', error);
       const message = error instanceof Error ? error.message : 'Something went wrong.';
       setError(message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSendFollowUp = async (message: string) => {
+    if (!conversationId) {
+      return;
+    }
+
+    setIsSendingFollowUp(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/referral/${conversationId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to send your message.');
+      }
+
+      setConversationMessages(Array.isArray(data?.conversation?.messages) ? data.conversation.messages : []);
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message : 'Failed to send your message.';
+      setError(messageText);
+      throw error;
+    } finally {
+      setIsSendingFollowUp(false);
     }
   };
 
@@ -128,6 +157,20 @@ export default function ReferralHero() {
             </div>
 
             {/* Form */}
+            {conversationId ? (
+              <div className="space-y-4 rounded-b-[28px] bg-white p-4 sm:p-5">
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                  Your referral is logged. Keep chatting with Spacey here if there is any timing, urgency, or extra context we should attach to it.
+                </div>
+                <SpaceyConversationPanel
+                  messages={conversationMessages}
+                  onSendMessage={handleSendFollowUp}
+                  isSending={isSendingFollowUp}
+                  emptyLabel="Referral follow-up"
+                  helperText="Share the best time to contact them, what storage need they mentioned, or any move-in timing."
+                />
+              </div>
+            ) : (
             <form onSubmit={handleSubmit} className="space-y-5 rounded-b-[28px] bg-white p-4 sm:p-5">
               {/* Your Info Section */}
               <div>
@@ -254,10 +297,11 @@ export default function ReferralHero() {
 
               {submitted && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-                  Thanks for submitting the form!
+                  Spacey started your referral conversation.
                 </div>
               )}
             </form>
+            )}
           </div>
 
           {/* Right Image */}

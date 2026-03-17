@@ -3,10 +3,7 @@ import { cookies } from 'next/headers';
 import { connectTypeORM } from '@/lib/db';
 import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
 import { verifyToken } from '@/lib/auth/jwt';
-import {
-  isReferralFollowUpConfigured,
-  sendReferralFollowUpEmail,
-} from '@/lib/services/referralFollowUpChat';
+import { initializeReferralConversation } from '@/lib/services/referralConversationService';
 import { normalizeEmail } from '@/lib/utils/email';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -94,22 +91,7 @@ export async function POST(request: Request) {
 
     await repo.save(submission);
 
-    let followUpThreadStarted = false;
-
-    if (isReferralFollowUpConfigured()) {
-      try {
-        await sendReferralFollowUpEmail({
-          submissionId: submission.id,
-          firstName: submission.firstName,
-          email: submission.email,
-          refereeFirstName: submission.refereeFirstName,
-          refereeLocation: submission.refereeLocation,
-        });
-        followUpThreadStarted = true;
-      } catch (error) {
-        console.error('Referral follow-up email failed:', error);
-      }
-    }
+    const conversation = await initializeReferralConversation(submission.id);
 
     return NextResponse.json({
       ok: true,
@@ -119,7 +101,7 @@ export async function POST(request: Request) {
         refereeEmail: submission.refereeEmail,
         createdAt: submission.createdAt.toISOString(),
       },
-      followUpThreadStarted,
+      conversation,
     });
   } catch (error: unknown) {
     console.error('API Route /api/referral Error:', error);

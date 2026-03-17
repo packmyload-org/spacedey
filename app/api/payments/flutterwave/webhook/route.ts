@@ -3,9 +3,12 @@ import { In } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
-import { sendBillingSuccessEmailBatch } from '@/lib/email/resend';
 import { flutterwave } from '@/lib/services/flutterwave';
 import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
+import {
+  processEmailNotificationsByIds,
+  queueOrderConfirmationNotifications,
+} from '@/lib/services/emailNotifications';
 
 const FLUTTERWAVE_SECRET_HASH = process.env.FLUTTERWAVE_SECRET_HASH;
 
@@ -131,7 +134,7 @@ export async function POST(req: Request) {
         providerData: verifiedPayment,
       });
 
-      await sendBillingSuccessEmailBatch({
+      const notificationIds = await queueOrderConfirmationNotifications({
         source: 'payments/flutterwave-webhook-existing',
         emails: updatedBookings.map(({ booking, invoice }) => ({
           to: booking.user.email,
@@ -143,6 +146,7 @@ export async function POST(req: Request) {
           billingType: PaymentBillingType.RECURRING,
         })),
       });
+      await processEmailNotificationsByIds(notificationIds);
 
       return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
     }
@@ -204,7 +208,7 @@ export async function POST(req: Request) {
       providerData: verifiedPayment,
     });
 
-    await sendBillingSuccessEmailBatch({
+    const notificationIds = await queueOrderConfirmationNotifications({
       source: 'payments/flutterwave-webhook-recurring',
       emails: updatedBookings.map(({ booking, invoice }) => ({
         to: booking.user.email,
@@ -216,6 +220,7 @@ export async function POST(req: Request) {
         billingType: PaymentBillingType.RECURRING,
       })),
     });
+    await processEmailNotificationsByIds(notificationIds);
 
     return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
   } catch (error: unknown) {

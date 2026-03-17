@@ -13,6 +13,9 @@ import PaymentMethodSetting from './entities/PaymentMethodSetting';
 import BlogPost from './entities/BlogPost';
 import NewsletterSubscriber from './entities/NewsletterSubscriber';
 import ReferralSubmission from './entities/ReferralSubmission';
+import LandlordInquiry from './entities/LandlordInquiry';
+import EmailNotification from './entities/EmailNotification';
+import SupportConversation from './entities/SupportConversation';
 
 const ssl = env.postgres.ssl
   ? { rejectUnauthorized: env.postgres.sslRejectUnauthorized }
@@ -53,6 +56,9 @@ function getAppDataSource(): DataSource {
       BlogPost,
       NewsletterSubscriber,
       ReferralSubmission,
+      LandlordInquiry,
+      EmailNotification,
+      SupportConversation,
     ],
   });
 
