@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { FormEvent, useState } from 'react';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface FormData {
   firstName: string;
@@ -38,6 +39,7 @@ export default function LandlordGetInTouch({
 
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -45,18 +47,37 @@ export default function LandlordGetInTouch({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === 'email' ? normalizeEmail(value) : value,
     }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
       if (onSubmit) {
         await onSubmit(formData);
+      } else {
+        const response = await fetch('/api/landlord/inquiry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const payload = (await response.json().catch(() => null)) as {
+          ok?: boolean;
+          error?: string;
+        } | null;
+
+        if (!response.ok || !payload?.ok) {
+          throw new Error(payload?.error || 'We could not submit your request right now.');
+        }
       }
+
       setSubmitted(true);
       setFormData({
         firstName: '',
@@ -71,6 +92,9 @@ export default function LandlordGetInTouch({
       setTimeout(() => setSubmitted(false), 3000);
     } catch (error) {
       console.error('Form submission error:', error);
+      setErrorMessage(
+        error instanceof Error ? error.message : 'We could not submit your request right now.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -90,11 +114,11 @@ export default function LandlordGetInTouch({
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
           
           {/* Left Column - Image */}
           <div className="flex items-center justify-center">
-            <div className="relative w-full h-96 lg:h-full min-h-96 rounded-3xl overflow-hidden shadow-lg">
+            <div className="relative h-80 w-full overflow-hidden rounded-3xl shadow-lg sm:h-96 lg:h-full lg:min-h-96">
               <Image
                 src={image}
                 alt="Get in touch"
@@ -114,7 +138,7 @@ export default function LandlordGetInTouch({
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Name Row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <input
                   type="text"
                   name="firstName"
@@ -136,7 +160,7 @@ export default function LandlordGetInTouch({
               </div>
 
               {/* Email & Phone Row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <input
                   type="email"
                   name="email"
@@ -145,6 +169,7 @@ export default function LandlordGetInTouch({
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 placeholder-gray-400"
+                  {...EMAIL_INPUT_PROPS}
                 />
                 <input
                   type="tel"
@@ -173,7 +198,7 @@ export default function LandlordGetInTouch({
               />
 
               {/* Region & Square Footage Row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <select
                   name="region"
                   value={formData.region}
@@ -220,7 +245,13 @@ export default function LandlordGetInTouch({
               {/* Success Message */}
               {submitted && (
                 <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg">
-                  Thank you! We&apos;ll be in touch soon.
+                  Thanks. Your enquiry is in, and we&apos;ve started the partnership follow-up by email.
+                </div>
+              )}
+
+              {errorMessage && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+                  {errorMessage}
                 </div>
               )}
 

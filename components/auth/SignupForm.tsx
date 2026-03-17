@@ -2,17 +2,17 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/useAuthStore';
+import PasswordField from '@/components/ui/PasswordField';
+import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 export default function SignupForm() {
   const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [globalError, setGlobalError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,6 +32,13 @@ export default function SignupForm() {
     if (!email) newErrors.email = 'Email is required.';
     if (!password) newErrors.password = 'Password is required.';
     if (!confirm) newErrors.confirm = 'Confirm password is required.';
+
+    if (password) {
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.message || 'Password is too weak.';
+      }
+    }
 
     if (password && confirm && password !== confirm) {
       newErrors.confirm = 'Passwords do not match.';
@@ -55,7 +62,6 @@ export default function SignupForm() {
           lastName,
           email,
           password,
-          rememberMe,
         }),
       });
 
@@ -65,7 +71,6 @@ export default function SignupForm() {
         throw new Error(data?.error || 'Failed to create account.');
       }
 
-      setAuth(data.user, data.accessToken, rememberMe);
       setSignupResult({
         email: data?.user?.email || email,
         verificationEmailSent: data?.verificationEmailSent === true,
@@ -103,7 +108,7 @@ export default function SignupForm() {
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Account created</h2>
             <p className="mt-2 text-sm text-gray-600">
-              You&apos;re signed in and your account is ready.
+              Your account is ready. Verify your email before signing in.
             </p>
           </div>
 
@@ -120,10 +125,10 @@ export default function SignupForm() {
 
           <button
             type="button"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/auth/signin')}
             className="w-full bg-[#1642F0] text-white font-semibold py-3 rounded-2xl"
           >
-            Continue to homepage
+            Continue to sign in
           </button>
         </div>
       </div>
@@ -172,54 +177,40 @@ export default function SignupForm() {
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(normalizeEmail(e.target.value))}
           onFocus={() => clearError('email')}
           className={getInputClass('email')}
           placeholder="you@example.com"
+          {...EMAIL_INPUT_PROPS}
         />
       </label>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <label className="block">
-          <div className="flex justify-between items-baseline mb-1">
-            <span className="text-sm font-medium text-gray-700">Password</span>
-          </div>
-          {errors.password && <div className="text-xs text-red-500 mb-1">{errors.password}</div>}
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => clearError('password')}
-            className={getInputClass('password')}
-            placeholder="Choose a password"
-          />
-        </label>
-
-        <label className="block">
-          <div className="flex justify-between items-baseline mb-1">
-            <span className="text-sm font-medium text-gray-700">Confirm password</span>
-          </div>
-          {errors.confirm && <div className="text-xs text-red-500 mb-1">{errors.confirm}</div>}
-          <input
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            onFocus={() => clearError('confirm')}
-            className={getInputClass('confirm')}
-            placeholder="Repeat password"
-          />
-        </label>
-      </div>
-
-      <label className="mb-6 flex items-center gap-3 text-sm text-gray-700 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={rememberMe}
-          onChange={(e) => setRememberMe(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300 text-[#1642F0] focus:ring-[#1642F0]"
+        <PasswordField
+          label="Password"
+          name="password"
+          value={password}
+          onChange={setPassword}
+          onFocus={() => clearError('password')}
+          error={errors.password}
+          placeholder="Choose a password"
+          autoComplete="new-password"
+          inputClassName={getInputClass('password')}
+          showRequirements
         />
-        <span>Keep me signed in</span>
-      </label>
+
+        <PasswordField
+          label="Confirm password"
+          name="confirmPassword"
+          value={confirm}
+          onChange={setConfirm}
+          onFocus={() => clearError('confirm')}
+          error={errors.confirm}
+          placeholder="Repeat password"
+          autoComplete="new-password"
+          inputClassName={getInputClass('confirm')}
+        />
+      </div>
 
       <button
         type="submit"

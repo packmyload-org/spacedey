@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import PasswordField from '@/components/ui/PasswordField';
+import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface ResetPasswordFormProps {
   initialToken?: string;
@@ -15,7 +18,7 @@ export default function ResetPasswordForm({
 }: ResetPasswordFormProps) {
   const router = useRouter();
   const [token, setToken] = useState(initialToken);
-  const [email, setEmail] = useState(initialEmail);
+  const [email, setEmail] = useState(normalizeEmail(initialEmail));
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +31,12 @@ export default function ResetPasswordForm({
 
     if (!token || !email || !password || !confirm) {
       setError('Please complete all fields.');
+      return;
+    }
+
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.message || 'Password is too weak.');
       return;
     }
 
@@ -95,29 +104,35 @@ export default function ResetPasswordForm({
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(normalizeEmail(e.target.value))}
             placeholder="Email Address"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            {...EMAIL_INPUT_PROPS}
           />
         </div>
 
         <div className="mb-4">
-          <input
-            type="password"
+          <PasswordField
+            name="newPassword"
+            label="New password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={setPassword}
             placeholder="New password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            autoComplete="new-password"
+            inputClassName="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#D96541]"
+            showRequirements
           />
         </div>
 
         <div className="mb-6">
-          <input
-            type="password"
+          <PasswordField
+            name="confirmNewPassword"
+            label="Confirm new password"
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            onChange={setConfirm}
             placeholder="Confirm new password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            autoComplete="new-password"
+            inputClassName="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#D96541]"
           />
         </div>
 

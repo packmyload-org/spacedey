@@ -3,6 +3,7 @@ import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
+import { normalizeEmail } from '@/lib/utils/email';
 
 export async function GET(
   request: NextRequest,
@@ -73,7 +74,8 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { firstName, lastName, email, role, phone } = body;
+    const { firstName, lastName, role, phone } = body;
+    const email = normalizeEmail(body?.email || '');
 
     if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json(
@@ -102,14 +104,14 @@ export async function PATCH(
 
     // Check if email is being changed and if new email already exists
     if (email && email !== user.email) {
-      const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
+      const existingUser = await repo.findOne({ where: { email } });
       if (existingUser) {
         return NextResponse.json(
           { ok: false, error: 'Email already in use' },
           { status: 409 }
         );
       }
-      user.email = email.toLowerCase();
+      user.email = email;
     }
 
     if (firstName) user.firstName = firstName;

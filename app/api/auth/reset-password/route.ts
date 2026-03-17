@@ -2,17 +2,27 @@ import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { verifyActionToken } from '@/lib/auth/actionTokens';
+import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
+import { normalizeEmail } from '@/lib/utils/email';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const token = String(body?.token || '').trim();
-    const email = String(body?.email || '').trim().toLowerCase();
+    const email = normalizeEmail(body?.email || '');
     const password = String(body?.password || '').trim();
 
     if (!token || !password) {
       return NextResponse.json(
         { ok: false, error: 'token and password are required.' },
+        { status: 400 }
+      );
+    }
+
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      return NextResponse.json(
+        { ok: false, error: passwordValidation.message || 'Password is too weak.' },
         { status: 400 }
       );
     }

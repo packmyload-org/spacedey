@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { isResendConfigured, sendForgotPasswordEmail } from '@/lib/email/resend';
+import { normalizeEmail } from '@/lib/utils/email';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const email = String(body?.email || '').trim().toLowerCase();
+    const email = normalizeEmail(body?.email || '');
 
     if (!email) {
       return NextResponse.json(

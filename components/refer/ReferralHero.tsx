@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface FormData {
   firstName: string;
@@ -55,7 +56,7 @@ export default function ReferralHero() {
       ...current,
       firstName: user.firstName || current.firstName,
       lastName: user.lastName || current.lastName,
-      email: user.email || current.email,
+      email: user.email ? normalizeEmail(user.email) : current.email,
     }));
   }, [isAuthenticated, user]);
 
@@ -65,7 +66,7 @@ export default function ReferralHero() {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === 'email' || name === 'refereeEmail' ? normalizeEmail(value) : value,
     }));
   };
 
@@ -94,7 +95,7 @@ export default function ReferralHero() {
       setFormData({
         firstName: isAuthenticated && user ? user.firstName : '',
         lastName: isAuthenticated && user ? user.lastName : '',
-        email: isAuthenticated && user ? user.email : '',
+        email: isAuthenticated && user?.email ? normalizeEmail(user.email) : '',
         refereeFirstName: '',
         refereeLastName: '',
         refereeEmail: '',
@@ -168,6 +169,7 @@ export default function ReferralHero() {
                   onChange={handleChange}
                   required
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  {...EMAIL_INPUT_PROPS}
                 />
               </div>
 
@@ -206,6 +208,7 @@ export default function ReferralHero() {
                     onChange={handleChange}
                     required
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    {...EMAIL_INPUT_PROPS}
                   />
                   <input
                     type="tel"

@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import NewsletterSubscriber from '@/lib/db/entities/NewsletterSubscriber';
 import { sendNewsletterWelcomeEmail } from '@/lib/email/resend';
+import { normalizeEmail } from '@/lib/utils/email';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null);
-    const email = String(body?.email || '').trim().toLowerCase();
+    const email = normalizeEmail(body?.email || '');
 
     if (!email || !EMAIL_PATTERN.test(email)) {
       return NextResponse.json(

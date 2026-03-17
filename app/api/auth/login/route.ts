@@ -3,6 +3,7 @@ import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { generateToken } from '@/lib/auth/jwt';
 import { env } from '@/config/env';
+import { normalizeEmail } from '@/lib/utils/email';
 
 const REMEMBER_ME_MAX_AGE = 60 * 60 * 24 * 30;
 const SESSION_TOKEN_EXPIRES_IN = '1d';
@@ -11,7 +12,7 @@ const REMEMBER_ME_TOKEN_EXPIRES_IN = '30d';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const email = String(body?.email || '').trim().toLowerCase();
+    const email = normalizeEmail(body?.email || '');
     const password = String(body?.password || '').trim();
     const rememberMe = body?.rememberMe === true;
 
@@ -44,6 +45,18 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { ok: false, error: 'Invalid email or password.' },
         { status: 401 }
+      );
+    }
+
+    if (!user.emailVerifiedAt) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'Verify your email before signing in.',
+          requiresEmailVerification: true,
+          email: user.email,
+        },
+        { status: 403 }
       );
     }
 

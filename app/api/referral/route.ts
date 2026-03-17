@@ -3,6 +3,11 @@ import { cookies } from 'next/headers';
 import { connectTypeORM } from '@/lib/db';
 import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
 import { verifyToken } from '@/lib/auth/jwt';
+import {
+  isReferralFollowUpConfigured,
+  sendReferralFollowUpEmail,
+} from '@/lib/services/referralFollowUpChat';
+import { normalizeEmail } from '@/lib/utils/email';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,10 +28,10 @@ export async function POST(request: Request) {
 
     const firstName = String(body?.firstName || '').trim();
     const lastName = String(body?.lastName || '').trim();
-    const email = String(body?.email || '').trim();
+    const email = normalizeEmail(body?.email || '');
     const refereeFirstName = String(body?.refereeFirstName || '').trim();
     const refereeLastName = String(body?.refereeLastName || '').trim();
-    const refereeEmail = String(body?.refereeEmail || '').trim();
+    const refereeEmail = normalizeEmail(body?.refereeEmail || '');
     const refereePhone = String(body?.refereePhone || '').trim();
     const refereeLocation = String(body?.refereeLocation || '').trim();
 
@@ -37,8 +42,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const normalizedEmail = email.toLowerCase();
-    const normalizedRefereeEmail = refereeEmail.toLowerCase();
+    const normalizedEmail = email;
+    const normalizedRefereeEmail = refereeEmail;
 
     if (!EMAIL_PATTERN.test(normalizedEmail) || !EMAIL_PATTERN.test(normalizedRefereeEmail)) {
       return NextResponse.json(
@@ -89,6 +94,23 @@ export async function POST(request: Request) {
 
     await repo.save(submission);
 
+    let followUpThreadStarted = false;
+
+    if (isReferralFollowUpConfigured()) {
+      try {
+        await sendReferralFollowUpEmail({
+          submissionId: submission.id,
+          firstName: submission.firstName,
+          email: submission.email,
+          refereeFirstName: submission.refereeFirstName,
+          refereeLocation: submission.refereeLocation,
+        });
+        followUpThreadStarted = true;
+      } catch (error) {
+        console.error('Referral follow-up email failed:', error);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       referral: {
@@ -97,6 +119,7 @@ export async function POST(request: Request) {
         refereeEmail: submission.refereeEmail,
         createdAt: submission.createdAt.toISOString(),
       },
+      followUpThreadStarted,
     });
   } catch (error: unknown) {
     console.error('API Route /api/referral Error:', error);

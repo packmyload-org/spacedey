@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -62,9 +63,10 @@ export default function ForgotPasswordForm() {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(normalizeEmail(e.target.value))}
             placeholder="Email Address"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            {...EMAIL_INPUT_PROPS}
           />
         </div>
 

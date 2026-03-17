@@ -3,6 +3,8 @@ import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
+import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
+import { normalizeEmail } from '@/lib/utils/email';
 
 export async function GET(request: NextRequest) {
   const adminCheck = await requireAdmin(request);
@@ -54,11 +56,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { firstName, lastName, email, password, role } = body;
+    const { firstName, lastName, password, role } = body;
+    const email = normalizeEmail(body?.email || '');
 
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
         { ok: false, error: 'firstName, lastName, email, and password are required.' },
+        { status: 400 }
+      );
+    }
+
+    const passwordValidation = validatePasswordStrength(String(password));
+    if (!passwordValidation.isValid) {
+      return NextResponse.json(
+        { ok: false, error: passwordValidation.message || 'Password is too weak.' },
         { status: 400 }
       );
     }
@@ -73,7 +84,7 @@ export async function POST(request: NextRequest) {
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
 
-    const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
+    const existingUser = await repo.findOne({ where: { email } });
 
     if (existingUser) {
       return NextResponse.json(
@@ -84,7 +95,7 @@ export async function POST(request: NextRequest) {
     const newUser = repo.create({
       firstName,
       lastName,
-      email: email.toLowerCase(),
+      email,
       password,
       role: role || UserRole.USER,
     } as Partial<User>);

@@ -224,7 +224,7 @@ function AdminBlogsSkeleton() {
 }
 
 export default function AdminBlogsPage() {
-  const postsPerPage = 9;
+  const postsPerPage = 10;
   const authStore = useAuthStore();
   const [posts, setPosts] = useState<BlogPostRecord[]>([]);
   const [currentPage, setCurrentPage] = useState(1);

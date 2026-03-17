@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface BlogPost {
   id: string;
@@ -184,7 +185,7 @@ export default function BlogList() {
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
   const [isSubmittingNewsletter, setIsSubmittingNewsletter] = useState(false);
 
-  const postsPerPage = 9;
+  const postsPerPage = 10;
   const leadPostsCount = 5;
 
   useEffect(() => {
@@ -327,36 +328,37 @@ export default function BlogList() {
             </div>
 
             <div className="my-10 grid gap-8 xl:grid-cols-3 xl:items-stretch">
-              <div className="rounded-[32px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_44%,#1233A3_100%)] p-6 text-white shadow-[0_26px_80px_rgba(17,56,216,0.2)] md:p-8">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.26em] text-white/90">
+              <div className="rounded-[32px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_44%,#1233A3_100%)] p-4 text-white shadow-[0_26px_80px_rgba(17,56,216,0.2)] md:p-8">
+                <div className="hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.26em] text-white/90 md:inline-flex">
                   <Mail className="h-3.5 w-3.5" />
                   Newsletter
                 </div>
-                <h3 className="mt-5 text-3xl font-black leading-tight md:text-[2rem]">
+                <h3 className="mt-5 hidden text-3xl font-black leading-tight md:block md:text-[2rem]">
                   Get practical storage advice before the next article drop.
                 </h3>
-                <p className="mt-4 text-sm leading-7 text-[#DCE6FF] md:text-base">
+                <p className="mt-4 hidden text-sm leading-7 text-[#DCE6FF] md:block md:text-base">
                   Subscribe for grounded moving tips, storage planning ideas, and business-use guidance from the Spacedey team.
                 </p>
 
-                <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-white/90">
+                <div className="mt-6 hidden flex-wrap gap-3 text-sm font-semibold text-white/90 md:flex">
                   <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Moving guides</span>
                   <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Storage planning</span>
                   <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Business tips</span>
                 </div>
 
-                <form onSubmit={handleSubscribe} className="mt-8 space-y-4">
+                <form onSubmit={handleSubscribe} className="space-y-4 md:mt-8">
                   <label className="block">
-                    <span className="mb-2 block text-xs font-black uppercase tracking-[0.2em] text-white/70">
+                    <span className="mb-2 hidden text-xs font-black uppercase tracking-[0.2em] text-white/70 md:block">
                       Email Address
                     </span>
                     <input
                       type="email"
                       placeholder="you@example.com"
                       value={email}
-                      onChange={(event) => setEmail(event.target.value)}
+                      onChange={(event) => setEmail(normalizeEmail(event.target.value))}
                       required
                       className="w-full rounded-2xl border border-white/18 bg-white/96 px-4 py-3 text-sm text-[#0F172A] outline-none transition placeholder:text-[#7A88B8] focus:border-white focus:ring-2 focus:ring-white/35"
+                      {...EMAIL_INPUT_PROPS}
                     />
                   </label>
 
