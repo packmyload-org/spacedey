@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import PasswordField from '@/components/ui/PasswordField';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
+import { getFieldErrors, loginFormSchema } from '@/lib/auth/authFormSchemas';
 
 export default function LoginForm() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [verificationNotice, setVerificationNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,12 +22,21 @@ export default function LoginForm() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setFieldErrors({});
     setVerificationNotice(null);
 
-    if (!email || !password) {
-      setError('Email and password are required.');
+    const validation = loginFormSchema.safeParse({
+      email,
+      password,
+      rememberMe,
+    });
+
+    if (!validation.success) {
+      setFieldErrors(getFieldErrors(validation.error));
       return;
     }
+
+    const payload = validation.data;
 
     setIsSubmitting(true);
     try {
@@ -34,7 +45,7 @@ export default function LoginForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -42,7 +53,7 @@ export default function LoginForm() {
       if (!response.ok) {
         if (data?.requiresEmailVerification) {
           setVerificationNotice(
-            `We found your account for ${data?.email || email}. Verify your email before signing in.`
+            `We found your account for ${data?.email || payload.email}. Verify your email before signing in.`
           );
         }
 
@@ -88,11 +99,23 @@ export default function LoginForm() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(normalizeEmail(e.target.value))}
+              onChange={(e) => {
+                setEmail(normalizeEmail(e.target.value));
+                if (fieldErrors.email) {
+                  setFieldErrors((current) => ({ ...current, email: '' }));
+                }
+              }}
               placeholder="Email Address"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+              className={`w-full rounded-lg border px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:border-transparent ${
+                fieldErrors.email
+                  ? 'border-red-500 focus:ring-red-200'
+                  : 'border-gray-300 focus:ring-[#D96541]'
+              }`}
               {...EMAIL_INPUT_PROPS}
             />
+            {fieldErrors.email ? (
+              <div className="mt-1 text-xs text-red-500">{fieldErrors.email}</div>
+            ) : null}
           </div>
 
           {/* Password Input */}
@@ -100,7 +123,18 @@ export default function LoginForm() {
             <PasswordField
               name="password"
               value={password}
-              onChange={setPassword}
+              onChange={(value) => {
+                setPassword(value);
+                if (fieldErrors.password) {
+                  setFieldErrors((current) => ({ ...current, password: '' }));
+                }
+              }}
+              onFocus={() => {
+                if (fieldErrors.password) {
+                  setFieldErrors((current) => ({ ...current, password: '' }));
+                }
+              }}
+              error={fieldErrors.password}
               placeholder="Enter your password"
               autoComplete="current-password"
               inputClassName="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-gray-700 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#D96541]"

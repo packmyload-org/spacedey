@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
-import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
+import { getFieldErrors, signupFormSchema } from '@/lib/auth/authFormSchemas';
 
 export default function SignupForm() {
   const router = useRouter();
@@ -26,28 +27,20 @@ export default function SignupForm() {
     setGlobalError(null);
     setErrors({});
 
-    const newErrors: Record<string, string> = {};
-    if (!firstName) newErrors.firstName = 'First name is required.';
-    if (!lastName) newErrors.lastName = 'Last name is required.';
-    if (!email) newErrors.email = 'Email is required.';
-    if (!password) newErrors.password = 'Password is required.';
-    if (!confirm) newErrors.confirm = 'Confirm password is required.';
+    const validation = signupFormSchema.safeParse({
+      firstName,
+      lastName,
+      email,
+      password,
+      confirm,
+    });
 
-    if (password) {
-      const passwordValidation = validatePasswordStrength(password);
-      if (!passwordValidation.isValid) {
-        newErrors.password = passwordValidation.message || 'Password is too weak.';
-      }
-    }
-
-    if (password && confirm && password !== confirm) {
-      newErrors.confirm = 'Passwords do not match.';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!validation.success) {
+      setErrors(getFieldErrors(validation.error));
       return;
     }
+
+    const payload = validation.data;
 
     setIsSubmitting(true);
     setSignupResult(null);
@@ -58,10 +51,10 @@ export default function SignupForm() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          password,
+          firstName: payload.firstName,
+          lastName: payload.lastName,
+          email: payload.email,
+          password: payload.password,
         }),
       });
 
@@ -72,7 +65,7 @@ export default function SignupForm() {
       }
 
       setSignupResult({
-        email: data?.user?.email || email,
+        email: data?.user?.email || payload.email,
         verificationEmailSent: data?.verificationEmailSent === true,
       });
     } catch (err) {
@@ -136,7 +129,18 @@ export default function SignupForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-8 max-w-lg mx-auto">
+    <form onSubmit={handleSubmit} className="mx-auto max-w-lg rounded-[28px] border border-[#D8E2FF] bg-white p-6 shadow-[0_20px_60px_rgba(17,56,216,0.08)] md:p-8">
+      <div className="mb-8 text-center">
+        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5D74B0]">Sign up</p>
+        <h1 className="mt-3 text-2xl font-black text-[#0F172A]">Create your account</h1>
+        <p className="mt-3 text-sm text-[#5E6C91]">
+          Already have an account?{' '}
+          <Link href="/auth/signin" className="font-bold text-[#1642F0] hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
+
       {globalError && <div className="mb-4 text-sm text-red-600">{globalError}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -144,7 +148,6 @@ export default function SignupForm() {
           <div className="flex justify-between items-baseline mb-1">
             <span className="text-sm font-medium text-gray-700">First name</span>
           </div>
-          {errors.firstName && <div className="text-xs text-red-500 mb-1">{errors.firstName}</div>}
           <input
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -152,13 +155,13 @@ export default function SignupForm() {
             className={getInputClass('firstName')}
             placeholder="Jane"
           />
+          {errors.firstName && <div className="mt-1 text-xs text-red-500">{errors.firstName}</div>}
         </label>
 
         <label className="block">
           <div className="flex justify-between items-baseline mb-1">
             <span className="text-sm font-medium text-gray-700">Last name</span>
           </div>
-          {errors.lastName && <div className="text-xs text-red-500 mb-1">{errors.lastName}</div>}
           <input
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -166,6 +169,7 @@ export default function SignupForm() {
             className={getInputClass('lastName')}
             placeholder="Doe"
           />
+          {errors.lastName && <div className="mt-1 text-xs text-red-500">{errors.lastName}</div>}
         </label>
       </div>
 
@@ -173,7 +177,6 @@ export default function SignupForm() {
         <div className="flex justify-between items-baseline mb-1">
           <span className="text-sm font-medium text-gray-700">Email</span>
         </div>
-        {errors.email && <div className="text-xs text-red-500 mb-1">{errors.email}</div>}
         <input
           type="email"
           value={email}
@@ -183,6 +186,7 @@ export default function SignupForm() {
           placeholder="you@example.com"
           {...EMAIL_INPUT_PROPS}
         />
+        {errors.email && <div className="mt-1 text-xs text-red-500">{errors.email}</div>}
       </label>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
