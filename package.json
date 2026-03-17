@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node scripts/dev-server.mjs",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
@@ -33,6 +33,7 @@
     "react-dom": "19.1.0",
     "reflect-metadata": "^0.1.13",
     "resend": "^6.9.3",
+    "sonner": "^2.0.7",
     "typeorm": "^0.3.28",
     "zustand": "^5.0.10"
   },

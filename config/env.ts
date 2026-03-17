@@ -55,6 +55,7 @@ export const env = {
     pooledUrl: pooledDatabaseUrl,
     directUrl: directDatabaseUrl,
     useDirectUrl,
+    poolMax: readNumber(process.env.DB_POOL_MAX, isProduction ? 2 : 10),
     ssl: readBoolean(process.env.DB_SSL, defaultSsl),
     sslRejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
     synchronize: readBoolean(process.env.DB_SYNCHRONIZE, false),

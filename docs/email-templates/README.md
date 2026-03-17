@@ -17,12 +17,14 @@ Suggested variables:
 - `firstName`
 - `verificationUrl`
 - `supportEmail`
+- `logoUrl`
 
 ## Forgot password
 
 - `firstName`
 - `resetUrl`
 - `supportEmail`
+- `logoUrl`
 
 ## Billing success
 
@@ -34,5 +36,6 @@ Suggested variables:
 - `bookingsUrl`
 - `invoicesUrl`
 - `supportEmail`
+- `logoUrl`
 
 These templates use moustache-style placeholders like `{{firstName}}`, which map well to most transactional email providers.

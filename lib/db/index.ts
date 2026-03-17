@@ -35,6 +35,9 @@ function getAppDataSource(): DataSource {
     type: 'postgres',
     url: env.postgres.url,
     ssl,
+    extra: {
+      max: env.postgres.poolMax,
+    },
     synchronize: env.postgres.synchronize,
     logging: env.postgres.logging,
     entities: [

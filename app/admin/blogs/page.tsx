@@ -6,9 +6,7 @@ import { useAuthStore } from '@/lib/store/useAuthStore';
 import {
   ExternalLink,
   ImagePlus,
-  Loader,
   PencilLine,
-  Plus,
   Save,
   Trash2,
 } from 'lucide-react';
@@ -67,6 +65,93 @@ function mapPostToForm(post: BlogPostRecord): BlogFormState {
     author: post.author,
     published: post.published,
   };
+}
+
+function AdminBlogsSkeleton() {
+  return (
+    <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
+      <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm xl:sticky xl:top-28 xl:max-h-[calc(100vh-8.5rem)] xl:overflow-hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="h-7 w-24 animate-pulse rounded-xl bg-[#E8EEFF]" />
+            <div className="mt-3 h-4 w-52 animate-pulse rounded-lg bg-[#EEF3FF]" />
+          </div>
+          <div className="h-10 w-24 animate-pulse rounded-full bg-[#E8EEFF]" />
+        </div>
+
+        <div className="mt-6 space-y-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-y-auto xl:pr-2">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-[#E6EEFF] bg-[#FBFCFF] px-4 py-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="h-4 w-40 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-6 w-14 animate-pulse rounded-full bg-[#EEF3FF]" />
+              </div>
+              <div className="mt-3 h-3 w-full animate-pulse rounded-lg bg-[#EEF3FF]" />
+              <div className="mt-2 h-3 w-4/5 animate-pulse rounded-lg bg-[#EEF3FF]" />
+              <div className="mt-4 flex items-center justify-between">
+                <div className="h-3 w-20 animate-pulse rounded-lg bg-[#EEF3FF]" />
+                <div className="h-3 w-24 animate-pulse rounded-lg bg-[#EEF3FF]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <section className="rounded-[32px] border border-[#D8E2FF] bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-col gap-4 border-b border-[#E6EEFF] pb-6 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="h-3 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+            <div className="mt-4 h-10 w-2/3 animate-pulse rounded-2xl bg-[#EEF3FF]" />
+          </div>
+          <div className="h-10 w-36 animate-pulse rounded-full bg-[#EEF3FF]" />
+        </div>
+
+        <div className="mt-8 space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {Array.from({ length: 2 }, (_, index) => (
+              <div key={index}>
+                <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-12 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="space-y-6">
+              <div>
+                <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-32 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              </div>
+              <div>
+                <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-[340px] w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index}>
+                  <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                  <div className="h-12 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+                </div>
+              ))}
+              <div className="h-16 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              <div className="h-20 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              <div className="h-48 w-full animate-pulse rounded-[24px] bg-[#F3F6FF]" />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-[#E6EEFF] pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="h-4 w-60 animate-pulse rounded-lg bg-[#E8EEFF]" />
+            <div className="h-12 w-36 animate-pulse rounded-full bg-[#E8EEFF]" />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export default function AdminBlogsPage() {
@@ -280,33 +365,30 @@ export default function AdminBlogsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader className="h-8 w-8 animate-spin text-[#1642F0]" />
-      </div>
-    );
+    return <AdminBlogsSkeleton />;
   }
 
   return (
     <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
-      <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm">
+      <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm xl:sticky xl:top-28 xl:max-h-[calc(100vh-8.5rem)] xl:overflow-hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-[#0F172A]">Blogs</h1>
             <p className="mt-1 text-sm text-[#5D74B0]">Create and publish what appears on the public blog.</p>
           </div>
 
-          <button
-            type="button"
-            onClick={resetForm}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1642F0] text-white transition hover:bg-[#1138D8]"
-            aria-label="Create new post"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
+          {selectedPost ? (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="inline-flex items-center rounded-full border border-[#D8E2FF] px-4 py-2 text-sm font-bold text-[#1642F0] transition hover:bg-[#F0F4FF]"
+            >
+              New post
+            </button>
+          ) : null}
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 space-y-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-y-auto xl:pr-2">
           {posts.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[#D8E2FF] px-4 py-8 text-center text-sm text-[#5D74B0]">
               No posts yet. Create your first article.

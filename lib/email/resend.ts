@@ -6,6 +6,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Spacedey <onboarding@resend.dev>';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@spacedey.com';
 const PUBLIC_APP_URL = process.env.PUBLIC_APP_URL || 'http://localhost:3000';
+const EMAIL_LOGO_PATH = '/email_logo.jpg';
 
 const RESEND_TEMPLATE_IDS = {
   signupVerification: 'email_verification',
@@ -48,6 +49,10 @@ function getResendClient() {
 
 function getTemplateId(templateKey: ResendTemplateKey): string | null {
   return RESEND_TEMPLATE_IDS[templateKey] || null;
+}
+
+function getEmailLogoUrl() {
+  return new URL(EMAIL_LOGO_PATH, PUBLIC_APP_URL).toString();
 }
 
 async function sendEmail(args: {
@@ -121,6 +126,7 @@ export async function sendSignupVerificationEmail(args: {
       firstName: args.firstName,
       verificationUrl,
       supportEmail: SUPPORT_EMAIL,
+      logoUrl: getEmailLogoUrl(),
     },
   });
 
@@ -157,6 +163,7 @@ export async function sendForgotPasswordEmail(args: {
       firstName: args.firstName,
       resetUrl,
       supportEmail: SUPPORT_EMAIL,
+      logoUrl: getEmailLogoUrl(),
     },
   });
 }
@@ -197,6 +204,7 @@ export async function sendBillingSuccessEmail(args: BillingSuccessEmailArgs) {
       bookingsUrl: `${PUBLIC_APP_URL}/bookings`,
       invoicesUrl: `${PUBLIC_APP_URL}/invoices`,
       supportEmail: SUPPORT_EMAIL,
+      logoUrl: getEmailLogoUrl(),
     },
   });
 
