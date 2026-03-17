@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import NewsletterSubscriber from '@/lib/db/entities/NewsletterSubscriber';
+import { sendNewsletterWelcomeEmail } from '@/lib/email/resend';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -22,9 +23,20 @@ export async function POST(request: Request) {
     const existingSubscriber = await repo.findOne({ where: { email } });
 
     if (existingSubscriber) {
+      let shouldSendWelcomeEmail = false;
+
       if (!existingSubscriber.subscribedAt) {
         existingSubscriber.subscribedAt = new Date();
         await repo.save(existingSubscriber);
+        shouldSendWelcomeEmail = true;
+      }
+
+      if (shouldSendWelcomeEmail) {
+        try {
+          await sendNewsletterWelcomeEmail({ email });
+        } catch (error) {
+          console.error('Newsletter welcome email failed:', error);
+        }
       }
 
       return NextResponse.json({
@@ -44,6 +56,12 @@ export async function POST(request: Request) {
     });
 
     await repo.save(subscriber);
+
+    try {
+      await sendNewsletterWelcomeEmail({ email });
+    } catch (error) {
+      console.error('Newsletter welcome email failed:', error);
+    }
 
     return NextResponse.json(
       {

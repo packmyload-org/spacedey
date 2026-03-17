@@ -9,6 +9,7 @@ Suggested template names:
 - `signup-verification`
 - `forgot-password`
 - `billing-success`
+- `newsletter-welcome`
 
 Suggested variables:
 
@@ -17,14 +18,12 @@ Suggested variables:
 - `firstName`
 - `verificationUrl`
 - `supportEmail`
-- `logoUrl`
 
 ## Forgot password
 
 - `firstName`
 - `resetUrl`
 - `supportEmail`
-- `logoUrl`
 
 ## Billing success
 
@@ -36,6 +35,11 @@ Suggested variables:
 - `bookingsUrl`
 - `invoicesUrl`
 - `supportEmail`
-- `logoUrl`
+
+## Newsletter welcome
+
+- `email`
+- `blogUrl`
+- `supportEmail`
 
 These templates use moustache-style placeholders like `{{firstName}}`, which map well to most transactional email providers.

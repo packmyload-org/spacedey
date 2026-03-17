@@ -6,21 +6,26 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Spacedey <onboarding@resend.dev>';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@spacedey.com';
 const PUBLIC_APP_URL = process.env.PUBLIC_APP_URL || 'http://localhost:3000';
-const EMAIL_LOGO_PATH = '/email_logo.jpg';
 
 const RESEND_TEMPLATE_IDS = {
   signupVerification: 'email_verification',
   forgotPassword: 'reset-password',
   billingSuccess: 'billing-success',
+  newsletterWelcome: 'newsletter-welcome',
 } as const;
 
 const EMAIL_SUBJECTS = {
   signupVerification: 'Verify your Spacedey account',
   forgotPassword: 'Reset your Spacedey password',
   billingSuccess: 'Your Spacedey payment was successful',
+  newsletterWelcome: 'You are subscribed to Spacedey updates',
 } as const;
 
-type ResendTemplateKey = 'signupVerification' | 'forgotPassword' | 'billingSuccess';
+type ResendTemplateKey =
+  | 'signupVerification'
+  | 'forgotPassword'
+  | 'billingSuccess'
+  | 'newsletterWelcome';
 type TemplateVariables = Record<string, string | number>;
 
 export interface BillingSuccessEmailArgs {
@@ -49,10 +54,6 @@ function getResendClient() {
 
 function getTemplateId(templateKey: ResendTemplateKey): string | null {
   return RESEND_TEMPLATE_IDS[templateKey] || null;
-}
-
-function getEmailLogoUrl() {
-  return new URL(EMAIL_LOGO_PATH, PUBLIC_APP_URL).toString();
 }
 
 async function sendEmail(args: {
@@ -126,7 +127,6 @@ export async function sendSignupVerificationEmail(args: {
       firstName: args.firstName,
       verificationUrl,
       supportEmail: SUPPORT_EMAIL,
-      logoUrl: getEmailLogoUrl(),
     },
   });
 
@@ -163,7 +163,6 @@ export async function sendForgotPasswordEmail(args: {
       firstName: args.firstName,
       resetUrl,
       supportEmail: SUPPORT_EMAIL,
-      logoUrl: getEmailLogoUrl(),
     },
   });
 }
@@ -204,7 +203,6 @@ export async function sendBillingSuccessEmail(args: BillingSuccessEmailArgs) {
       bookingsUrl: `${PUBLIC_APP_URL}/bookings`,
       invoicesUrl: `${PUBLIC_APP_URL}/invoices`,
       supportEmail: SUPPORT_EMAIL,
-      logoUrl: getEmailLogoUrl(),
     },
   });
 
@@ -242,4 +240,27 @@ export async function sendBillingSuccessEmailBatch(args: {
       });
     }
   });
+}
+
+export async function sendNewsletterWelcomeEmail(args: {
+  email: string;
+}) {
+  const templateId = getTemplateId('newsletterWelcome');
+
+  if (!isResendConfigured('newsletterWelcome') || !templateId) {
+    return false;
+  }
+
+  await sendEmail({
+    to: args.email,
+    subject: EMAIL_SUBJECTS.newsletterWelcome,
+    templateId,
+    variables: {
+      email: args.email,
+      blogUrl: `${PUBLIC_APP_URL}/blog`,
+      supportEmail: SUPPORT_EMAIL,
+    },
+  });
+
+  return true;
 }
