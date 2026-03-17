@@ -1,0 +1,211 @@
+'use client';
+
+import { Suspense, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Header from '@/components/layout/Header';
+import SearchBar from '@/components/search/SearchBar';
+import CityList from '@/components/search/CityList';
+import MapView from '@/components/search/MapView';
+import { useSitesData } from '@/contexts/SitesContext';
+import { useSearchStore } from '@/lib/store/useSearchStore';
+import { getSiteCity, getSiteState, resolveStateFromQuery } from '@/lib/utils/siteLocations';
+
+function SearchContent() {
+  const searchParams = useSearchParams();
+  const { sites, isLoading: sitesLoading, error: sitesError } = useSitesData();
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedState,
+    setSelectedState,
+    selectedCity,
+    setSelectedCity,
+  } = useSearchStore();
+
+  useEffect(() => {
+    const stateParam = searchParams.get('state');
+    const cityParam = searchParams.get('city');
+
+    if (stateParam) {
+      const decodedState = decodeURIComponent(stateParam);
+      const decodedCity = cityParam ? decodeURIComponent(cityParam) : '';
+
+      setSelectedState(decodedState);
+      setSelectedCity(decodedCity);
+      setSearchQuery(decodedCity || decodedState);
+      return;
+    }
+
+    if (cityParam) {
+      const decodedCity = decodeURIComponent(cityParam);
+      setSelectedState('');
+      setSelectedCity(decodedCity);
+      setSearchQuery(decodedCity);
+      return;
+    }
+
+    setSelectedState('');
+    setSelectedCity('');
+    setSearchQuery('');
+  }, [searchParams, setSearchQuery, setSelectedCity, setSelectedState]);
+
+  useEffect(() => {
+    if (!selectedCity || selectedState || sites.length === 0) {
+      return;
+    }
+
+    const matchedSite = sites.find((site) => getSiteCity(site).toLowerCase() === selectedCity.trim().toLowerCase());
+
+    if (!matchedSite) {
+      return;
+    }
+
+    setSelectedState(getSiteState(matchedSite));
+  }, [selectedCity, selectedState, setSelectedState, sites]);
+
+  const syncSelectedState = useCallback((stateName: string) => {
+    const normalizedState = stateName.trim();
+
+    setSelectedState(normalizedState);
+    setSelectedCity('');
+    setSearchQuery(normalizedState);
+
+    const url = new URL(globalThis.location.href);
+
+    if (normalizedState) {
+      url.searchParams.set('state', normalizedState);
+    } else {
+      url.searchParams.delete('state');
+    }
+
+    url.searchParams.delete('city');
+    globalThis.history.replaceState({}, '', url);
+  }, [setSearchQuery, setSelectedCity, setSelectedState]);
+
+  const syncSelectedCity = useCallback((stateName: string, cityName: string) => {
+    const normalizedState = stateName.trim();
+    const normalizedCity = cityName.trim();
+
+    setSelectedState(normalizedState);
+    setSelectedCity(normalizedCity);
+    setSearchQuery(normalizedCity);
+
+    const url = new URL(globalThis.location.href);
+
+    if (normalizedState) {
+      url.searchParams.set('state', normalizedState);
+    } else {
+      url.searchParams.delete('state');
+    }
+
+    if (normalizedCity) {
+      url.searchParams.set('city', normalizedCity);
+    } else {
+      url.searchParams.delete('city');
+    }
+
+    globalThis.history.replaceState({}, '', url);
+  }, [setSearchQuery, setSelectedCity, setSelectedState]);
+
+  const handleSearch = useCallback((value: string) => {
+    const resolvedState = resolveStateFromQuery(value, sites);
+
+    if (resolvedState) {
+      syncSelectedState(resolvedState);
+      return;
+    }
+
+    setSearchQuery(value.trim());
+    setSelectedState('');
+    setSelectedCity('');
+
+    const url = new URL(globalThis.location.href);
+    url.searchParams.delete('state');
+    url.searchParams.delete('city');
+    globalThis.history.replaceState({}, '', url);
+  }, [setSearchQuery, setSelectedCity, setSelectedState, sites, syncSelectedState]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedState('');
+    setSelectedCity('');
+    setSearchQuery('');
+
+    const url = new URL(globalThis.location.href);
+    url.searchParams.delete('state');
+    url.searchParams.delete('city');
+    globalThis.history.replaceState({}, '', url);
+  }, [setSearchQuery, setSelectedCity, setSelectedState]);
+
+  if (sitesLoading && sites.length === 0) {
+    return (
+      <>
+        <Header />
+        <main className="mt-20 flex-1 lg:flex lg:flex-col">
+          <div className="flex h-[calc(100vh-80px)] items-center justify-center">
+            <p className="text-gray-600">Loading storage sites...</p>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header />
+      <main className="mt-20 flex-1 lg:flex lg:flex-col">
+        {sitesError && sites.length === 0 ? (
+          <div className="mx-4 mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700 lg:mx-8">
+            {sitesError}
+          </div>
+        ) : null}
+        <div className="lg:flex lg:flex-1 lg:flex-col lg:bg-white">
+          <div className="lg:flex lg:flex-1">
+            <div className="bg-white lg:h-[calc(100vh-82px)] lg:w-1/2 lg:overflow-hidden">
+              <div className="flex h-full min-h-0 flex-col bg-white">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onSearch={handleSearch}
+                />
+                <CityList
+                  searchQuery={searchQuery}
+                  selectedState={selectedState}
+                  selectedCity={selectedCity}
+                  onSelectState={syncSelectedState}
+                  onSelectCity={syncSelectedCity}
+                  onClearSelection={clearSelection}
+                  sites={sites}
+                />
+              </div>
+            </div>
+
+            <MapView
+              selectedState={selectedState}
+              selectedCity={selectedCity}
+              sites={sites}
+            />
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
+export default function SearchPageContent() {
+  return (
+    <Suspense
+      fallback={(
+        <>
+          <Header />
+          <main className="mt-20 flex-1 lg:flex lg:flex-col">
+            <div className="flex h-[calc(100vh-80px)] items-center justify-center">
+              <p className="text-gray-600">Loading storage sites...</p>
+            </div>
+          </main>
+        </>
+      )}
+    >
+      <SearchContent />
+    </Suspense>
+  );
+}

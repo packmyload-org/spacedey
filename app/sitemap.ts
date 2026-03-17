@@ -1,4 +1,6 @@
 import type { MetadataRoute } from 'next';
+import { connectTypeORM } from '@/lib/db';
+import Site from '@/lib/db/entities/Site';
 import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { getSiteUrl } from '@/lib/seo';
 
@@ -12,9 +14,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/products',
     '/blog',
     '/referral',
+    '/landlord',
   ];
 
   const blogPosts = await listPublishedBlogPosts();
+  let locationRoutes: MetadataRoute.Sitemap = [];
+
+  try {
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(Site);
+    const sites = await repo.find({
+      select: {
+        id: true,
+        updatedAt: true,
+      },
+      order: {
+        updatedAt: 'DESC',
+      },
+    });
+
+    locationRoutes = sites.map((site) => ({
+      url: `${siteUrl}/locations/${site.id}`,
+      lastModified: site.updatedAt,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    }));
+  } catch (error) {
+    console.error('Failed to build location sitemap entries', error);
+  }
 
   return [
     ...staticRoutes.map((route) => ({
@@ -29,5 +56,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
+    ...locationRoutes,
   ];
 }
