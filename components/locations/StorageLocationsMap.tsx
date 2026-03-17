@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { env } from '@/config';
 import { useSitesData } from '@/contexts/SitesContext';
 import type { ApiSite } from '@/lib/types/local';
+import { toLocationSlug } from '@/lib/utils/locationSeo';
 import { getUniqueSiteCities } from '@/lib/utils/siteLocations';
 import { MapPin, Phone, Mail, Box } from 'lucide-react';
 
@@ -225,7 +226,7 @@ export default function StorageMapSection({
   }, [selectedCitySites, sites]);
 
   const featuredCities = useMemo(() => cities.slice(0, 8), [cities]);
-  const selectedCityHref = selectedCity ? `/search?city=${encodeURIComponent(selectedCity)}` : '/search';
+  const selectedCityHref = selectedCity ? `/locations/city/${toLocationSlug(selectedCity)}` : '/locations';
   const shouldShowLiveMap = Boolean(selectedCity) && env.maps.enabled;
   const showUnavailableMessage = Boolean(selectedCity) && !shouldShowLiveMap;
 
@@ -419,7 +420,7 @@ export default function StorageMapSection({
                         <span>{site.unitTypes.length} unit type{site.unitTypes.length === 1 ? '' : 's'}</span>
                       </p>
                       <Link
-                        href={`/search?city=${encodeURIComponent(selectedCity)}&site=${encodeURIComponent(site.code)}`}
+                        href={`/locations/${site.id}`}
                         className="text-sm font-bold text-[#1642F0]"
                       >
                         View site

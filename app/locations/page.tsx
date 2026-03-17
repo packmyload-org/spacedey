@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import React from "react";
 import Hero from "@/components/locations/Hero";
+import LocationDiscoveryLinks from '@/components/locations/LocationDiscoveryLinks';
 import LocationsSection from "@/components/locations/LocationsSection";
 import StorageLocationsMap from "@/components/locations/StorageLocationsMap";
 import NotAverageStorage from "@/components/ui/NotAverageStorage";
@@ -26,10 +27,10 @@ export default function LocationsPage() {
     <main className="flex flex-col min-h-screen pt-20">
       <Hero />
       <LocationsSection />
+      <LocationDiscoveryLinks />
       <StorageLocationsMap />
       <NotAverageStorage />
       <FinalCtaBlock />
     </main>
   );
 }
-

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const SITE_NAME = 'Spacedey';
 export const SITE_DESCRIPTION =
-  'Spacedey helps people and businesses find, compare, and reserve secure self storage units across Nigeria.';
+  'Spacedey helps people and businesses find, compare, and reserve secure self storage units across Lagos and the rest of Nigeria with flexible monthly options.';
 export const DEFAULT_OG_IMAGE_PATH = '/images/hero1.jpg';
 
 export const DEFAULT_KEYWORDS = [

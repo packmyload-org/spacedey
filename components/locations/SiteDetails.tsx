@@ -2,12 +2,14 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { MapPin, Phone, Mail, Clock, Check, Box } from 'lucide-react';
 import { Site } from '@/lib/types/local';
 import SiteMapViewer from '@/components/locations/SiteMapViewer';
 import ProductsSpacedeyAddOns from '@/components/products/ProductsStufAddOns';
 import { useStorageCart } from '@/contexts/StorageCartContext';
 import { getLocationDetails } from '@/lib/utils/sampleLocations';
+import { toLocationSlug } from '@/lib/utils/locationSeo';
 import { formatStorageUnitLabel } from '@/lib/pricing/storagePricing';
 
 interface SiteDetailsProps {
@@ -47,6 +49,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
 
         return parts.length > 1 ? parts[parts.length - 1] : title;
     }, [addressStr, site.address?.city, title]);
+    const inferredState = site.address?.state?.trim();
 
     const locationContent = React.useMemo(() => getLocationDetails(inferredCity), [inferredCity]);
 
@@ -124,6 +127,23 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                             <p className="text-gray-600 leading-relaxed">
                                 {site.about || locationContent.about}
                             </p>
+
+                            <div className="mt-5 flex flex-wrap gap-3">
+                                <Link
+                                    href={`/locations/city/${toLocationSlug(inferredCity)}`}
+                                    className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
+                                >
+                                    More in {inferredCity}
+                                </Link>
+                                {inferredState ? (
+                                    <Link
+                                        href={`/locations/state/${toLocationSlug(inferredState)}`}
+                                        className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100"
+                                    >
+                                        Explore {inferredState}
+                                    </Link>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
 

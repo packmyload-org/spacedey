@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { useSitesData } from "@/contexts/SitesContext";
 import FadeIn from "@/components/ui/FadeIn";
 import { getAvailableCities } from "@/lib/utils/cities";
+import { toLocationSlug } from '@/lib/utils/locationSeo';
 import { getLocationDetails } from "@/lib/utils/sampleLocations";
 import { getSiteCity } from "@/lib/utils/siteLocations";
 
@@ -175,7 +176,7 @@ export default function FeatureList() {
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-blue-900 mb-4">Storage in {loc.city}</h3>
                     <button
-                      onClick={() => router.push(`/search?city=${encodeURIComponent(loc.city)}`)}
+                      onClick={() => router.push(`/locations/city/${toLocationSlug(loc.city)}`)}
                       className="w-full py-3 border-2 border-blue-600 text-blue-600 rounded-full font-bold hover:bg-blue-600 hover:text-white transition-all"
                     >
                       View All Facilities
