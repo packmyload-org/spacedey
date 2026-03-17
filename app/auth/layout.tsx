@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import AuthPageGuard from '@/components/auth/AuthPageGuard';
 
 export const metadata: Metadata = {
   robots: {
@@ -12,5 +13,5 @@ export default function AuthLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return <AuthPageGuard>{children}</AuthPageGuard>;
 }
