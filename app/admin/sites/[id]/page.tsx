@@ -664,7 +664,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                     </div>
 
                                     <div className="space-y-3">
-                                        {site.unitTypes.length === 0 ? (
+                                        {site.unitTypes?.length === 0 ? (
                                             <p className="text-center text-gray-500 py-8 italic">No unit types selected yet.</p>
                                         ) : (
                                             site.unitTypes.map((unit) => (

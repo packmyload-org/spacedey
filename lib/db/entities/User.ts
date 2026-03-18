@@ -52,7 +52,6 @@ export class User extends BaseEntity {
   @BeforeUpdate()
   async hashPassword() {
     if (!this.password) return;
-    // If password already hashed (starts with $2a$), skip
     if (this.password.startsWith('$2')) return;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
