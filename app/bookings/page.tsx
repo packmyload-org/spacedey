@@ -187,7 +187,7 @@ export default function UserBookingsPage() {
                         <h2 className="text-2xl font-black text-blue-900 mb-3">No bookings yet</h2>
                         <p className="text-gray-500 mb-10 text-lg">Ready to make your first storage booking? Find a location near you.</p>
                         <Link href="/search" className="inline-block bg-blue-600 text-white px-10 py-5 rounded-full font-black shadow-lg shadow-blue-600/20 hover:scale-105 transition-all">
-                            EXPORE LOCATIONS
+                            EXPLORE LOCATIONS
                         </Link>
                     </div>
                 ) : (
