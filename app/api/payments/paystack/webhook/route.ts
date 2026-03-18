@@ -75,6 +75,7 @@ function matchesRecurringGroup({
 }
 
 export async function POST(req: Request) {
+  const appUrl = new URL(req.url).origin;
   const rawBody = await req.text();
   const signature = req.headers.get('x-paystack-signature');
 
@@ -163,6 +164,7 @@ export async function POST(req: Request) {
 
       const notificationIds = await queueOrderConfirmationNotifications({
         source: 'payments/paystack-webhook-existing',
+        appUrl,
         emails: updatedBookings.map(({ booking, invoice }) => ({
           to: booking.user.email,
           firstName: booking.user.firstName,
@@ -240,6 +242,7 @@ export async function POST(req: Request) {
 
     const notificationIds = await queueOrderConfirmationNotifications({
       source: 'payments/paystack-webhook-recurring',
+      appUrl,
       emails: updatedBookings.map(({ booking, invoice }) => ({
         to: booking.user.email,
         firstName: booking.user.firstName,

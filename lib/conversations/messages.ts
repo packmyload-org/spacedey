@@ -19,3 +19,20 @@ export function createConversationMessage(
     createdAt: createdAt.toISOString(),
   };
 }
+
+export function toConversationMessage(args: {
+  id: string;
+  role: ConversationMessageRole;
+  content: string;
+  createdAt: Date | string;
+}): ConversationMessage {
+  return {
+    id: args.id,
+    role: args.role,
+    content: args.content,
+    createdAt:
+      args.createdAt instanceof Date
+        ? args.createdAt.toISOString()
+        : new Date(args.createdAt).toISOString(),
+  };
+}

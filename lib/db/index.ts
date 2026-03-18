@@ -16,6 +16,9 @@ import ReferralSubmission from './entities/ReferralSubmission';
 import LandlordInquiry from './entities/LandlordInquiry';
 import EmailNotification from './entities/EmailNotification';
 import SupportConversation from './entities/SupportConversation';
+import SupportMessage from './entities/SupportMessage';
+import ReferralMessage from './entities/ReferralMessage';
+import LandlordMessage from './entities/LandlordMessage';
 
 const ssl = env.postgres.ssl
   ? { rejectUnauthorized: env.postgres.sslRejectUnauthorized }
@@ -59,6 +62,9 @@ function getAppDataSource(): DataSource {
       LandlordInquiry,
       EmailNotification,
       SupportConversation,
+      SupportMessage,
+      ReferralMessage,
+      LandlordMessage,
     ],
   });
 

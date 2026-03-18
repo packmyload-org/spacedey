@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Bot, Send, X } from "lucide-react";
+import { Bot, MessageCircle, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import SpaceyConversationPanel from "@/components/chat/SpaceyConversationPanel";
@@ -74,6 +74,24 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
     setConversationId(null);
     setMessages([]);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) {
     return null;
@@ -155,27 +173,42 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 p-3 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-950 px-4 py-4 text-white sm:px-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white">
-              <Bot className="h-5 w-5" />
+    <div className="pointer-events-none fixed bottom-6 left-4 z-[60] w-[min(calc(100vw-2rem),24rem)] sm:left-6 sm:w-[24rem]">
+      <div className="pointer-events-auto flex max-h-[min(78vh,44rem)] flex-col overflow-hidden rounded-[30px] border border-[#D6E2FF] bg-white shadow-[0_28px_90px_rgba(15,23,42,0.22)]">
+        <div className="border-b border-[#D6E2FF] bg-[linear-gradient(135deg,#0F1A48_0%,#1642F0_60%,#2E7BFF_100%)] px-5 py-4 text-white">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/16 text-white ring-1 ring-white/25 backdrop-blur">
+                <Bot className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-base font-semibold text-white">Spacey</p>
+                <p className="truncate text-sm text-blue-100">
+                  {conversationId ? "Support thread is live" : "Quick support chat"}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">Spacey</p>
-              <p className="truncate text-xs text-slate-300">
-                {conversationId ? "In-app support thread" : "Start a support chat"}
-              </p>
-            </div>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 text-blue-100 transition hover:bg-white/10 hover:text-white"
+              aria-label="Close support chat"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-full p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
-            aria-label="Close support chat"
-          >
-            <X className="h-5 w-5" />
-          </button>
+
+          {!conversationId ? (
+            <div className="mt-4 rounded-[22px] border border-white/15 bg-white/10 px-4 py-3 backdrop-blur">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
+                  <MessageCircle className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-sm font-medium leading-6 text-white">
+                  Tell me what you need help with.
+                </p>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {conversationId ? (
@@ -184,97 +217,121 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
             onSendMessage={handleSendReply}
             isSending={isSendingReply}
             className="flex-1"
+            showHeader={false}
             emptyLabel="In-app support thread"
             helperText="Reply here with any extra detail, screenshots, booking email, location, or invoice number."
           />
         ) : (
-        <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white px-4 py-4 sm:px-5">
-          <div className="mb-4 space-y-3 bg-slate-100 px-0 py-0">
-            <div className="max-w-[85%] rounded-3xl rounded-bl-md bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm">
-              Hi, I&apos;m Spacey. Tell me what&apos;s going on and I&apos;ll open a support thread right here in the app.
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto bg-[#F7F9FF] px-4 py-4 sm:px-5">
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#6881BB]">
+                    First name
+                  </span>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-2xl border border-[#D6E2FF] bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D9E5FF]"
+                    placeholder="First name"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#6881BB]">
+                    Last name
+                  </span>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="w-full rounded-2xl border border-[#D6E2FF] bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D9E5FF]"
+                    placeholder="Last name"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#6881BB]">
+                    Email
+                  </span>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full rounded-2xl border border-[#D6E2FF] bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D9E5FF]"
+                    placeholder="Email address"
+                    {...EMAIL_INPUT_PROPS}
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#6881BB]">
+                    Phone
+                  </span>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full rounded-2xl border border-[#D6E2FF] bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D9E5FF]"
+                    placeholder="Phone number"
+                  />
+                </label>
+              </div>
             </div>
 
-            <div className="max-w-[85%] rounded-3xl rounded-bl-md bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm">
-              Once you send the first message, the form will turn into a live chat so you can keep adding details without leaving this page.
+            <div className="mt-3 space-y-3">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#6881BB]">
+                  Topic
+                </span>
+                <select
+                  name="topic"
+                  value={formData.topic}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-[#D6E2FF] bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D9E5FF]"
+                >
+                  {TOPIC_OPTIONS.map((topic) => (
+                    <option key={topic} value={topic}>
+                      {topic}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-[0.16em] text-[#6881BB]">
+                  Message
+                </span>
+                <textarea
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                  rows={5}
+                  className="w-full resize-none rounded-[24px] border border-[#D6E2FF] bg-white px-4 py-3 text-sm leading-6 text-slate-900 shadow-sm outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D9E5FF]"
+                  placeholder="What do you need help with?"
+                />
+              </label>
             </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="First name"
-            />
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Last name"
-            />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Email address"
-              {...EMAIL_INPUT_PROPS}
-            />
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Phone number"
-            />
-          </div>
 
-          <div className="mt-3 grid gap-3">
-            <select
-              name="topic"
-              value={formData.topic}
-              onChange={handleChange}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            >
-              {TOPIC_OPTIONS.map((topic) => (
-                <option key={topic} value={topic}>
-                  {topic}
-                </option>
-              ))}
-            </select>
-
-            <textarea
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              required
-              rows={4}
-              className="w-full resize-none rounded-[24px] border border-slate-200 px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Type your message..."
-            />
-          </div>
-
-          <div className="mt-3 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
-              Spacey will keep this support thread active in-app.
-            </p>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
-            >
-              <Send className="h-4 w-4" />
-              {isSubmitting ? "Sending..." : "Send"}
-            </button>
-          </div>
-        </form>
+            <div className="mt-4 flex items-center justify-end gap-3">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#1642F0] px-5 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(22,66,240,0.22)] transition hover:bg-[#1138D8] disabled:cursor-not-allowed disabled:bg-blue-300 disabled:shadow-none"
+              >
+                <Send className="h-4 w-4" />
+                {isSubmitting ? "Sending..." : "Send"}
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>

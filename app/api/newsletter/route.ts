@@ -8,6 +8,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   try {
+    const appUrl = new URL(request.url).origin;
     const body = await request.json().catch(() => null);
     const email = normalizeEmail(body?.email || '');
 
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
 
       if (shouldSendWelcomeEmail) {
         try {
-          await sendNewsletterWelcomeEmail({ email });
+          await sendNewsletterWelcomeEmail({ email, appUrl });
         } catch (error) {
           console.error('Newsletter welcome email failed:', error);
         }
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
     await repo.save(subscriber);
 
     try {
-      await sendNewsletterWelcomeEmail({ email });
+      await sendNewsletterWelcomeEmail({ email, appUrl });
     } catch (error) {
       console.error('Newsletter welcome email failed:', error);
     }

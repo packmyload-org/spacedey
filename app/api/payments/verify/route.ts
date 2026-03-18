@@ -76,6 +76,7 @@ async function releaseFailedPendingBookings(payment: Payment) {
 
 export async function POST(req: Request) {
     try {
+        const appUrl = new URL(req.url).origin;
         const { reference, transactionId } = await req.json();
 
         const dataSource = await connectTypeORM();
@@ -157,6 +158,7 @@ export async function POST(req: Request) {
 
             const notificationIds = await queueOrderConfirmationNotifications({
                 source: 'payments/verify',
+                appUrl,
                 emails: updatedBookings.map(({ booking, invoice }) => ({
                     to: booking.user.email,
                     firstName: booking.user.firstName,

@@ -227,7 +227,7 @@ export default function StorageMapSection({
 
   const featuredCities = useMemo(() => cities.slice(0, 8), [cities]);
   const selectedCityHref = selectedCity ? `/locations/city/${toLocationSlug(selectedCity)}` : '/locations';
-  const shouldShowLiveMap = Boolean(selectedCity) && env.maps.enabled;
+  const shouldShowLiveMap = env.maps.enabled;
   const showUnavailableMessage = Boolean(selectedCity) && !shouldShowLiveMap;
 
   useEffect(() => {
@@ -242,26 +242,42 @@ export default function StorageMapSection({
   }, [selectedCity]);
 
   return (
-    <section className="px-6 py-14 lg:px-20">
+    <section className="bg-[linear-gradient(180deg,#F8FAFF_0%,#FFFFFF_100%)] px-6 py-14 lg:px-20 lg:py-20">
       <div className="mx-auto max-w-[1400px]">
-        <h2 className="text-center text-3xl font-bold capitalize text-blue-900 lg:text-4xl">
-          Storage in your neighborhood
-        </h2>
+        <div className="mx-auto max-w-[920px] text-center">
+          <h2 className="mt-4 text-4xl font-black tracking-[-0.03em] text-[#102A72] lg:text-5xl">
+            Find storage in your neighborhood
+          </h2>
+          <p className="mt-4 text-base leading-7 text-[#5E6C91] lg:text-lg">
+            Explore every Spacedey location on a fully interactive map, and filter by city to find the closest match for your storage needs.
+          </p>
+        </div>
 
-        <hr className="mx-auto mb-10 mt-6 h-[3px] w-[50px] border-0 bg-orange-500 lg:mb-[72px]" />
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-[24px] border border-[#D6E2FF] bg-white px-5 py-4 shadow-[0_18px_45px_rgba(17,42,114,0.06)]">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5D74B0]">Cities listed</p>
+            <p className="mt-2 text-3xl font-black text-[#102A72]">{cities.length}</p>
+          </div>
+          <div className="rounded-[24px] border border-[#D6E2FF] bg-white px-5 py-4 shadow-[0_18px_45px_rgba(17,42,114,0.06)]">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5D74B0]">Mapped sites</p>
+            <p className="mt-2 text-3xl font-black text-[#102A72]">{mapSites.length}</p>
+          </div>
+          <div className="rounded-[24px] border border-[#D6E2FF] bg-white px-5 py-4 shadow-[0_18px_45px_rgba(17,42,114,0.06)]">
+            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5D74B0]">Map status</p>
+            <p className="mt-2 text-3xl font-black text-[#102A72]">
+              {shouldShowLiveMap ? 'Live' : 'Preview'}
+            </p>
+          </div>
+        </div>
 
-        <div className="grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-stretch">
+        <div className="mt-10 grid gap-8 lg:grid-cols-[320px_minmax(0,1fr)] lg:items-stretch">
           <div className="rounded-[28px] border border-[#D6E2FF] bg-white p-6 shadow-[0_22px_60px_rgba(17,42,114,0.08)] lg:p-7">
             <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5D74B0]">
               Explore locations
             </p>
             <h3 className="mt-3 text-2xl font-black text-[#102A72]">
-              Select a city first
+              Filter the map
             </h3>
-            <p className="mt-3 text-sm leading-6 text-[#5E6C91]">
-              The live map appears when a city is selected. Selecting a city also reveals the storage sites available under it.
-            </p>
-
             <div className="mt-6">
               <label htmlFor="location-city" className="mb-2 block text-sm font-semibold text-[#16306D]">
                 Location or state
@@ -286,12 +302,12 @@ export default function StorageMapSection({
                 Current selection
               </p>
               <p className="mt-3 text-xl font-bold text-[#102A72]">
-                {selectedCity || 'No city selected yet'}
+                {selectedCity || 'All locations'}
               </p>
               <p className="mt-2 text-sm text-[#5E6C91]">
                 {selectedCity
                   ? `${selectedCitySites.length} site${selectedCitySites.length === 1 ? '' : 's'} available in ${selectedCity}.`
-                  : 'Choose a city from the list to filter the map and reveal the matching sites.'}
+                  : `${mapSites.length} mapped site${mapSites.length === 1 ? '' : 's'} currently visible across all listed cities.`}
               </p>
             </div>
 
@@ -316,20 +332,13 @@ export default function StorageMapSection({
               })}
             </div>
 
-            <Link
-              href={selectedCityHref}
-              className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-[#1642F0] px-6 py-3.5 text-center text-sm font-bold text-white transition-colors hover:bg-[#1238D4]"
-            >
-              {selectedCity ? `View ${selectedCity} storage` : 'Browse all storage units'}
-            </Link>
-
             <p className="mt-3 text-center text-xs text-[#6D7CA4]">
               {loading
                 ? 'Updating location list...'
-                : !selectedCity
-                  ? 'Select a city to activate the map and reveal matching locations'
-                  : shouldShowLiveMap
-                  ? `${cities.length} cities currently listed`
+                : shouldShowLiveMap
+                  ? selectedCity
+                    ? `Focused on ${selectedCity}`
+                    : 'Showing every mapped location'
                   : 'Showing coverage preview until live maps are enabled.'}
             </p>
           </div>
@@ -433,14 +442,6 @@ export default function StorageMapSection({
           </div>
         )}
 
-        <div className="mt-10 flex justify-center">
-          <Link
-            href="/search"
-            className="rounded-full border border-blue-600 px-7 py-3 font-medium text-blue-600 transition-colors hover:bg-blue-50"
-          >
-            Search Storage Units Near Me
-          </Link>
-        </div>
       </div>
     </section>
   );

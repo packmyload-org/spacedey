@@ -17,6 +17,9 @@ import ReferralSubmission from '../lib/db/entities/ReferralSubmission';
 import LandlordInquiry from '../lib/db/entities/LandlordInquiry';
 import EmailNotification from '../lib/db/entities/EmailNotification';
 import SupportConversation from '../lib/db/entities/SupportConversation';
+import SupportMessage from '../lib/db/entities/SupportMessage';
+import ReferralMessage from '../lib/db/entities/ReferralMessage';
+import LandlordMessage from '../lib/db/entities/LandlordMessage';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();
@@ -78,6 +81,9 @@ const AppDataSource = new DataSource({
     LandlordInquiry,
     EmailNotification,
     SupportConversation,
+    SupportMessage,
+    ReferralMessage,
+    LandlordMessage,
   ],
   migrations: [path.join(process.cwd(), 'migrations/*{.ts,.js}')],
 });

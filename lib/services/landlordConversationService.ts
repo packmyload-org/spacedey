@@ -1,6 +1,8 @@
 import { connectTypeORM } from '@/lib/db';
+import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
 import LandlordInquiry from '@/lib/db/entities/LandlordInquiry';
-import { createConversationMessage, type ConversationMessage } from '@/lib/conversations/messages';
+import LandlordMessage from '@/lib/db/entities/LandlordMessage';
+import { type ConversationMessage, toConversationMessage } from '@/lib/conversations/messages';
 
 export type LandlordConversationSnapshot = {
   conversationId: string;
@@ -16,18 +18,18 @@ function buildLandlordIntroMessages(inquiry: LandlordInquiry) {
     : 'If there is anything important about access, ceiling height, power, or security, send it here.';
 
   return [
-    createConversationMessage(
-      'user',
-      `I have a property at ${locationLabel} and want Spacedey to review it for storage use.`
-    ),
-    createConversationMessage(
-      'assistant',
-      `Thanks ${inquiry.firstName}, I’ve logged your property at ${locationLabel} for the partnerships team and started a review for ${sizeLabel}.`
-    ),
-    createConversationMessage(
-      'assistant',
-      `${detailsLine}\n\nYou can reply here with exact availability, access notes, photos, floor plan context, or the best callback window.`
-    ),
+    {
+      role: 'user' as const,
+      content: `I have a property at ${locationLabel} and want Spacedey to review it for storage use.`,
+    },
+    {
+      role: 'assistant' as const,
+      content: `Thanks ${inquiry.firstName}, I’ve logged your property at ${locationLabel} for the partnerships team and started a review for ${sizeLabel}.`,
+    },
+    {
+      role: 'assistant' as const,
+      content: `${detailsLine}\n\nYou can reply here with exact availability, access notes, photos, floor plan context, or the best callback window.`,
+    },
   ];
 }
 
@@ -52,7 +54,9 @@ export async function initializeLandlordConversation(
   inquiryId: string
 ): Promise<LandlordConversationSnapshot> {
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(LandlordInquiry);
+  const messageRepo = dataSource.getRepository(LandlordMessage);
   const inquiry = await repo.findOne({ where: { id: inquiryId } });
 
   if (!inquiry) {
@@ -60,16 +64,25 @@ export async function initializeLandlordConversation(
   }
 
   const now = new Date();
+  const messages = buildLandlordIntroMessages(inquiry);
   inquiry.chatThreadId = inquiry.chatThreadId || crypto.randomUUID();
-  inquiry.conversationMessages = buildLandlordIntroMessages(inquiry);
   inquiry.status = 'contacted';
   inquiry.botReplyCount = 2;
   inquiry.lastOutboundAt = now;
   await repo.save(inquiry);
+  const savedMessages = await messageRepo.save(
+    messages.map((message) =>
+      messageRepo.create({
+        inquiryId: inquiry.id,
+        role: message.role,
+        content: message.content,
+      })
+    )
+  );
 
   return {
     conversationId: inquiry.chatThreadId,
-    messages: inquiry.conversationMessages,
+    messages: savedMessages.map((message) => toConversationMessage(message)),
     status: inquiry.status,
   };
 }
@@ -79,7 +92,9 @@ export async function appendLandlordConversationMessage(args: {
   message: string;
 }): Promise<LandlordConversationSnapshot> {
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(LandlordInquiry);
+  const messageRepo = dataSource.getRepository(LandlordMessage);
   const inquiry = await repo.findOne({ where: { chatThreadId: args.conversationId } });
 
   if (!inquiry) {
@@ -87,28 +102,32 @@ export async function appendLandlordConversationMessage(args: {
   }
 
   const now = new Date();
-  const userMessage = createConversationMessage('user', args.message, now);
-  const assistantMessage = createConversationMessage(
-    'assistant',
-    buildLandlordReply(inquiry, args.message),
-    now
-  );
-
-  inquiry.conversationMessages = [
-    ...inquiry.conversationMessages,
-    userMessage,
-    assistantMessage,
-  ];
+  await messageRepo.save([
+    messageRepo.create({
+      inquiryId: inquiry.id,
+      role: 'user',
+      content: args.message,
+    }),
+    messageRepo.create({
+      inquiryId: inquiry.id,
+      role: 'assistant',
+      content: buildLandlordReply(inquiry, args.message),
+    }),
+  ]);
   inquiry.lastInboundMessage = args.message;
   inquiry.lastInboundAt = now;
   inquiry.lastOutboundAt = now;
   inquiry.botReplyCount += 1;
   inquiry.status = inquiry.botReplyCount > 2 ? 'triaging' : 'responded';
   await repo.save(inquiry);
+  const allMessages = await messageRepo.find({
+    where: { inquiryId: inquiry.id },
+    order: { createdAt: 'ASC' },
+  });
 
   return {
     conversationId: inquiry.chatThreadId || args.conversationId,
-    messages: inquiry.conversationMessages,
+    messages: allMessages.map((message) => toConversationMessage(message)),
     status: inquiry.status,
   };
 }

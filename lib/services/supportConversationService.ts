@@ -1,6 +1,11 @@
 import { connectTypeORM } from '@/lib/db';
+import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
 import SupportConversation from '@/lib/db/entities/SupportConversation';
-import { createConversationMessage, type ConversationMessage } from '@/lib/conversations/messages';
+import SupportMessage from '@/lib/db/entities/SupportMessage';
+import {
+  type ConversationMessage,
+  toConversationMessage,
+} from '@/lib/conversations/messages';
 
 export type SupportConversationContext = {
   firstName: string;
@@ -23,15 +28,19 @@ function buildSupportIntroMessages(context: SupportConversationContext) {
   const phoneLabel = context.phone || 'Not provided';
 
   return [
-    createConversationMessage('user', context.message),
-    createConversationMessage(
-      'assistant',
-      `Hi ${context.firstName}, I’ve opened your support ticket and shared it with the Spacedey team.\n\nHere’s what I captured:\nName: ${name || context.email}\nEmail: ${context.email}\nPhone: ${phoneLabel}\nTopic: ${topicLabel}`
-    ),
-    createConversationMessage(
-      'assistant',
-      'You can keep replying here with any extra detail, screenshots, booking email, storage location, or invoice number. I’ll keep everything attached to this conversation.'
-    ),
+    {
+      role: 'user' as const,
+      content: context.message,
+    },
+    {
+      role: 'assistant' as const,
+      content: `Hi ${context.firstName}, I’ve opened your support ticket and shared it with the Spacedey team.\n\nHere’s what I captured:\nName: ${name || context.email}\nEmail: ${context.email}\nPhone: ${phoneLabel}\nTopic: ${topicLabel}`,
+    },
+    {
+      role: 'assistant' as const,
+      content:
+        'You can keep replying here with any extra detail, screenshots, booking email, storage location, or invoice number. I’ll keep everything attached to this conversation.',
+    },
   ];
 }
 
@@ -68,7 +77,9 @@ export async function startSupportConversation(
   context: SupportConversationContext
 ): Promise<SupportConversationSnapshot> {
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(SupportConversation);
+  const messageRepo = dataSource.getRepository(SupportMessage);
   const now = new Date();
   const messages = buildSupportIntroMessages(context);
   const fullName = [context.firstName, context.lastName].filter(Boolean).join(' ').trim();
@@ -77,7 +88,6 @@ export async function startSupportConversation(
     threadId: crypto.randomUUID(),
     email: context.email,
     fullName: fullName || null,
-    phone: context.phone || null,
     topic: context.topic || null,
     status: 'acknowledged',
     firstMessage: context.message,
@@ -85,14 +95,22 @@ export async function startSupportConversation(
     lastInboundAt: now,
     lastOutboundAt: now,
     botReplyCount: 2,
-    messages,
   });
 
   await repo.save(conversation);
+  const savedMessages = await messageRepo.save(
+    messages.map((message) =>
+      messageRepo.create({
+        conversationId: conversation.id,
+        role: message.role,
+        content: message.content,
+      })
+    )
+  );
 
   return {
     conversationId: conversation.threadId,
-    messages: conversation.messages,
+    messages: savedMessages.map((message) => toConversationMessage(message)),
     status: conversation.status,
   };
 }
@@ -102,7 +120,9 @@ export async function appendSupportConversationMessage(args: {
   message: string;
 }): Promise<SupportConversationSnapshot> {
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(SupportConversation);
+  const messageRepo = dataSource.getRepository(SupportMessage);
   const conversation = await repo.findOne({ where: { threadId: args.conversationId } });
 
   if (!conversation) {
@@ -110,14 +130,18 @@ export async function appendSupportConversationMessage(args: {
   }
 
   const now = new Date();
-  const userMessage = createConversationMessage('user', args.message, now);
-  const assistantMessage = createConversationMessage(
-    'assistant',
-    buildSupportReply(conversation, args.message),
-    now
-  );
-
-  conversation.messages = [...conversation.messages, userMessage, assistantMessage];
+  await messageRepo.save([
+    messageRepo.create({
+      conversationId: conversation.id,
+      role: 'user',
+      content: args.message,
+    }),
+    messageRepo.create({
+      conversationId: conversation.id,
+      role: 'assistant',
+      content: buildSupportReply(conversation, args.message),
+    }),
+  ]);
   conversation.lastInboundMessage = args.message;
   conversation.lastInboundAt = now;
   conversation.lastOutboundAt = now;
@@ -125,10 +149,14 @@ export async function appendSupportConversationMessage(args: {
   conversation.status = conversation.botReplyCount > 2 ? 'triaging' : 'acknowledged';
 
   await repo.save(conversation);
+  const allMessages = await messageRepo.find({
+    where: { conversationId: conversation.id },
+    order: { createdAt: 'ASC' },
+  });
 
   return {
     conversationId: conversation.threadId,
-    messages: conversation.messages,
+    messages: allMessages.map((message) => toConversationMessage(message)),
     status: conversation.status,
   };
 }

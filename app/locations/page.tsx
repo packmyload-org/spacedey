@@ -4,8 +4,6 @@ import Hero from "@/components/locations/Hero";
 import LocationDiscoveryLinks from '@/components/locations/LocationDiscoveryLinks';
 import LocationsSection from "@/components/locations/LocationsSection";
 import StorageLocationsMap from "@/components/locations/StorageLocationsMap";
-import NotAverageStorage from "@/components/ui/NotAverageStorage";
-import FinalCtaBlock from "@/components/ui/FinalCtaBlock";
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
@@ -29,8 +27,6 @@ export default function LocationsPage() {
       <LocationsSection />
       <LocationDiscoveryLinks />
       <StorageLocationsMap />
-      <NotAverageStorage />
-      <FinalCtaBlock />
     </main>
   );
 }

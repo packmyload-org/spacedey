@@ -85,6 +85,7 @@ function matchesRecurringGroup(args: {
 }
 
 export async function POST(req: Request) {
+  const appUrl = new URL(req.url).origin;
   const signature = req.headers.get('verif-hash');
   if (!hasValidHash(signature)) {
     return NextResponse.json({ ok: false, message: 'Invalid Flutterwave signature' }, { status: 401 });
@@ -136,6 +137,7 @@ export async function POST(req: Request) {
 
       const notificationIds = await queueOrderConfirmationNotifications({
         source: 'payments/flutterwave-webhook-existing',
+        appUrl,
         emails: updatedBookings.map(({ booking, invoice }) => ({
           to: booking.user.email,
           firstName: booking.user.firstName,
@@ -210,6 +212,7 @@ export async function POST(req: Request) {
 
     const notificationIds = await queueOrderConfirmationNotifications({
       source: 'payments/flutterwave-webhook-recurring',
+      appUrl,
       emails: updatedBookings.map(({ booking, invoice }) => ({
         to: booking.user.email,
         firstName: booking.user.firstName,

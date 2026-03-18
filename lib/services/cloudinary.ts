@@ -1,7 +1,9 @@
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
-const CLOUDINARY_FOLDER_PREFIX = process.env.CLOUDINARY_FOLDER_PREFIX || 'spacedey';
+import { env } from '@/config/env';
+
+const CLOUDINARY_CLOUD_NAME = env.integrations.cloudinary.cloudName;
+const CLOUDINARY_API_KEY = env.integrations.cloudinary.apiKey;
+const CLOUDINARY_API_SECRET = env.integrations.cloudinary.apiSecret;
+const CLOUDINARY_FOLDER_PREFIX = env.integrations.cloudinary.folderPrefix;
 
 function getCloudinaryAuthHeader() {
   if (!CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {

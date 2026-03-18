@@ -2,10 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import type { ConversationMessage } from '@/lib/conversations/messages';
+import type { Relation } from 'typeorm';
+import type { LandlordMessage } from '@/lib/db/entities/LandlordMessage';
+import * as LandlordMessageEntity from '@/lib/db/entities/LandlordMessage';
 
 @Entity({ name: 'landlord_inquiries' })
 export class LandlordInquiry {
@@ -54,8 +57,8 @@ export class LandlordInquiry {
   @Column({ type: 'timestamp', nullable: true })
   lastOutboundAt!: Date | null;
 
-  @Column({ type: 'jsonb', default: () => "'[]'" })
-  conversationMessages!: ConversationMessage[];
+  @OneToMany(() => LandlordMessageEntity.LandlordMessage, (message: LandlordMessage) => message.inquiry)
+  messages!: Relation<LandlordMessage[]>;
 
   @CreateDateColumn()
   createdAt!: Date;

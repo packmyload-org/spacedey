@@ -3,7 +3,7 @@ import HomePageContent from "@/components/home/HomePageContent";
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Self Storage Units in Nigeria',
+  title: 'Best and Affordable Self Storage Units near you | Spacedey',
   description:
     'Reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and flexible storage needs.',
   path: '/',
@@ -14,6 +14,7 @@ export const metadata: Metadata = buildPageMetadata({
     'personal storage nigeria',
     'reserve storage unit online',
   ],
+  "noIndex": false,
 });
 
 export default function Home() {

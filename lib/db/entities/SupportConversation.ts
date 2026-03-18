@@ -1,5 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import type { ConversationMessage } from '@/lib/conversations/messages';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
+import type { SupportMessage } from '@/lib/db/entities/SupportMessage';
+import * as SupportMessageEntity from '@/lib/db/entities/SupportMessage';
 
 @Entity({ name: 'support_conversations' })
 export class SupportConversation {
@@ -14,9 +16,6 @@ export class SupportConversation {
 
   @Column({ type: 'varchar', nullable: true })
   fullName!: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  phone!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   topic!: string | null;
@@ -39,8 +38,8 @@ export class SupportConversation {
   @Column({ type: 'integer', default: 0 })
   botReplyCount!: number;
 
-  @Column({ type: 'jsonb', default: () => "'[]'" })
-  messages!: ConversationMessage[];
+  @OneToMany(() => SupportMessageEntity.SupportMessage, (message: SupportMessage) => message.conversation)
+  messages!: Relation<SupportMessage[]>;
 
   @CreateDateColumn()
   createdAt!: Date;

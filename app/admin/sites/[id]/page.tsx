@@ -181,6 +181,13 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
         }));
     };
 
+    const handleMediaUrlChange = (field: 'image' | 'siteMapUrl', value: string) => {
+        setSite((current) => ({
+            ...current,
+            [field]: value.trim(),
+        }));
+    };
+
     const addPresetUnitTypeToDraft = (preset: UnitType) => {
         setSite((current) => {
             const exists = current.unitTypes.some((unit) => (
@@ -925,6 +932,13 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                         <div className="space-y-6">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Facility Image</label>
+                                <input
+                                    type="url"
+                                    value={site.image || ''}
+                                    onChange={(event) => handleMediaUrlChange('image', event.target.value)}
+                                    className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                    placeholder="https://..."
+                                />
                                 <div
                                     onClick={() => document.getElementById('image-upload')?.click()}
                                     className="aspect-video relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 group cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all overflow-hidden"
@@ -947,11 +961,29 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                         </>
                                     )}
                                 </div>
-                                <p className="mt-2 text-[10px] text-gray-400">Recommended: 16:9 aspect ratio, at least 1200x675px. Uploaded to Cloudinary and saved as the site image URL.</p>
+                                <div className="mt-2 flex items-center justify-between gap-3">
+                                    <p className="text-[10px] text-gray-400">Recommended: 16:9 aspect ratio, at least 1200x675px. Upload to Cloudinary or paste an image URL.</p>
+                                    {site.image ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMediaUrlChange('image', '')}
+                                            className="text-[10px] font-bold uppercase tracking-wide text-red-500 transition hover:text-red-600"
+                                        >
+                                            Clear
+                                        </button>
+                                    ) : null}
+                                </div>
                             </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Site Map Layout</label>
+                                <input
+                                    type="url"
+                                    value={site.siteMapUrl || ''}
+                                    onChange={(event) => handleMediaUrlChange('siteMapUrl', event.target.value)}
+                                    className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                    placeholder="https://..."
+                                />
                                 <div
                                     onClick={() => document.getElementById('map-upload')?.click()}
                                     className="aspect-[4/3] relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 group cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all overflow-hidden"
@@ -981,7 +1013,18 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                         </>
                                     )}
                                 </div>
-                                <p className="mt-2 text-[10px] text-gray-400">Blueprint uploads are stored in Cloudinary and saved to the site map URL field.</p>
+                                <div className="mt-2 flex items-center justify-between gap-3">
+                                    <p className="text-[10px] text-gray-400">Upload to Cloudinary or paste an image or PDF URL for the site map field.</p>
+                                    {site.siteMapUrl ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMediaUrlChange('siteMapUrl', '')}
+                                            className="text-[10px] font-bold uppercase tracking-wide text-red-500 transition hover:text-red-600"
+                                        >
+                                            Clear
+                                        </button>
+                                    ) : null}
+                                </div>
                             </div>
                         </div>
                     </section>

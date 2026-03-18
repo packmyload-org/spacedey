@@ -10,12 +10,13 @@ import EmailNotification, {
 import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { sendBillingSuccessEmail, sendDirectEmail } from '@/lib/email/resend';
 import type { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { resolveAppUrl } from '@/lib/utils/appUrl';
 
 const ALERT_RECIPIENTS = (process.env.ALERT_NOTIFICATION_EMAILS || '')
   .split(',')
   .map((value) => value.trim().toLowerCase())
   .filter(Boolean);
-const APP_URL = process.env.PUBLIC_APP_URL || 'http://localhost:3000';
+const APP_URL = resolveAppUrl();
 const EMAIL_LOGO_URL = `${APP_URL}/apple-icon.png`;
 
 type OrderConfirmationPayload = {
@@ -25,6 +26,7 @@ type OrderConfirmationPayload = {
   amountPaid: number;
   currency: string;
   billingType?: PaymentBillingType;
+  appUrl?: string;
 };
 
 function escapeHtml(value: string) {
@@ -152,6 +154,7 @@ async function queueNotification(args: {
 
 export async function queueOrderConfirmationNotifications(args: {
   source: string;
+  appUrl?: string | null;
   emails: Array<{
     to: string;
     firstName: string;
@@ -168,7 +171,10 @@ export async function queueOrderConfirmationNotifications(args: {
     recipientEmail: email.to,
     recipientName: email.firstName,
     subject: 'Your Spacedey order is confirmed',
-    payload: email,
+    payload: {
+      ...email,
+      appUrl: resolveAppUrl(args.appUrl),
+    },
   })));
 
   return queued.map((notification) => notification.id);
@@ -397,6 +403,7 @@ async function deliverNotification(notification: EmailNotification) {
         amountPaid: notification.payload.amountPaid,
         currency: notification.payload.currency,
         billingType: notification.payload.billingType,
+        appUrl: typeof notification.payload.appUrl === 'string' ? notification.payload.appUrl : undefined,
       });
       if (!sent) {
         throw new Error('Order confirmation email could not be sent.');

@@ -119,7 +119,7 @@ This creates two default accounts:
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | `admin@spacedey.com` | `admin123456` |
+| Admin | `spacedeystorage@gmail.com` | `Admin@123` |
 | User | `user@spacedey.com` | `user123456` |
 
 > ⚠️ **Change these passwords before deploying to production!**

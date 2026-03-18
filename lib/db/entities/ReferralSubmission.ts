@@ -1,5 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import type { ConversationMessage } from '@/lib/conversations/messages';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
+import type { ReferralMessage } from '@/lib/db/entities/ReferralMessage';
+import * as ReferralMessageEntity from '@/lib/db/entities/ReferralMessage';
 
 @Entity({ name: 'referral_submissions' })
 export class ReferralSubmission {
@@ -51,8 +53,8 @@ export class ReferralSubmission {
   @Column({ type: 'timestamp', nullable: true })
   lastOutboundAt!: Date | null;
 
-  @Column({ type: 'jsonb', default: () => "'[]'" })
-  conversationMessages!: ConversationMessage[];
+  @OneToMany(() => ReferralMessageEntity.ReferralMessage, (message: ReferralMessage) => message.submission)
+  messages!: Relation<ReferralMessage[]>;
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import SpaceyConversationPanel from '@/components/chat/SpaceyConversationPanel';
 import type { ConversationMessage } from '@/lib/conversations/messages';
@@ -51,6 +52,13 @@ export default function ReferralHero() {
   const [imageSrc, setImageSrc] = useState('/images/referHero.png');
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
+  const [isYourInfoCollapsed, setIsYourInfoCollapsed] = useState(false);
+
+  const hasPopulatedYourInfo = Boolean(
+    formData.firstName.trim() &&
+    formData.lastName.trim() &&
+    formData.email.trim()
+  );
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -64,6 +72,12 @@ export default function ReferralHero() {
       email: user.email ? normalizeEmail(user.email) : current.email,
     }));
   }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (hasPopulatedYourInfo) {
+      setIsYourInfoCollapsed(true);
+    }
+  }, [hasPopulatedYourInfo]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -173,47 +187,74 @@ export default function ReferralHero() {
             ) : (
             <form onSubmit={handleSubmit} className="space-y-5 rounded-b-[28px] bg-white p-4 sm:p-5">
               {/* Your Info Section */}
-              <div>
-                <h3 className="mb-4 text-base font-bold text-gray-900 sm:text-lg">Your info</h3>
+              <div className="rounded-[24px] border border-[#D8E2FF] bg-[#F8FAFF] p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900 sm:text-lg">Your info</h3>
+                    {hasPopulatedYourInfo ? (
+                      <p className="mt-1 text-sm text-[#5D74B0]">
+                        {formData.firstName} {formData.lastName} • {formData.email}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-sm text-[#5D74B0]">
+                        Add your details so we know who made the referral.
+                      </p>
+                    )}
+                  </div>
+                  {hasPopulatedYourInfo ? (
+                    <button
+                      type="button"
+                      onClick={() => setIsYourInfoCollapsed((current) => !current)}
+                      className="inline-flex items-center gap-2 rounded-full border border-[#C7D8FF] bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#1642F0] transition hover:bg-[#EEF4FF]"
+                      aria-expanded={!isYourInfoCollapsed}
+                    >
+                      {isYourInfoCollapsed ? 'Edit' : 'Hide'}
+                      {isYourInfoCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                    </button>
+                  ) : null}
+                </div>
+
                 {isAuthenticated && user ? (
                   <p className="mb-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
                     We pre-filled your details from your Spacedey account.
                   </p>
                 ) : null}
-                
-                {/* Name Row */}
-                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <input
-                    type="text"
-                    name="firstName"
-                    placeholder="First Name*"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <input
-                    type="text"
-                    name="lastName"
-                    placeholder="Last Name*"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                </div>
 
-                {/* Email */}
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email*"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  {...EMAIL_INPUT_PROPS}
-                />
+                {!isYourInfoCollapsed ? (
+                  <div className="mt-4">
+                    <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <input
+                        type="text"
+                        name="firstName"
+                        placeholder="First Name*"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                      <input
+                        type="text"
+                        name="lastName"
+                        placeholder="Last Name*"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Email*"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      {...EMAIL_INPUT_PROPS}
+                    />
+                  </div>
+                ) : null}
               </div>
 
               {/* Their Info Section */}

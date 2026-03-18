@@ -1,11 +1,11 @@
 import { Resend } from 'resend';
 import { generateActionToken } from '@/lib/auth/actionTokens';
 import { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { resolveAppUrl } from '@/lib/utils/appUrl';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Spacedey <onboarding@resend.dev>';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@mailing.spacedey.com';
-const PUBLIC_APP_URL = process.env.PUBLIC_APP_URL || 'http://localhost:3000';
 
 const RESEND_TEMPLATE_IDS = {
   signupVerification: 'email_verification',
@@ -36,6 +36,7 @@ export interface BillingSuccessEmailArgs {
   amountPaid: number;
   currency: string;
   billingType?: PaymentBillingType;
+  appUrl?: string | null;
 }
 
 let resendClient: Resend | null = null;
@@ -127,6 +128,7 @@ export async function sendSignupVerificationEmail(args: {
   userId: string;
   email: string;
   firstName: string;
+  appUrl?: string | null;
 }) {
   const templateId = getTemplateId('signupVerification');
 
@@ -143,7 +145,8 @@ export async function sendSignupVerificationEmail(args: {
     '24h'
   );
 
-  const verificationUrl = `${PUBLIC_APP_URL}/auth/verify-email?token=${encodeURIComponent(token)}`;
+  const appUrl = resolveAppUrl(args.appUrl);
+  const verificationUrl = `${appUrl}/auth/verify-email?token=${encodeURIComponent(token)}`;
 
   await sendEmail({
     to: args.email,
@@ -163,6 +166,7 @@ export async function sendForgotPasswordEmail(args: {
   userId: string;
   email: string;
   firstName: string;
+  appUrl?: string | null;
 }) {
   const templateId = getTemplateId('forgotPassword');
 
@@ -179,7 +183,8 @@ export async function sendForgotPasswordEmail(args: {
     '1h'
   );
 
-  const resetUrl = `${PUBLIC_APP_URL}/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(args.email)}`;
+  const appUrl = resolveAppUrl(args.appUrl);
+  const resetUrl = `${appUrl}/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(args.email)}`;
 
   await sendEmail({
     to: args.email,
@@ -216,6 +221,8 @@ export async function sendBillingSuccessEmail(args: BillingSuccessEmailArgs) {
     return false;
   }
 
+  const appUrl = resolveAppUrl(args.appUrl);
+
   await sendEmail({
     to: args.to,
     subject: EMAIL_SUBJECTS.billingSuccess,
@@ -226,8 +233,8 @@ export async function sendBillingSuccessEmail(args: BillingSuccessEmailArgs) {
       invoiceNumber: args.invoiceNumber,
       amountPaid: formatCurrency(args.amountPaid, args.currency),
       billingType: getBillingTypeLabel(args.billingType),
-      bookingsUrl: `${PUBLIC_APP_URL}/bookings`,
-      invoicesUrl: `${PUBLIC_APP_URL}/invoices`,
+      bookingsUrl: `${appUrl}/bookings`,
+      invoicesUrl: `${appUrl}/invoices`,
       supportEmail: SUPPORT_EMAIL,
     },
   });
@@ -270,6 +277,7 @@ export async function sendBillingSuccessEmailBatch(args: {
 
 export async function sendNewsletterWelcomeEmail(args: {
   email: string;
+  appUrl?: string | null;
 }) {
   const templateId = getTemplateId('newsletterWelcome');
 
@@ -277,13 +285,15 @@ export async function sendNewsletterWelcomeEmail(args: {
     return false;
   }
 
+  const appUrl = resolveAppUrl(args.appUrl);
+
   await sendEmail({
     to: args.email,
     subject: EMAIL_SUBJECTS.newsletterWelcome,
     templateId,
     variables: {
       email: args.email,
-      blogUrl: `${PUBLIC_APP_URL}/blog`,
+      blogUrl: `${appUrl}/blog`,
       supportEmail: SUPPORT_EMAIL,
     },
   });

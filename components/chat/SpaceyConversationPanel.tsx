@@ -9,6 +9,8 @@ interface SpaceyConversationPanelProps {
   onSendMessage: (message: string) => Promise<void>;
   isSending: boolean;
   className?: string;
+  showHeader?: boolean;
+  title?: string;
   emptyLabel?: string;
   helperText?: string;
 }
@@ -18,6 +20,8 @@ export default function SpaceyConversationPanel({
   onSendMessage,
   isSending,
   className,
+  showHeader = true,
+  title = "Spacey",
   emptyLabel = "Continue the conversation with Spacey",
   helperText = "Replies stay in this chat thread.",
 }: SpaceyConversationPanelProps) {
@@ -51,15 +55,17 @@ export default function SpaceyConversationPanel({
   return (
     <div className={className}>
       <div className="flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-950 px-4 py-4 text-white sm:px-5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white">
-            <Bot className="h-5 w-5" />
+        {showHeader ? (
+          <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-950 px-4 py-4 text-white sm:px-5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white">
+              <Bot className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">{title}</p>
+              <p className="text-xs text-slate-300">{emptyLabel}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold">Spacey</p>
-            <p className="text-xs text-slate-300">{emptyLabel}</p>
-          </div>
-        </div>
+        ) : null}
 
         <div className="flex-1 space-y-3 overflow-y-auto bg-slate-100 px-4 py-4 sm:px-5">
           {sortedMessages.map((message) => {
@@ -85,24 +91,26 @@ export default function SpaceyConversationPanel({
         </div>
 
         <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white px-4 py-4 sm:px-5">
-          <div className="flex items-end gap-3">
+          <div className="rounded-[26px] border border-[#D6E2FF] bg-[#F7F9FF] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              rows={2}
-              placeholder="Type your message..."
-              className="min-h-[52px] flex-1 resize-none rounded-[24px] border border-slate-200 px-4 py-3 text-sm leading-6 text-slate-900 outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D8E2FF]"
+              rows={3}
+              placeholder="Reply to Spacey..."
+              className="min-h-[84px] w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400"
             />
-            <button
-              type="submit"
-              disabled={isSending || draft.trim().length === 0}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
-            >
-              <Send className="h-4 w-4" />
-              {isSending ? "Sending..." : "Send"}
-            </button>
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#DFE8FF] pt-3">
+              <p className="text-[11px] font-medium text-slate-500">{helperText}</p>
+              <button
+                type="submit"
+                disabled={isSending || draft.trim().length === 0}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#1642F0] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(22,66,240,0.25)] transition hover:bg-[#1138D8] disabled:cursor-not-allowed disabled:bg-blue-300 disabled:shadow-none"
+              >
+                <Send className="h-4 w-4" />
+                {isSending ? "Sending" : "Send"}
+              </button>
+            </div>
           </div>
-          <p className="mt-3 text-xs text-slate-500">{helperText}</p>
         </form>
       </div>
     </div>

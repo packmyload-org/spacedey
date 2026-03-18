@@ -68,6 +68,7 @@ export async function POST(request: Request) {
         userId: newUser.id,
         email: newUser.email,
         firstName: newUser.firstName,
+        appUrl: new URL(request.url).origin,
       });
     } catch (mailError) {
       console.error('Signup verification email error:', mailError);

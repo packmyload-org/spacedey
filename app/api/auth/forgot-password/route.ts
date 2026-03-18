@@ -32,6 +32,7 @@ export async function POST(request: Request) {
         userId: user.id,
         email: user.email,
         firstName: user.firstName,
+        appUrl: new URL(request.url).origin,
       });
     }
 

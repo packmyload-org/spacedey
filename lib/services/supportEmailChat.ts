@@ -1,6 +1,7 @@
 import { Chat, type Message, type Thread } from 'chat';
 import { MemoryStateAdapter } from '@chat-adapter/state-memory';
 import { connectTypeORM } from '@/lib/db';
+import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
 import SupportConversation from '@/lib/db/entities/SupportConversation';
 import { createConfiguredResendAdapter, createResendThread } from '@/lib/services/emailChatConfig';
 
@@ -81,7 +82,7 @@ function createSupportIntroMessage(args: SupportConversationContext) {
         },
         {
           type: 'link' as const,
-          content: 'Email support',
+          label: 'Email support',
           url: `mailto:${SUPPORT_EMAIL}`,
         },
         {
@@ -132,6 +133,7 @@ function getSupportEmailChat() {
 
   const handleInboundMessage = async (thread: Thread, message: Message) => {
     const dataSource = await connectTypeORM();
+    await ensureInAppConversationSchema(dataSource);
     const repo = dataSource.getRepository(SupportConversation);
 
     let conversation = await repo.findOne({ where: { threadId: thread.id } });
@@ -218,6 +220,7 @@ export async function startSupportConversation(context: SupportConversationConte
   });
 
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(SupportConversation);
   const fullName = [context.firstName, context.lastName].filter(Boolean).join(' ').trim();
   const existingConversation = await repo.findOne({ where: { threadId: thread.id } });

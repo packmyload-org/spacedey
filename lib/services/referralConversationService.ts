@@ -1,6 +1,8 @@
 import { connectTypeORM } from '@/lib/db';
+import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
 import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
-import { createConversationMessage, type ConversationMessage } from '@/lib/conversations/messages';
+import ReferralMessage from '@/lib/db/entities/ReferralMessage';
+import { type ConversationMessage, toConversationMessage } from '@/lib/conversations/messages';
 
 export type ReferralConversationSnapshot = {
   conversationId: string;
@@ -10,18 +12,19 @@ export type ReferralConversationSnapshot = {
 
 function buildReferralIntroMessages(submission: ReferralSubmission) {
   return [
-    createConversationMessage(
-      'user',
-      `I want to refer ${submission.refereeFirstName} in ${submission.refereeLocation}.`
-    ),
-    createConversationMessage(
-      'assistant',
-      `Thanks ${submission.firstName}, I’ve logged your referral for ${submission.refereeFirstName} in ${submission.refereeLocation}.`
-    ),
-    createConversationMessage(
-      'assistant',
-      'If there’s anything we should know before we reach out, reply here with the best contact time, what storage need they mentioned, or any move-in timing that will help us.'
-    ),
+    {
+      role: 'user' as const,
+      content: `I want to refer ${submission.refereeFirstName} in ${submission.refereeLocation}.`,
+    },
+    {
+      role: 'assistant' as const,
+      content: `Thanks ${submission.firstName}, I’ve logged your referral for ${submission.refereeFirstName} in ${submission.refereeLocation}.`,
+    },
+    {
+      role: 'assistant' as const,
+      content:
+        'If there’s anything we should know before we reach out, reply here with the best contact time, what storage need they mentioned, or any move-in timing that will help us.',
+    },
   ];
 }
 
@@ -37,7 +40,9 @@ export async function initializeReferralConversation(
   submissionId: string
 ): Promise<ReferralConversationSnapshot> {
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(ReferralSubmission);
+  const messageRepo = dataSource.getRepository(ReferralMessage);
   const submission = await repo.findOne({ where: { id: submissionId } });
 
   if (!submission) {
@@ -45,16 +50,25 @@ export async function initializeReferralConversation(
   }
 
   const now = new Date();
+  const messages = buildReferralIntroMessages(submission);
   submission.chatThreadId = submission.chatThreadId || crypto.randomUUID();
-  submission.conversationMessages = buildReferralIntroMessages(submission);
   submission.followUpStatus = 'contacted';
   submission.botReplyCount = 2;
   submission.lastOutboundAt = now;
   await repo.save(submission);
+  const savedMessages = await messageRepo.save(
+    messages.map((message) =>
+      messageRepo.create({
+        submissionId: submission.id,
+        role: message.role,
+        content: message.content,
+      })
+    )
+  );
 
   return {
     conversationId: submission.chatThreadId,
-    messages: submission.conversationMessages,
+    messages: savedMessages.map((message) => toConversationMessage(message)),
     status: submission.followUpStatus,
   };
 }
@@ -64,7 +78,9 @@ export async function appendReferralConversationMessage(args: {
   message: string;
 }): Promise<ReferralConversationSnapshot> {
   const dataSource = await connectTypeORM();
+  await ensureInAppConversationSchema(dataSource);
   const repo = dataSource.getRepository(ReferralSubmission);
+  const messageRepo = dataSource.getRepository(ReferralMessage);
   const submission = await repo.findOne({ where: { chatThreadId: args.conversationId } });
 
   if (!submission) {
@@ -72,28 +88,32 @@ export async function appendReferralConversationMessage(args: {
   }
 
   const now = new Date();
-  const userMessage = createConversationMessage('user', args.message, now);
-  const assistantMessage = createConversationMessage(
-    'assistant',
-    buildReferralReply(submission),
-    now
-  );
-
-  submission.conversationMessages = [
-    ...submission.conversationMessages,
-    userMessage,
-    assistantMessage,
-  ];
+  await messageRepo.save([
+    messageRepo.create({
+      submissionId: submission.id,
+      role: 'user',
+      content: args.message,
+    }),
+    messageRepo.create({
+      submissionId: submission.id,
+      role: 'assistant',
+      content: buildReferralReply(submission),
+    }),
+  ]);
   submission.lastInboundMessage = args.message;
   submission.lastInboundAt = now;
   submission.lastOutboundAt = now;
   submission.botReplyCount += 1;
   submission.followUpStatus = submission.botReplyCount > 2 ? 'triaging' : 'responded';
   await repo.save(submission);
+  const allMessages = await messageRepo.find({
+    where: { submissionId: submission.id },
+    order: { createdAt: 'ASC' },
+  });
 
   return {
     conversationId: submission.chatThreadId || args.conversationId,
-    messages: submission.conversationMessages,
+    messages: allMessages.map((message) => toConversationMessage(message)),
     status: submission.followUpStatus,
   };
 }

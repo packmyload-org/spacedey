@@ -17,6 +17,7 @@ const DEFAULT_USERS = [
     firstName: 'Admin',
     lastName: 'User',
     role: UserRole.ADMIN,
+    emailVerifiedAt: new Date(),
   },
   {
     email: 'user@spacedey.com',
@@ -49,6 +50,7 @@ async function seed() {
         existingUser.firstName = userSeed.firstName;
         existingUser.lastName = userSeed.lastName;
         existingUser.role = userSeed.role;
+        existingUser.emailVerifiedAt = userSeed.emailVerifiedAt ?? existingUser.emailVerifiedAt ?? null;
 
         await userRepo.save(existingUser);
         console.debug(`Updated ${userSeed.email}`);
