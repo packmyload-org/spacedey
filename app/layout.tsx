@@ -6,7 +6,6 @@ import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import GoogleTagManager from '@/components/analytics/GoogleTagManager';
 import RouteChangeTracker from '@/components/analytics/RouteChangeTracker';
-import ZendeskWidget from "@/components/ZendeskWidget";
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCart from "@/components/StorageCart";
@@ -111,7 +110,6 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
             </Suspense>
-            <ZendeskWidget />
             {children}
             <StorageCart />
             <Toaster
