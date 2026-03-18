@@ -129,7 +129,7 @@ export default async function CityLocationPage({
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/search"
-                className="inline-flex items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-black text-[#1642F0] transition hover:bg-[#EAF0FF]"
+                className="inline-flex items-center justify-center rounded-full border border-white/70 bg-white px-5 py-3 text-sm font-black !text-[#1642F0] shadow-[0_10px_30px_rgba(9,24,86,0.16)] transition hover:bg-[#EAF0FF] hover:!text-[#1238D8]"
               >
                 Search all facilities
               </Link>
@@ -190,8 +190,8 @@ export default async function CityLocationPage({
               <h2 className="mt-3 text-3xl font-black text-[#0F172A]">Compare live storage options</h2>
             </div>
             <p className="max-w-2xl text-sm leading-6 text-[#475569]">
-              These facility pages are the strongest conversion paths for organic visitors because they carry local context,
-              inventory depth, and direct reservation routes.
+              Review nearby facilities, compare available unit sizes, and choose the location that fits your move,
+              business stock, or extra household storage.
             </p>
           </div>
 
@@ -206,16 +206,16 @@ export default async function CityLocationPage({
       <section className="mt-12 px-6 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="rounded-[32px] border border-[#D8E2FF] bg-white p-7 shadow-sm md:p-8">
-            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">Local fit</p>
-            <h2 className="mt-3 text-3xl font-black text-[#0F172A]">Why this city page exists</h2>
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">Storage guide</p>
+            <h2 className="mt-3 text-3xl font-black text-[#0F172A]">What to know before you book in {city.name}</h2>
             <div className="mt-6 space-y-4 text-sm leading-7 text-[#475569] md:text-base">
               <p>
-                Customers searching for storage in {city.name} usually want to know three things quickly: whether there is a facility nearby,
-                whether the available unit sizes match their needs, and whether pricing looks realistic before they commit to checkout.
+                Start by checking how much access you need, how long you plan to store, and the kind of items you are moving in.
+                That usually makes it easier to narrow down the right facility and unit format.
               </p>
               <p>
-                This page brings those answers together with real Spacedey inventory instead of repeating generic brand copy. That gives search engines
-                a clearer local signal and gives visitors a faster path into a facility page or reservation flow.
+                For most customers in {city.name}, the best choice comes down to location convenience, available space,
+                and whether the site is a better fit for personal items, moving support, or business inventory.
               </p>
             </div>
           </div>
