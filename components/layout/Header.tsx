@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useEffectEvent, useRef } from "react";
+import React, { useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -61,14 +61,14 @@ export default function Header() {
     }
   };
 
-  const closeMenus = useEffectEvent(() => {
+  const closeMenus = useCallback(() => {
     setIsLocationsModalOpen(false);
     setIsProfileOpen(false);
-  });
+  }, []);
 
   useEffect(() => {
     closeMenus();
-  }, [pathname]);
+  }, [pathname, closeMenus]);
 
   const profileLinks = [
     ...(isAdmin() ? [{ href: "/admin", label: "Admin Dashboard" }] : []),
