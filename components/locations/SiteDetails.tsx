@@ -30,6 +30,7 @@ const getStr = (obj: unknown) => {
 export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps>) {
     const { addToCart, cartItems, openCart } = useStorageCart();
     const title = site.name || site.code;
+    const activeDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
     const addressStr = React.useMemo(() => {
         if (!site.address) return 'Address available on request';
@@ -150,17 +151,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                     {/* Right Column: Key Info & Actions */}
                     <div className="lg:col-span-5 mt-8 lg:mt-0">
                         <div className="bg-white p-6 lg:p-8 rounded-2xl border border-gray-200 shadow-xl sticky top-32">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600">
-                                    <MapPin className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-bold text-gray-900">Location Info</h2>
-                                    <p className="text-sm text-gray-500">Contact & Hours</p>
-                                </div>
-                            </div>
-                            
-                            <div className="flex items-start gap-3 mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                            <div className="flex items-start gap-3 mb-8 rounded-xl border border-gray-100 bg-gray-50 p-4">
                                 <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                                 <span className="text-sm leading-relaxed font-medium text-gray-700">{addressStr}</span>
                             </div>
@@ -191,9 +182,13 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                         <Clock className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition-colors" />
                                         <span className="text-sm font-medium">Hours</span>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-sm font-bold text-gray-900">Mon-Fri: 9am - 6pm</div>
-                                        <div className="text-xs text-gray-500">Sat: 10am - 4pm</div>
+                                    <div className="space-y-1 text-right">
+                                        {activeDays.map((day) => (
+                                            <div key={day} className="flex min-w-[178px] items-center justify-between gap-4 text-sm">
+                                                <span className="font-medium text-gray-500">{day}</span>
+                                                <span className="font-bold text-gray-900">{locationContent.hours}</span>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>

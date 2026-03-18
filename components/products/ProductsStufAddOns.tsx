@@ -98,30 +98,32 @@ function CompactAddOnCard({
   const price = addOn.price ?? 15000;
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-gray-200 bg-white p-3.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <div className="relative mb-3 aspect-square overflow-hidden rounded-lg bg-gray-50">
+    <div className="group flex h-full flex-col rounded-[22px] border border-[#DCE5FF] bg-white p-3 transition-all duration-300 hover:-translate-y-1 hover:border-[#BFD0FF] hover:shadow-[0_18px_45px_rgba(17,42,114,0.08)]">
+      <div className="relative mb-2.5 aspect-[1.08/1] overflow-hidden rounded-[18px] bg-[linear-gradient(180deg,#F8FAFF_0%,#F2F6FF_100%)]">
         <Image
           src={addOn.image}
           alt={addOn.name}
           fill
-          className="object-contain p-3"
+          className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.03]"
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 25vw"
         />
       </div>
 
-      <h3 className="mb-1 text-base font-bold text-gray-900">{addOn.name}</h3>
-      <p className="mb-3 line-clamp-2 text-sm leading-5 text-gray-500">{addOn.description}</p>
+      <div className="mb-2">
+        <h3 className="text-[1.02rem] font-black text-[#102A72]">{addOn.name}</h3>
+        <p className="mt-1.5 line-clamp-2 text-[13px] leading-5 text-[#62739E]">{addOn.description}</p>
+      </div>
 
-      <div className="mt-auto border-t border-gray-100 pt-3">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <span className="block text-xl font-bold text-blue-600">₦{price.toLocaleString()}</span>
-          <p className="text-xs font-semibold text-blue-600 text-right">{footerText}</p>
+      <div className="mt-auto border-t border-[#EEF3FF] pt-3">
+        <div className="mb-2.5 flex items-end justify-between gap-3">
+          <span className="block text-[1.75rem] font-black leading-none text-[#1642F0]">₦{price.toLocaleString()}</span>
+          <p className="max-w-[48%] text-right text-[11px] font-bold leading-4 text-[#3E63D3]">{footerText}</p>
         </div>
 
         <button
           type="button"
           onClick={() => onAddToCart?.(addOn)}
-          className="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white transition-colors hover:bg-blue-700"
+          className="w-full rounded-xl bg-[#1642F0] px-3 py-2.5 text-[11px] font-black uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#1238D4]"
         >
           {quantity > 0 ? `Add to cart again (${quantity})` : "Add to cart"}
         </button>
@@ -129,7 +131,7 @@ function CompactAddOnCard({
         {addOn.linkText && addOn.linkHref ? (
           <a
             href={addOn.linkHref}
-            className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors hover:text-blue-700"
+            className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#1642F0] transition-colors hover:text-[#1238D4]"
           >
             <Shield size={14} />
             {addOn.linkText}
@@ -206,15 +208,17 @@ export default function ProductsSpacedeyAddOns({
 }: SpacedeyAddOnsProps) {
   if (variant === "compact") {
     return (
-      <section className="w-full bg-white py-8">
-        <div className="flex items-end justify-between border-b border-gray-200 pb-4">
+      <section className="w-full rounded-[30px] border border-[#E4EBFF] bg-[linear-gradient(180deg,#FFFFFF_0%,#FBFCFF_100%)] px-4 py-6 shadow-[0_16px_50px_rgba(17,42,114,0.05)] md:px-6">
+        <div className="flex flex-col gap-2 border-b border-[#E8EEFF] pb-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-            <p className="mt-1.5 text-sm text-gray-500">{subtitle ?? "Moving supplies and extra services"}</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5D74B0]">Extras for move-in</p>
+            <h2 className="mt-2 text-[1.8rem] font-black text-[#102A72]">{title}</h2>
+            <p className="mt-1.5 max-w-2xl text-sm leading-6 text-[#62739E]">{subtitle ?? "Moving supplies and extra services"}</p>
           </div>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#3E63D3]">{addOns.length} options</p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {addOns.map((addOn) => (
             <CompactAddOnCard
               key={addOn.id}
