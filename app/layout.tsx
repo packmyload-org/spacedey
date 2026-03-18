@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Analytics } from '@vercel/analytics/next';
+import { Suspense } from 'react';
 import { Toaster } from 'sonner';
+import GoogleTagManager from '@/components/analytics/GoogleTagManager';
+import RouteChangeTracker from '@/components/analytics/RouteChangeTracker';
 import ZendeskWidget from "@/components/ZendeskWidget";
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
@@ -63,6 +66,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const googleTagManagerId = env.integrations.analytics.googleTagManagerId;
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -93,6 +97,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased" suppressHydrationWarning>
+        <GoogleTagManager containerId={googleTagManagerId} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
@@ -103,6 +108,9 @@ export default function RootLayout({
         />
         <StorageCartProvider>
           <SitesProvider>
+            <Suspense fallback={null}>
+              <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
+            </Suspense>
             <ZendeskWidget />
             {children}
             <StorageCart />

@@ -84,6 +84,9 @@ export const env = {
     zendesk: {
       key: process.env.NEXT_PUBLIC_ZENDESK_KEY,
     },
+    analytics: {
+      googleTagManagerId: process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID,
+    },
   },
 
   // Security
