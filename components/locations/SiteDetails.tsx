@@ -151,6 +151,15 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                     {/* Right Column: Key Info & Actions */}
                     <div className="lg:col-span-5 mt-8 lg:mt-0">
                         <div className="bg-white p-6 lg:p-8 rounded-2xl border border-gray-200 shadow-xl sticky top-32">
+                            <div className="mb-5">
+                                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5D74B0]">
+                                    Contact information
+                                </p>
+                                <h2 className="mt-2 text-2xl font-black text-[#102A72]">
+                                    Reach this location
+                                </h2>
+                            </div>
+
                             <div className="flex items-start gap-3 mb-8 rounded-xl border border-gray-100 bg-gray-50 p-4">
                                 <MapPin className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                                 <span className="text-sm leading-relaxed font-medium text-gray-700">{addressStr}</span>
