@@ -620,7 +620,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                 <Box className="w-5 h-5 mr-2 text-blue-600" />
                                 Unit Types
                             </h2>
-                            <span className="text-sm font-medium text-gray-500">{site.unitTypes.length} types</span>
+                            <span className="text-sm font-medium text-gray-500">{site?.unitTypes?.length} types</span>
                         </div>
 
                         <div className="p-6 space-y-6">
