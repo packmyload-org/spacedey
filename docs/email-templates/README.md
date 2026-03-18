@@ -9,6 +9,7 @@ Suggested template names:
 - `signup-verification`
 - `forgot-password`
 - `billing-success`
+- `newsletter-welcome`
 
 Suggested variables:
 
@@ -33,6 +34,12 @@ Suggested variables:
 - `billingType`
 - `bookingsUrl`
 - `invoicesUrl`
+- `supportEmail`
+
+## Newsletter welcome
+
+- `email`
+- `blogUrl`
 - `supportEmail`
 
 These templates use moustache-style placeholders like `{{firstName}}`, which map well to most transactional email providers.

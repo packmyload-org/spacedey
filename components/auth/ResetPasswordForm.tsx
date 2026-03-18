@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import PasswordField from '@/components/ui/PasswordField';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
+import { getFieldErrors, resetPasswordFormSchema } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 interface ResetPasswordFormProps {
   initialToken?: string;
@@ -15,9 +19,10 @@ export default function ResetPasswordForm({
 }: ResetPasswordFormProps) {
   const router = useRouter();
   const [token, setToken] = useState(initialToken);
-  const [email, setEmail] = useState(initialEmail);
+  const [email, setEmail] = useState(normalizeEmail(initialEmail));
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,16 +30,21 @@ export default function ResetPasswordForm({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setFieldErrors({});
 
-    if (!token || !email || !password || !confirm) {
-      setError('Please complete all fields.');
+    const validation = resetPasswordFormSchema.safeParse({
+      token,
+      email,
+      password,
+      confirm,
+    });
+
+    if (!validation.success) {
+      setFieldErrors(getFieldErrors(validation.error));
       return;
     }
 
-    if (password !== confirm) {
-      setError('Passwords do not match.');
-      return;
-    }
+    const payload = validation.data;
 
     setIsSubmitting(true);
     try {
@@ -43,7 +53,11 @@ export default function ResetPasswordForm({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, email, password }),
+        body: JSON.stringify({
+          token: payload.token,
+          email: payload.email,
+          password: payload.password,
+        }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -84,10 +98,18 @@ export default function ResetPasswordForm({
             <input
               type="text"
               value={token}
-              onChange={(e) => setToken(e.target.value)}
+              onChange={(e) => {
+                setToken(e.target.value);
+                if (fieldErrors.token) {
+                  setFieldErrors((current) => ({ ...current, token: '' }));
+                }
+              }}
               placeholder="Reset token"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+              className={getAuthInputClass(Boolean(fieldErrors.token))}
             />
+            {fieldErrors.token ? (
+              <div className="mt-1 text-xs text-red-500">{fieldErrors.token}</div>
+            ) : null}
           </div>
         )}
 
@@ -95,29 +117,65 @@ export default function ResetPasswordForm({
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(normalizeEmail(e.target.value));
+              if (fieldErrors.email) {
+                setFieldErrors((current) => ({ ...current, email: '' }));
+              }
+            }}
             placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className={getAuthInputClass(Boolean(fieldErrors.email))}
+            {...EMAIL_INPUT_PROPS}
           />
+          {fieldErrors.email ? (
+            <div className="mt-1 text-xs text-red-500">{fieldErrors.email}</div>
+          ) : null}
         </div>
 
         <div className="mb-4">
-          <input
-            type="password"
+          <PasswordField
+            name="newPassword"
+            label="New password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(value) => {
+              setPassword(value);
+              if (fieldErrors.password) {
+                setFieldErrors((current) => ({ ...current, password: '' }));
+              }
+            }}
+            onFocus={() => {
+              if (fieldErrors.password) {
+                setFieldErrors((current) => ({ ...current, password: '' }));
+              }
+            }}
+            error={fieldErrors.password}
             placeholder="New password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            autoComplete="new-password"
+            inputClassName={`${getAuthInputClass(Boolean(fieldErrors.password)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
+            showRequirements
           />
         </div>
 
         <div className="mb-6">
-          <input
-            type="password"
+          <PasswordField
+            name="confirmNewPassword"
+            label="Confirm new password"
             value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
+            onChange={(value) => {
+              setConfirm(value);
+              if (fieldErrors.confirm) {
+                setFieldErrors((current) => ({ ...current, confirm: '' }));
+              }
+            }}
+            onFocus={() => {
+              if (fieldErrors.confirm) {
+                setFieldErrors((current) => ({ ...current, confirm: '' }));
+              }
+            }}
+            error={fieldErrors.confirm}
             placeholder="Confirm new password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            autoComplete="new-password"
+            inputClassName={`${getAuthInputClass(Boolean(fieldErrors.confirm)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
           />
         </div>
 

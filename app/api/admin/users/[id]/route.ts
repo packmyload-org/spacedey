@@ -3,6 +3,8 @@ import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
+import { normalizeEmail } from '@/lib/utils/email';
+import { sendSignupVerificationEmail } from '@/lib/email/resend';
 
 export async function GET(
   request: NextRequest,
@@ -45,6 +47,7 @@ export async function GET(
       lastName: user.lastName,
       phone: user.phone,
       role: user.role,
+      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -73,7 +76,10 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { firstName, lastName, email, role, phone } = body;
+    const firstName = typeof body?.firstName === 'string' ? body.firstName.trim() : undefined;
+    const lastName = typeof body?.lastName === 'string' ? body.lastName.trim() : undefined;
+    const role = body?.role;
+    const email = normalizeEmail(body?.email || '');
 
     if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
       return NextResponse.json(
@@ -89,6 +95,13 @@ export async function PATCH(
       );
     }
 
+    if (typeof body?.password !== 'undefined') {
+      return NextResponse.json(
+        { ok: false, error: 'Password updates are not allowed from this screen.' },
+        { status: 400 }
+      );
+    }
+
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
     const user = await repo.findOne({ where: { id } });
@@ -100,24 +113,49 @@ export async function PATCH(
       );
     }
 
+    if (user.id === adminCheck.userId && role === UserRole.USER) {
+      return NextResponse.json(
+        { ok: false, error: 'You cannot remove your own admin access.' },
+        { status: 400 }
+      );
+    }
+
+    let emailChanged = false;
+
     // Check if email is being changed and if new email already exists
     if (email && email !== user.email) {
-      const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
+      const existingUser = await repo.findOne({ where: { email } });
       if (existingUser) {
         return NextResponse.json(
           { ok: false, error: 'Email already in use' },
           { status: 409 }
         );
       }
-      user.email = email.toLowerCase();
+      user.email = email;
+      user.emailVerifiedAt = null;
+      emailChanged = true;
     }
 
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
-    if (phone) user.phone = phone;
     if (role) user.role = role;
 
     await repo.save(user);
+
+    let verificationEmailSent = false;
+
+    if (emailChanged) {
+      try {
+        verificationEmailSent = await sendSignupVerificationEmail({
+          userId: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          appUrl: new URL(request.url).origin,
+        });
+      } catch (mailError) {
+        console.error('Admin update user verification email error:', mailError);
+      }
+    }
 
     const userResponse = {
       id: user.id,
@@ -126,11 +164,17 @@ export async function PATCH(
       lastName: user.lastName,
       phone: user.phone,
       role: user.role,
+      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
 
-    return NextResponse.json({ ok: true, user: userResponse });
+    return NextResponse.json({
+      ok: true,
+      user: userResponse,
+      verificationEmailSent,
+      requiresEmailVerification: emailChanged,
+    });
   } catch (error) {
     console.error('Update user error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';

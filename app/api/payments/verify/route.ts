@@ -8,7 +8,10 @@ import { syncUnitTypeAvailability } from '@/lib/db/storageUnits';
 import { paystack } from '@/lib/services/paystack';
 import { flutterwave } from '@/lib/services/flutterwave';
 import { applySuccessfulPayment, getPaymentAllocations } from '@/lib/services/paymentProcessing';
-import { sendBillingSuccessEmailBatch } from '@/lib/email/resend';
+import {
+    processEmailNotificationsByIds,
+    queueOrderConfirmationNotifications,
+} from '@/lib/services/emailNotifications';
 import { In } from 'typeorm';
 
 async function releaseFailedPendingBookings(payment: Payment) {
@@ -73,6 +76,7 @@ async function releaseFailedPendingBookings(payment: Payment) {
 
 export async function POST(req: Request) {
     try {
+        const appUrl = new URL(req.url).origin;
         const { reference, transactionId } = await req.json();
 
         const dataSource = await connectTypeORM();
@@ -152,8 +156,9 @@ export async function POST(req: Request) {
             });
             const billingType = recurringEnabled ? PaymentBillingType.RECURRING : (payment.metadata?.billingType ?? PaymentBillingType.ONE_TIME);
 
-            await sendBillingSuccessEmailBatch({
+            const notificationIds = await queueOrderConfirmationNotifications({
                 source: 'payments/verify',
+                appUrl,
                 emails: updatedBookings.map(({ booking, invoice }) => ({
                     to: booking.user.email,
                     firstName: booking.user.firstName,
@@ -164,6 +169,7 @@ export async function POST(req: Request) {
                     billingType,
                 })),
             });
+            await processEmailNotificationsByIds(notificationIds);
 
             return NextResponse.json({
                 ok: true,

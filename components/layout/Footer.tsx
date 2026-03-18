@@ -7,25 +7,15 @@ import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
 import SupportModal from "@/components/ui/SupportModal";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 
+const SUPPORT_EMAIL = "info@mailing.spacedey.com";
+
 export default function Footer() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
   const [isLocationsModalOpen, setIsLocationsModalOpen] = useState(false);
   const footerLinkClass = "text-white transition-colors hover:text-gray-300";
 
   const handleSupportClick = () => {
-    try {
-      // Try to open Zendesk if available
-      if (window.__zendeskAvailable || typeof window.zE === "function") {
-        window.openZendesk?.();
-      } else {
-        // Fallback to modal if Zendesk is not available
-        setIsSupportModalOpen(true);
-      }
-    } catch (e) {
-      console.error("Support widget error:", e);
-      // Show fallback modal on error
-      setIsSupportModalOpen(true);
-    }
+    setIsSupportModalOpen((current) => !current);
   };
 
   return (
@@ -64,7 +54,7 @@ export default function Footer() {
               Reach Out To Us
             </h3>
             <p className="mb-2 text-white">09166680777</p>
-            <p className="mb-4 text-white">info@spacedey.com</p>
+            <p className="mb-4 text-white">{SUPPORT_EMAIL}</p>
             <div className="w-12 h-[2px] bg-[#e65c3a] mb-6"></div>
             <div className="flex gap-4 text-white">
               <a
@@ -180,12 +170,14 @@ export default function Footer() {
         </div>
         <button
           onClick={handleSupportClick}
-          className="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
+          className={`fixed bottom-6 left-4 z-[70] flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-700 sm:left-6 ${
+            isSupportModalOpen ? 'pointer-events-none translate-y-3 opacity-0' : 'opacity-100'
+          }`}
         >
           <span className="w-5 h-5 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-xs">
-            ?
+            {isSupportModalOpen ? "×" : "?"}
           </span>
-          Support
+          {isSupportModalOpen ? "Close Spacey" : "Chat with Spacey"}
         </button>
       </footer>
     </>

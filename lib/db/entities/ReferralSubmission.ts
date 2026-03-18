@@ -1,4 +1,7 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import type { Relation } from 'typeorm';
+import type { ReferralMessage } from '@/lib/db/entities/ReferralMessage';
+import * as ReferralMessageEntity from '@/lib/db/entities/ReferralMessage';
 
 @Entity({ name: 'referral_submissions' })
 export class ReferralSubmission {
@@ -31,6 +34,27 @@ export class ReferralSubmission {
 
   @Column({ type: 'varchar' })
   refereeLocation!: string;
+
+  @Column({ type: 'varchar', nullable: true, unique: true })
+  chatThreadId!: string | null;
+
+  @Column({ type: 'varchar', default: 'new' })
+  followUpStatus!: string;
+
+  @Column({ type: 'integer', default: 0 })
+  botReplyCount!: number;
+
+  @Column({ type: 'text', nullable: true })
+  lastInboundMessage!: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastInboundAt!: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  lastOutboundAt!: Date | null;
+
+  @OneToMany(() => ReferralMessageEntity.ReferralMessage, (message: ReferralMessage) => message.submission)
+  messages!: Relation<ReferralMessage[]>;
 
   @CreateDateColumn()
   createdAt!: Date;

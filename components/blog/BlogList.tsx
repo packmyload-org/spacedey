@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface BlogPost {
   id: string;
@@ -27,16 +28,28 @@ function formatBlogDate(value: string | null) {
   }).format(new Date(value));
 }
 
-function BlogCard({ post }: { post: BlogPost }) {
+function BlogCard({
+  post,
+  featured = false,
+}: {
+  post: BlogPost;
+  featured?: boolean;
+}) {
   const [imageFailed, setImageFailed] = useState(false);
   const imageSrc = !imageFailed && post.image ? post.image : '/images/blogpost1.png';
 
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#D8E2FF] bg-white shadow-[0_18px_45px_rgba(17,56,216,0.08)] transition-transform duration-300 hover:-translate-y-1"
+      className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-[#D8E2FF] bg-white shadow-[0_18px_45px_rgba(17,56,216,0.08)] transition-transform duration-300 hover:-translate-y-1 ${
+        featured ? 'lg:min-h-[540px]' : ''
+      }`}
     >
-      <div className="relative h-64 overflow-hidden bg-[#EAF0FF]">
+      <div
+        className={`relative overflow-hidden bg-[#EAF0FF] ${
+          featured ? 'h-72 md:h-80 lg:h-[340px]' : 'h-64'
+        }`}
+      >
         {imageSrc.startsWith('http') ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -58,10 +71,16 @@ function BlogCard({ post }: { post: BlogPost }) {
 
       <div className="flex flex-1 flex-col p-6">
         <p className="text-sm font-medium text-[#5D74B0]">{formatBlogDate(post.publishedAt)}</p>
-        <h2 className="mt-3 text-2xl font-black leading-tight text-[#0F172A] transition-colors group-hover:text-[#1642F0]">
+        <h2
+          className={`mt-3 font-black leading-tight text-[#0F172A] transition-colors group-hover:text-[#1642F0] ${
+            featured ? 'text-[2rem] md:text-[2.25rem]' : 'text-2xl'
+          }`}
+        >
           {post.title}
         </h2>
-        <p className="mt-4 flex-1 text-sm leading-6 text-[#475569]">{post.excerpt}</p>
+        <p className={`mt-4 flex-1 text-[#475569] ${featured ? 'text-base leading-7' : 'text-sm leading-6'}`}>
+          {post.excerpt}
+        </p>
 
         <div className="mt-6 flex items-center justify-between border-t border-[#E5ECFF] pt-4">
           <span className="text-sm font-semibold text-[#1138D8]">{post.author}</span>
@@ -69,6 +88,90 @@ function BlogCard({ post }: { post: BlogPost }) {
         </div>
       </div>
     </Link>
+  );
+}
+
+function BlogCardSkeleton({ featured = false }: { featured?: boolean }) {
+  return (
+    <div
+      className={`overflow-hidden rounded-3xl border border-[#D8E2FF] bg-white shadow-[0_18px_45px_rgba(17,56,216,0.08)] ${
+        featured ? 'lg:min-h-[540px]' : ''
+      }`}
+    >
+      <div
+        className={`animate-pulse bg-[#EAF0FF] ${
+          featured ? 'h-72 md:h-80 lg:h-[340px]' : 'h-64'
+        }`}
+      />
+
+      <div className="space-y-4 p-6">
+        <div className="h-4 w-28 animate-pulse rounded-lg bg-[#E8EEFF]" />
+        <div className={`animate-pulse rounded-xl bg-[#EEF3FF] ${featured ? 'h-12 w-4/5' : 'h-10 w-full'}`} />
+        <div className="h-4 w-full animate-pulse rounded-lg bg-[#F1F5FF]" />
+        <div className="h-4 w-5/6 animate-pulse rounded-lg bg-[#F1F5FF]" />
+        <div className="border-t border-[#E5ECFF] pt-4">
+          <div className="flex items-center justify-between">
+            <div className="h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+            <div className="h-4 w-20 animate-pulse rounded-lg bg-[#EEF3FF]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BlogListSkeleton() {
+  return (
+    <>
+      <div>
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <div className="h-3 w-24 animate-pulse rounded-lg bg-[#DDE7FF]" />
+            <div className="mt-3 h-4 w-72 animate-pulse rounded-lg bg-[#E8EEFF]" />
+          </div>
+          <div className="hidden h-9 w-28 animate-pulse rounded-full bg-white md:block" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+          <div className="xl:col-span-2">
+            <BlogCardSkeleton featured />
+          </div>
+          <BlogCardSkeleton />
+          <BlogCardSkeleton />
+          <BlogCardSkeleton />
+          <BlogCardSkeleton />
+        </div>
+      </div>
+
+      <div className="my-10 grid gap-8 xl:grid-cols-3 xl:items-stretch">
+        <div className="rounded-[32px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_44%,#1233A3_100%)] p-6 shadow-[0_26px_80px_rgba(17,56,216,0.2)] md:p-8">
+          <div className="h-8 w-32 animate-pulse rounded-full bg-white/15" />
+          <div className="mt-5 h-10 w-5/6 animate-pulse rounded-2xl bg-white/18" />
+          <div className="mt-3 h-4 w-full animate-pulse rounded-lg bg-white/12" />
+          <div className="mt-2 h-4 w-4/5 animate-pulse rounded-lg bg-white/12" />
+          <div className="mt-6 flex flex-wrap gap-3">
+            <div className="h-9 w-28 animate-pulse rounded-full bg-white/12" />
+            <div className="h-9 w-32 animate-pulse rounded-full bg-white/12" />
+            <div className="h-9 w-24 animate-pulse rounded-full bg-white/12" />
+          </div>
+          <div className="mt-8 space-y-4">
+            <div className="h-12 w-full animate-pulse rounded-2xl bg-white/95" />
+            <div className="h-12 w-full animate-pulse rounded-full bg-white/20" />
+          </div>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 xl:col-span-2">
+          <BlogCardSkeleton />
+          <BlogCardSkeleton />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <BlogCardSkeleton />
+        <BlogCardSkeleton />
+        <BlogCardSkeleton />
+      </div>
+    </>
   );
 }
 
@@ -82,7 +185,8 @@ export default function BlogList() {
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
   const [isSubmittingNewsletter, setIsSubmittingNewsletter] = useState(false);
 
-  const postsPerPage = 6;
+  const postsPerPage = 10;
+  const leadPostsCount = 5;
 
   useEffect(() => {
     async function fetchPosts() {
@@ -119,8 +223,10 @@ export default function BlogList() {
     const startIndex = (currentPage - 1) * postsPerPage;
     return posts.slice(startIndex, startIndex + postsPerPage);
   }, [currentPage, posts]);
-  const featuredPosts = currentPosts.slice(0, 3);
-  const remainingPosts = currentPosts.slice(3);
+  const leadPosts = currentPosts.slice(0, leadPostsCount);
+  const remainingPosts = currentPosts.slice(leadPostsCount);
+  const postsBesideNewsletter = remainingPosts.slice(0, 2);
+  const trailingPosts = remainingPosts.slice(2);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) {
@@ -179,9 +285,7 @@ export default function BlogList() {
         </div>
 
         {isLoading ? (
-          <div className="rounded-3xl border border-[#D8E2FF] bg-white px-6 py-20 text-center text-[#5D74B0]">
-            Loading articles...
-          </div>
+          <BlogListSkeleton />
         ) : error ? (
           <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-6 text-sm text-red-700">
             {error}
@@ -193,89 +297,104 @@ export default function BlogList() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              {featuredPosts.map((post, index) => (
-                <div key={post.id} className={index === 0 ? 'lg:col-span-2' : ''}>
-                  <BlogCard post={post} />
-                </div>
-              ))}
-            </div>
-
-            <div className="my-10 overflow-hidden rounded-[36px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_38%,#0F2FA5_100%)] text-white shadow-[0_26px_80px_rgba(17,56,216,0.22)]">
-              <div className="grid gap-8 px-6 py-8 md:px-10 md:py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:px-12">
-                <div className="relative">
-                  <div className="absolute -left-12 top-0 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
-                  <div className="absolute bottom-0 right-8 h-28 w-28 rounded-full bg-[#8FB0FF]/20 blur-2xl" />
-
-                  <div className="relative">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.26em] text-white/90">
-                      <Mail className="h-3.5 w-3.5" />
-                      Newsletter
-                    </div>
-                    <h3 className="mt-5 max-w-2xl text-3xl font-black leading-tight md:text-4xl">
-                      Get storage ideas, moving checklists, and smart space tips before everyone else.
-                    </h3>
-                    <p className="mt-4 max-w-2xl text-sm leading-7 text-[#DCE6FF] md:text-base">
-                      Subscribe for practical guides from the Spacedey team, from move-day prep and business storage to decluttering, packing, and getting more value from every square foot.
-                    </p>
-
-                    <div className="mt-6 flex flex-wrap gap-3 text-sm font-semibold text-white/90">
-                      <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Moving guides</span>
-                      <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Storage planning</span>
-                      <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Business inventory tips</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-[28px] border border-white/12 bg-white p-5 text-[#0F172A] shadow-[0_22px_50px_rgba(9,26,92,0.2)] md:p-6">
-                  <p className="text-sm font-bold text-[#1138D8]">Join the Spacedey update list</p>
-                  <p className="mt-2 text-sm leading-6 text-[#5D74B0]">
-                    One strong email address gets you first access to fresh articles and storage insights.
+            <div>
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5D74B0]">
+                    Latest posts
                   </p>
-
-                  <form onSubmit={handleSubscribe} className="mt-6 space-y-4">
-                    <label className="block">
-                      <span className="mb-2 block text-xs font-black uppercase tracking-[0.2em] text-[#7386B9]">
-                        Email Address
-                      </span>
-                      <input
-                        type="email"
-                        placeholder="you@example.com"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        required
-                        className="w-full rounded-2xl border border-[#C4D5FF] bg-[#F8FAFF] px-4 py-3 text-sm text-[#0F172A] outline-none transition focus:border-[#1642F0] focus:ring-2 focus:ring-[#D7E3FF]"
-                      />
-                    </label>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmittingNewsletter}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1642F0] px-4 py-3 text-sm font-black text-white transition hover:bg-[#1138D8] disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {isSubmittingNewsletter ? 'Subscribing...' : 'Subscribe to Updates'}
-                      {!isSubmittingNewsletter ? <ArrowRight className="h-4 w-4" /> : null}
-                    </button>
-
-                    {newsletterMessage ? (
-                      <p className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
-                        {newsletterMessage}
-                      </p>
-                    ) : null}
-
-                    {newsletterError ? (
-                      <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                        {newsletterError}
-                      </p>
-                    ) : null}
-                  </form>
+                  <p className="mt-2 text-sm text-[#5E6C91]">
+                    The newest Spacedey articles appear here first before the newsletter break.
+                  </p>
                 </div>
+                <p className="hidden rounded-full border border-[#D8E2FF] bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#1642F0] md:inline-flex">
+                  {leadPosts.length} fresh reads
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
+                {leadPosts[0] ? (
+                  <div className="xl:col-span-2">
+                    <BlogCard post={leadPosts[0]} featured />
+                  </div>
+                ) : null}
+
+                {leadPosts[1] ? <BlogCard post={leadPosts[1]} /> : null}
+
+                {leadPosts.slice(2).map((post) => (
+                  <BlogCard key={post.id} post={post} />
+                ))}
               </div>
             </div>
 
-            {remainingPosts.length > 0 ? (
+            <div className="my-10 grid gap-8 xl:grid-cols-3 xl:items-stretch">
+              <div className="rounded-[32px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_44%,#1233A3_100%)] p-4 text-white shadow-[0_26px_80px_rgba(17,56,216,0.2)] md:p-8">
+                <div className="hidden items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.26em] text-white/90 md:inline-flex">
+                  <Mail className="h-3.5 w-3.5" />
+                  Newsletter
+                </div>
+                <h3 className="mt-5 hidden text-3xl font-black leading-tight md:block md:text-[2rem]">
+                  Get practical storage advice before the next article drop.
+                </h3>
+                <p className="mt-4 hidden text-sm leading-7 text-[#DCE6FF] md:block md:text-base">
+                  Subscribe for grounded moving tips, storage planning ideas, and business-use guidance from the Spacedey team.
+                </p>
+
+                <div className="mt-6 hidden flex-wrap gap-3 text-sm font-semibold text-white/90 md:flex">
+                  <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Moving guides</span>
+                  <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Storage planning</span>
+                  <span className="rounded-full border border-white/15 bg-white/10 px-4 py-2">Business tips</span>
+                </div>
+
+                <form onSubmit={handleSubscribe} className="space-y-4 md:mt-8">
+                  <label className="block">
+                    <span className="mb-2 hidden text-xs font-black uppercase tracking-[0.2em] text-white/70 md:block">
+                      Email Address
+                    </span>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(event) => setEmail(normalizeEmail(event.target.value))}
+                      required
+                      className="w-full rounded-2xl border border-white/18 bg-white/96 px-4 py-3 text-sm text-[#0F172A] outline-none transition placeholder:text-[#7A88B8] focus:border-white focus:ring-2 focus:ring-white/35"
+                      {...EMAIL_INPUT_PROPS}
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmittingNewsletter}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-black text-[#1642F0] transition hover:bg-[#EAF0FF] disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {isSubmittingNewsletter ? 'Subscribing...' : 'Subscribe to Updates'}
+                    {!isSubmittingNewsletter ? <ArrowRight className="h-4 w-4" /> : null}
+                  </button>
+
+                  {newsletterMessage ? (
+                    <p className="rounded-2xl border border-white/18 bg-white/92 px-4 py-3 text-sm font-medium text-green-700">
+                      {newsletterMessage}
+                    </p>
+                  ) : null}
+
+                  {newsletterError ? (
+                    <p className="rounded-2xl border border-white/18 bg-white/92 px-4 py-3 text-sm font-medium text-red-700">
+                      {newsletterError}
+                    </p>
+                  ) : null}
+                </form>
+              </div>
+
+              <div className="grid gap-8 md:grid-cols-2 xl:col-span-2">
+                {postsBesideNewsletter.map((post) => (
+                  <BlogCard key={post.id} post={post} />
+                ))}
+              </div>
+            </div>
+
+            {trailingPosts.length > 0 ? (
               <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-                {remainingPosts.map((post) => (
+                {trailingPosts.map((post) => (
                   <BlogCard key={post.id} post={post} />
                 ))}
               </div>

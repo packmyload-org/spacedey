@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
+import { forgotPasswordFormSchema, getFieldErrors } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -12,11 +16,15 @@ export default function ForgotPasswordForm() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setFieldErrors({});
 
-    if (!email) {
-      setError('Email is required.');
+    const validation = forgotPasswordFormSchema.safeParse({ email });
+    if (!validation.success) {
+      setFieldErrors(getFieldErrors(validation.error));
       return;
     }
+
+    const payload = validation.data;
 
     setIsSubmitting(true);
     try {
@@ -25,7 +33,7 @@ export default function ForgotPasswordForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -62,10 +70,19 @@ export default function ForgotPasswordForm() {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(normalizeEmail(e.target.value));
+              if (fieldErrors.email) {
+                setFieldErrors((current) => ({ ...current, email: '' }));
+              }
+            }}
             placeholder="Email Address"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+            className={getAuthInputClass(Boolean(fieldErrors.email))}
+            {...EMAIL_INPUT_PROPS}
           />
+          {fieldErrors.email ? (
+            <div className="mt-1 text-xs text-red-500">{fieldErrors.email}</div>
+          ) : null}
         </div>
 
         <button

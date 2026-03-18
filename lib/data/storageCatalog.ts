@@ -29,7 +29,7 @@ export interface SeedSite {
 }
 
 const DEFAULT_CONTACT_PHONE = '+234123456789';
-const DEFAULT_CONTACT_EMAIL = 'info@spacedey.com';
+const DEFAULT_CONTACT_EMAIL = 'info@mailing.spacedey.com';
 const DEFAULT_MEASURING_UNIT = 'ft';
 const DEFAULT_AVAILABLE_COUNT = 5;
 

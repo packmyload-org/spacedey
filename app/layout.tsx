@@ -2,15 +2,19 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Analytics } from '@vercel/analytics/next';
+import { Toaster } from 'sonner';
 import ZendeskWidget from "@/components/ZendeskWidget";
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCart from "@/components/StorageCart";
-import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo";
+import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage } from "@/lib/seo";
 import { env } from "@/config/env";
+
+const defaultSeoImage = getDefaultSeoImage();
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.app.url),
+  applicationName: SITE_NAME,
   title: {
     default: `${SITE_NAME} | Self Storage in Nigeria`,
     template: `%s | ${SITE_NAME}`,
@@ -27,12 +31,20 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} | Self Storage in Nigeria`,
     description: SITE_DESCRIPTION,
     locale: 'en_NG',
+    images: [
+      {
+        url: defaultSeoImage,
+        alt: `${SITE_NAME} self storage in Nigeria`,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_NAME} | Self Storage in Nigeria`,
     description: SITE_DESCRIPTION,
+    images: [defaultSeoImage],
   },
+  category: 'storage',
   robots: {
     index: true,
     follow: true,
@@ -57,6 +69,7 @@ export default function RootLayout({
     name: SITE_NAME,
     url: env.app.url,
     description: SITE_DESCRIPTION,
+    logo: `${env.app.url}/apple-icon.png`,
     sameAs: [
       'https://www.instagram.com/spacedey.ng/',
       'https://x.com/spacedeyng',
@@ -72,7 +85,7 @@ export default function RootLayout({
     url: env.app.url,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${env.app.url}/search`,
+      target: `${env.app.url}/search?search={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   };
@@ -93,6 +106,15 @@ export default function RootLayout({
             <ZendeskWidget />
             {children}
             <StorageCart />
+            <Toaster
+              position="top-right"
+              richColors
+              toastOptions={{
+                style: {
+                  borderRadius: '18px',
+                },
+              }}
+            />
           </SitesProvider>
         </StorageCartProvider>
         <Analytics />

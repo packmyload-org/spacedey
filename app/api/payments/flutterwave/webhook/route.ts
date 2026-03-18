@@ -3,9 +3,12 @@ import { In } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
-import { sendBillingSuccessEmailBatch } from '@/lib/email/resend';
 import { flutterwave } from '@/lib/services/flutterwave';
 import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
+import {
+  processEmailNotificationsByIds,
+  queueOrderConfirmationNotifications,
+} from '@/lib/services/emailNotifications';
 
 const FLUTTERWAVE_SECRET_HASH = process.env.FLUTTERWAVE_SECRET_HASH;
 
@@ -82,6 +85,7 @@ function matchesRecurringGroup(args: {
 }
 
 export async function POST(req: Request) {
+  const appUrl = new URL(req.url).origin;
   const signature = req.headers.get('verif-hash');
   if (!hasValidHash(signature)) {
     return NextResponse.json({ ok: false, message: 'Invalid Flutterwave signature' }, { status: 401 });
@@ -131,8 +135,9 @@ export async function POST(req: Request) {
         providerData: verifiedPayment,
       });
 
-      await sendBillingSuccessEmailBatch({
+      const notificationIds = await queueOrderConfirmationNotifications({
         source: 'payments/flutterwave-webhook-existing',
+        appUrl,
         emails: updatedBookings.map(({ booking, invoice }) => ({
           to: booking.user.email,
           firstName: booking.user.firstName,
@@ -143,6 +148,7 @@ export async function POST(req: Request) {
           billingType: PaymentBillingType.RECURRING,
         })),
       });
+      await processEmailNotificationsByIds(notificationIds);
 
       return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
     }
@@ -204,8 +210,9 @@ export async function POST(req: Request) {
       providerData: verifiedPayment,
     });
 
-    await sendBillingSuccessEmailBatch({
+    const notificationIds = await queueOrderConfirmationNotifications({
       source: 'payments/flutterwave-webhook-recurring',
+      appUrl,
       emails: updatedBookings.map(({ booking, invoice }) => ({
         to: booking.user.email,
         firstName: booking.user.firstName,
@@ -216,6 +223,7 @@ export async function POST(req: Request) {
         billingType: PaymentBillingType.RECURRING,
       })),
     });
+    await processEmailNotificationsByIds(notificationIds);
 
     return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
   } catch (error: unknown) {

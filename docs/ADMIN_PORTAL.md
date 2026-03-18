@@ -36,7 +36,7 @@ pnpm run seed:data
 ```
 
 This creates two default users:
-- **Admin User**: `admin@spacedey.com` / `admin123456`
+- **Admin User**: `spacedeystorage@gmail.com` / `Admin@123`
 - **Regular User**: `user@spacedey.com` / `user123456`
 
 ⚠️ **IMPORTANT**: Change these passwords in production!
@@ -45,8 +45,8 @@ This creates two default users:
 
 1. Go to the app at `http://localhost:3000`
 2. Sign in with admin credentials:
-   - Email: `admin@spacedey.com`
-   - Password: `admin123456`
+   - Email: `spacedeystorage@gmail.com`
+   - Password: `Admin@123`
 3. You'll be redirected to the admin dashboard at `/admin`
 
 ## Admin Dashboard Features

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "node scripts/dev-server.mjs",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
@@ -14,14 +14,18 @@
     "db:baseline": "tsx --tsconfig tsconfig.json scripts/baseline-migrations.ts",
     "db:setup": "pnpm db:migrate && pnpm run seed:data",
     "seed:data": "tsx --tsconfig tsconfig.json scripts/seed-db-typeorm.ts",
-    "email:test": "node --import tsx scripts/send-test-emails.ts"
+    "email:test": "node --import tsx scripts/send-test-emails.ts",
+    "automation:run": "tsx --tsconfig tsconfig.json scripts/process-email-automations.ts"
   },
   "dependencies": {
+    "@chat-adapter/state-memory": "^4.20.2",
     "@google-cloud/storage": "^7.19.0",
+    "@resend/chat-sdk-adapter": "^0.1.1",
     "@vercel/analytics": "^2.0.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
+    "chat": "^4.20.2",
     "dotenv": "^17.2.3",
     "framer-motion": "^12.29.0",
     "jsonwebtoken": "^9.0.3",
@@ -33,7 +37,9 @@
     "react-dom": "19.1.0",
     "reflect-metadata": "^0.1.13",
     "resend": "^6.9.3",
+    "sonner": "^2.0.7",
     "typeorm": "^0.3.28",
+    "zod": "^4.3.6",
     "zustand": "^5.0.10"
   },
   "devDependencies": {

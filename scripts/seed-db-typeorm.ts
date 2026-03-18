@@ -11,11 +11,13 @@ import { UserRole } from '../lib/types/roles.js';
 
 const DEFAULT_USERS = [
   {
-    email: 'admin@spacedey.com',
-    password: 'admin123456',
+    email: 'spacedeystorage@gmail.com',
+    legacyEmail: 'admin@spacedey.com',
+    password: 'Admin@123',
     firstName: 'Admin',
     lastName: 'User',
     role: UserRole.ADMIN,
+    emailVerifiedAt: new Date(),
   },
   {
     email: 'user@spacedey.com',
@@ -37,15 +39,27 @@ async function seed() {
     const blogPostRepo = AppDataSource.getRepository(BlogPost);
 
     for (const u of DEFAULT_USERS) {
-      const exists = await userRepo.findOne({ where: { email: u.email } });
-      if (exists) {
-        console.debug(`User ${u.email} already exists`);
+      const { legacyEmail, ...userSeed } = u;
+      const existingUser =
+        await userRepo.findOne({ where: { email: userSeed.email } }) ||
+        (legacyEmail ? await userRepo.findOne({ where: { email: legacyEmail } }) : null);
+
+      if (existingUser) {
+        existingUser.email = userSeed.email;
+        existingUser.password = userSeed.password;
+        existingUser.firstName = userSeed.firstName;
+        existingUser.lastName = userSeed.lastName;
+        existingUser.role = userSeed.role;
+        existingUser.emailVerifiedAt = userSeed.emailVerifiedAt ?? existingUser.emailVerifiedAt ?? null;
+
+        await userRepo.save(existingUser);
+        console.debug(`Updated ${userSeed.email}`);
         continue;
       }
 
-      const user = userRepo.create(u);
+      const user = userRepo.create(userSeed);
       await userRepo.save(user);
-      console.debug(`Created ${u.email}`);
+      console.debug(`Created ${userSeed.email}`);
     }
 
     for (const siteSeed of STORAGE_SITES) {

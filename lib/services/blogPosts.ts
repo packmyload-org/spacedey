@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { Repository } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import BlogPost from '@/lib/db/entities/BlogPost';
@@ -68,7 +69,7 @@ export async function getBlogPostRepository() {
   return dataSource.getRepository(BlogPost);
 }
 
-export async function listPublishedBlogPosts(): Promise<SerializedBlogPost[]> {
+const listPublishedBlogPostsCached = cache(async (): Promise<SerializedBlogPost[]> => {
   const repo = await getBlogPostRepository();
   const posts = await repo.find({
     where: { published: true },
@@ -79,13 +80,19 @@ export async function listPublishedBlogPosts(): Promise<SerializedBlogPost[]> {
   });
 
   return posts.map(serializeBlogPost);
+});
+
+const getPublishedBlogPostBySlugCached = cache(
+  async (slug: string): Promise<SerializedBlogPost | null> => {
+    const posts = await listPublishedBlogPostsCached();
+    return posts.find((post) => post.slug === slug) ?? null;
+  }
+);
+
+export async function listPublishedBlogPosts(): Promise<SerializedBlogPost[]> {
+  return listPublishedBlogPostsCached();
 }
 
 export async function getPublishedBlogPostBySlug(slug: string): Promise<SerializedBlogPost | null> {
-  const repo = await getBlogPostRepository();
-  const post = await repo.findOne({
-    where: { slug, published: true },
-  });
-
-  return post ? serializeBlogPost(post) : null;
+  return getPublishedBlogPostBySlugCached(slug);
 }

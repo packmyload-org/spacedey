@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import Link from "next/link";
 import { useSitesData } from '@/contexts/SitesContext';
 import { getAvailableCities } from '@/lib/utils/cities';
+import { toLocationSlug } from '@/lib/utils/locationSeo';
 import { getUniqueSiteCities } from '@/lib/utils/siteLocations';
 
 const LocationsSection = () => {
@@ -39,7 +40,7 @@ const LocationsSection = () => {
           locations.map((location) => (
             <Link
               key={location}
-              href={`/search?city=${encodeURIComponent(location)}`}
+              href={`/locations/city/${toLocationSlug(location)}`}
               className="flex items-center justify-between gap-6 p-10 border border-blue-600 bg-gray-50 text-2xl font-semibold cursor-pointer rounded-2xl w-full lg:w-[31%] min-w-[280px] hover:bg-gray-100 transition-colors"
             >
               <span>{location}</span>

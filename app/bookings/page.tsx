@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Image from "next/image";
 import { Tag, CreditCard, Loader2, MapPin, CalendarClock, RefreshCcw } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { PaymentProvider } from "@/lib/db/entities/Payment";
 import { formatStorageUnitLabel } from "@/lib/pricing/storagePricing";
 import type { PaymentMethodsResponse } from "@/lib/types/local";
@@ -152,10 +153,11 @@ export default function UserBookingsPage() {
             if (data.ok && data.authorizationUrl) {
                 window.location.href = data.authorizationUrl;
             } else {
-                alert(data.message || "Failed to initialize payment");
+                toast.error(data.message || "Failed to initialize payment");
             }
         } catch (err) {
             console.error(err);
+            toast.error("Failed to initialize payment");
         } finally {
             setProcessingId(null);
         }

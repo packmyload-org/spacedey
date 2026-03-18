@@ -1,9 +1,12 @@
+import type { Metadata } from 'next';
 import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
 import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
+import { buildPageMetadata, toAbsoluteUrl } from '@/lib/seo';
+import { getSiteCity, getSiteState } from '@/lib/utils/siteLocations';
 
 async function getSiteByIdFromDB(siteId: string) {
   try {
@@ -18,6 +21,46 @@ async function getSiteByIdFromDB(siteId: string) {
   }
 }
 
+export async function generateMetadata(
+  { params }: { params: Promise<{ siteId: string }> }
+): Promise<Metadata> {
+  const { siteId } = await params;
+  const site = await getSiteByIdFromDB(siteId);
+
+  if (!site) {
+    return {
+      title: 'Storage Location',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const city = getSiteCity({ city: site.city ?? undefined, address: site.address });
+  const state = getSiteState({ state: site.state ?? undefined, address: site.address });
+  const locationLabel = [city, state].filter(Boolean).join(', ');
+  const availableUnits = (site.unitTypes || []).reduce((count, unitType) => (
+    count + Number(unitType.availableCount || 0)
+  ), 0);
+
+  return buildPageMetadata({
+    title: `${site.name} Self Storage${locationLabel ? ` in ${locationLabel}` : ''}`,
+    description:
+      site.about?.trim() ||
+      `Explore ${site.name}${locationLabel ? ` in ${locationLabel}` : ''}, compare available storage units, and reserve secure self storage online with Spacedey.`,
+    path: `/locations/${site.id}`,
+    image: site.image,
+    keywords: [
+      site.name.toLowerCase(),
+      city ? `self storage ${city.toLowerCase()}` : 'self storage nigeria',
+      state ? `storage facility ${state.toLowerCase()}` : 'storage facility nigeria',
+      city ? `storage units in ${city.toLowerCase()}` : 'storage units nigeria',
+      availableUnits > 0 ? 'available storage units' : 'secure storage facility',
+    ],
+  });
+}
+
 export default async function SiteDetailsPage({ params }: { params: Promise<{ siteId: string }> }) {
   const { siteId } = await params;
   const site = await getSiteByIdFromDB(siteId);
@@ -27,6 +70,10 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
   }
 
   const siteUnits = site.units || [];
+  const city = getSiteCity({ city: site.city ?? undefined, address: site.address });
+  const state = getSiteState({ state: site.state ?? undefined, address: site.address });
+  const pageUrl = toAbsoluteUrl(`/locations/${site.id}`);
+  const availableUnitCount = siteUnits.filter((unit) => unit.status === 'available').length;
 
   const siteData = {
     id: site.id,
@@ -82,9 +129,73 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
     createdAt: site.createdAt,
     updatedAt: site.updatedAt,
   };
+  const localBusinessJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: site.name,
+    description:
+      site.about ||
+      `Secure self storage facility${city ? ` in ${city}` : ''}${state ? `, ${state}` : ''}.`,
+    url: pageUrl,
+    image: site.image ? [site.image] : undefined,
+    telephone: site.contactPhone || undefined,
+    email: site.contactEmail || undefined,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: site.address,
+      addressLocality: city || undefined,
+      addressRegion: state || undefined,
+      addressCountry: 'NG',
+    },
+    geo: (site.lat ?? site.latitude) && (site.lng ?? site.longitude)
+      ? {
+          '@type': 'GeoCoordinates',
+          latitude: site.lat ?? site.latitude,
+          longitude: site.lng ?? site.longitude,
+        }
+      : undefined,
+    areaServed: [city, state].filter(Boolean),
+    numberOfEmployees: undefined,
+    makesOffer: availableUnitCount > 0
+      ? {
+          '@type': 'Offer',
+          availability: 'https://schema.org/InStock',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Self storage unit rental',
+          },
+        }
+      : undefined,
+  };
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Locations',
+        item: toAbsoluteUrl('/locations'),
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: site.name,
+        item: pageUrl,
+      },
+    ],
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 pt-[80px]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <SiteDetails site={siteData} />
     </main>
   );

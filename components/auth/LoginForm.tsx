@@ -1,29 +1,43 @@
 "use client";
 //login form component
-import { Eye } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/useAuthStore';
+import PasswordField from '@/components/ui/PasswordField';
+import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
+import { getFieldErrors, loginFormSchema } from '@/lib/auth/authFormSchemas';
+import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
 export default function LoginForm() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [rememberMe, setRememberMe] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [verificationNotice, setVerificationNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    setFieldErrors({});
+    setVerificationNotice(null);
 
-    if (!email || !password) {
-      setError('Email and password are required.');
+    const validation = loginFormSchema.safeParse({
+      email,
+      password,
+      rememberMe,
+    });
+
+    if (!validation.success) {
+      setFieldErrors(getFieldErrors(validation.error));
       return;
     }
+
+    const payload = validation.data;
 
     setIsSubmitting(true);
     try {
@@ -32,12 +46,18 @@ export default function LoginForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, rememberMe }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        if (data?.requiresEmailVerification) {
+          setVerificationNotice(
+            `We found your account for ${data?.email || payload.email}. Verify your email before signing in.`
+          );
+        }
+
         throw new Error(data?.error || 'Login failed.');
       }
 
@@ -69,34 +89,53 @@ export default function LoginForm() {
 
         <form onSubmit={handleSubmit}>
           {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
+          {verificationNotice && (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {verificationNotice}
+            </div>
+          )}
 
           {/* Email Input */}
           <div className="mb-4">
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(normalizeEmail(e.target.value));
+                if (fieldErrors.email) {
+                  setFieldErrors((current) => ({ ...current, email: '' }));
+                }
+              }}
               placeholder="Email Address"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+              className={getAuthInputClass(Boolean(fieldErrors.email))}
+              {...EMAIL_INPUT_PROPS}
             />
+            {fieldErrors.email ? (
+              <div className="mt-1 text-xs text-red-500">{fieldErrors.email}</div>
+            ) : null}
           </div>
 
           {/* Password Input */}
-          <div className="mb-4 relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
+          <div className="mb-4">
+            <PasswordField
+              name="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(value) => {
+                setPassword(value);
+                if (fieldErrors.password) {
+                  setFieldErrors((current) => ({ ...current, password: '' }));
+                }
+              }}
+              onFocus={() => {
+                if (fieldErrors.password) {
+                  setFieldErrors((current) => ({ ...current, password: '' }));
+                }
+              }}
+              error={fieldErrors.password}
               placeholder="Enter your password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D96541] focus:border-transparent text-gray-700"
+              autoComplete="current-password"
+              inputClassName={`${getAuthInputClass(Boolean(fieldErrors.password)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <Eye className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Remember Me & Forgot Password */}

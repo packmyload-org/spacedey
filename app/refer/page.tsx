@@ -1,19 +1,5 @@
-import Footer from "@/components/layout/Footer";
-import Header from "@/components/layout/Header";
-import ReferralFAQAccordion from "@/components/refer/ReferralFAQAccordion";
-import ReferralHero from "@/components/refer/ReferralHero";
-import ReferralReviewsCarousel from "@/components/refer/ReferralReviewsCarousel";
-import ReferralStorageFeatures from "@/components/refer/ReferralStorageFeatures";
+import { permanentRedirect } from 'next/navigation';
 
-export default function Page() {
-    return (
-        <div>
-            <Header />
-            <ReferralHero />
-            <ReferralStorageFeatures />
-            <ReferralFAQAccordion />
-            <ReferralReviewsCarousel />
-            <Footer />
-        </div>
-    );
+export default function ReferPage() {
+  permanentRedirect('/referral');
 }

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getAvailableCities } from "@/lib/utils/cities";
+import { toLocationSlug } from '@/lib/utils/locationSeo';
 
 export default function LocationSection() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function LocationSection() {
 
   const handleSearch = () => {
     if (location) {
-      router.push(`/search?city=${encodeURIComponent(location)}`);
+      router.push(`/locations/city/${toLocationSlug(location)}`);
     }
   };
 
@@ -93,7 +94,6 @@ export default function LocationSection() {
     </section>
   );
 }
-
 
 
 

@@ -19,6 +19,7 @@ import {
     FileText
 } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 interface UnitType {
     id?: string;
@@ -180,6 +181,13 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
         }));
     };
 
+    const handleMediaUrlChange = (field: 'image' | 'siteMapUrl', value: string) => {
+        setSite((current) => ({
+            ...current,
+            [field]: value.trim(),
+        }));
+    };
+
     const addPresetUnitTypeToDraft = (preset: UnitType) => {
         setSite((current) => {
             const exists = current.unitTypes.some((unit) => (
@@ -228,16 +236,19 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             const data = await res.json();
             if (data.ok) {
                 if (isNew) {
+                    toast.success('Site created successfully');
                     router.push(`/admin/sites/${data.site.id}`);
                 } else {
                     setSite(data.site);
-                    alert('Site updated successfully');
+                    toast.success('Site updated successfully');
                 }
             } else {
                 setError(data.error);
+                toast.error(data.error || 'Failed to save site');
             }
         } catch {
             setError('An error occurred while saving');
+            toast.error('An error occurred while saving');
         } finally {
             setSaving(false);
         }
@@ -245,7 +256,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
 
     const handleAddUnit = async () => {
         if (!unitForm.name || !unitForm.width || !unitForm.depth || !unitForm.priceAmount) {
-            alert('Please fill in name, dimensions, and price');
+            toast.error('Please fill in name, dimensions, and price');
             return;
         }
 
@@ -262,11 +273,12 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             if (data.ok) {
                 setSite({ ...site, unitTypes: [...site.unitTypes, data.unitType] });
                 setUnitForm({ name: '', width: 0, depth: 0, unit: 'ft', priceAmount: 0, priceCurrency: 'NGN', availableCount: 0 });
+                toast.success('Unit type added');
             } else {
-                alert(data.error);
+                toast.error(data.error || 'Failed to add unit type');
             }
         } catch {
-            alert('Failed to add unit type');
+            toast.error('Failed to add unit type');
         }
     };
 
@@ -284,15 +296,16 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                     unitTypes: site.unitTypes.filter(u => u.id !== unitId),
                     units: site.units.filter((unit) => unit.unitType?.id !== unitId && unit.unitTypeId !== unitId),
                 });
+                toast.success('Unit type deleted');
             }
         } catch {
-            alert('Failed to delete unit type');
+            toast.error('Failed to delete unit type');
         }
     };
 
     const handleAddStorageUnit = async () => {
         if (!storageUnitForm.unitNumber || !storageUnitForm.unitTypeId) {
-            alert('Please fill in unit number and unit type');
+            toast.error('Please fill in unit number and unit type');
             return;
         }
 
@@ -325,10 +338,10 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                     unitTypeId: storageUnitForm.unitTypeId,
                 });
             } else {
-                alert(data.error);
+                toast.error(data.error || 'Failed to add storage unit');
             }
         } catch {
-            alert('Failed to add storage unit');
+            toast.error('Failed to add storage unit');
         }
     };
 
@@ -349,12 +362,13 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                     ...current,
                     units: current.units.map((unit) => unit.id === unitId ? { ...unit, ...data.unit } : unit),
                 }));
+                toast.success('Storage unit updated');
                 fetchSite();
             } else {
-                alert(data.error);
+                toast.error(data.error || 'Failed to update storage unit');
             }
         } catch {
-            alert('Failed to update storage unit');
+            toast.error('Failed to update storage unit');
         }
     };
 
@@ -372,10 +386,11 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                     ...current,
                     units: current.units.filter((unit) => unit.id !== unitId),
                 }));
+                toast.success('Storage unit deleted');
                 fetchSite();
             }
         } catch {
-            alert('Failed to delete storage unit');
+            toast.error('Failed to delete storage unit');
         }
     };
 
@@ -402,11 +417,12 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             const data = await res.json();
             if (data.ok) {
                 setSite({ ...site, [type]: data.url });
+                toast.success(type === 'image' ? 'Site image uploaded' : 'Blueprint uploaded');
             } else {
-                alert(data.error || 'Upload failed');
+                toast.error(data.error || 'Upload failed');
             }
         } catch {
-            alert('An error occurred during upload');
+            toast.error('An error occurred during upload');
         } finally {
             if (type === 'image') setUploadingImage(false);
             else setUploadingMap(false);
@@ -648,7 +664,7 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                     </div>
 
                                     <div className="space-y-3">
-                                        {site.unitTypes.length === 0 ? (
+                                        {site.unitTypes?.length === 0 ? (
                                             <p className="text-center text-gray-500 py-8 italic">No unit types selected yet.</p>
                                         ) : (
                                             site.unitTypes.map((unit) => (
@@ -916,6 +932,13 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                         <div className="space-y-6">
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Facility Image</label>
+                                <input
+                                    type="url"
+                                    value={site.image || ''}
+                                    onChange={(event) => handleMediaUrlChange('image', event.target.value)}
+                                    className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                    placeholder="https://..."
+                                />
                                 <div
                                     onClick={() => document.getElementById('image-upload')?.click()}
                                     className="aspect-video relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 group cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all overflow-hidden"
@@ -938,11 +961,29 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                         </>
                                     )}
                                 </div>
-                                <p className="mt-2 text-[10px] text-gray-400">Recommended: 16:9 aspect ratio, at least 1200x675px. Uploaded to Cloudinary and saved as the site image URL.</p>
+                                <div className="mt-2 flex items-center justify-between gap-3">
+                                    <p className="text-[10px] text-gray-400">Recommended: 16:9 aspect ratio, at least 1200x675px. Upload to Cloudinary or paste an image URL.</p>
+                                    {site.image ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMediaUrlChange('image', '')}
+                                            className="text-[10px] font-bold uppercase tracking-wide text-red-500 transition hover:text-red-600"
+                                        >
+                                            Clear
+                                        </button>
+                                    ) : null}
+                                </div>
                             </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Site Map Layout</label>
+                                <input
+                                    type="url"
+                                    value={site.siteMapUrl || ''}
+                                    onChange={(event) => handleMediaUrlChange('siteMapUrl', event.target.value)}
+                                    className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                                    placeholder="https://..."
+                                />
                                 <div
                                     onClick={() => document.getElementById('map-upload')?.click()}
                                     className="aspect-[4/3] relative bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 group cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all overflow-hidden"
@@ -972,7 +1013,18 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                         </>
                                     )}
                                 </div>
-                                <p className="mt-2 text-[10px] text-gray-400">Blueprint uploads are stored in Cloudinary and saved to the site map URL field.</p>
+                                <div className="mt-2 flex items-center justify-between gap-3">
+                                    <p className="text-[10px] text-gray-400">Upload to Cloudinary or paste an image or PDF URL for the site map field.</p>
+                                    {site.siteMapUrl ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMediaUrlChange('siteMapUrl', '')}
+                                            className="text-[10px] font-bold uppercase tracking-wide text-red-500 transition hover:text-red-600"
+                                        >
+                                            Clear
+                                        </button>
+                                    ) : null}
+                                </div>
                             </div>
                         </div>
                     </section>

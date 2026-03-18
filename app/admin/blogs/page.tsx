@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import {
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   ImagePlus,
-  Loader,
   PencilLine,
-  Plus,
   Save,
   Trash2,
 } from 'lucide-react';
@@ -69,10 +69,167 @@ function mapPostToForm(post: BlogPostRecord): BlogFormState {
   };
 }
 
+function BlogOverviewCard({
+  post,
+  onEdit,
+}: {
+  post: BlogPostRecord;
+  onEdit: () => void;
+}) {
+  return (
+    <article className="overflow-hidden rounded-[28px] border border-[#D8E2FF] bg-white shadow-sm transition hover:-translate-y-1 hover:border-[#BCD0FF]">
+      {post.image ? (
+        <div className="relative h-52 overflow-hidden bg-[#EEF3FF]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={post.image} alt={post.title} className="h-full w-full object-cover" />
+        </div>
+      ) : (
+        <div className="flex h-52 items-center justify-center bg-[#EEF3FF] px-6 text-center">
+          <p className="text-sm font-semibold text-[#7386B9]">No cover image yet</p>
+        </div>
+      )}
+
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#5D74B0]">
+              {formatDate(post.publishedAt || post.updatedAt)}
+            </p>
+            <h3 className="mt-3 text-xl font-black leading-tight text-[#0F172A]">
+              {post.title}
+            </h3>
+          </div>
+          <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] ${
+            post.published ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+          }`}>
+            {post.published ? 'Live' : 'Draft'}
+          </span>
+        </div>
+
+        <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#5D74B0]">{post.excerpt}</p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#E6EEFF] pt-4">
+          <p className="text-sm font-semibold text-[#1138D8]">{post.author}</p>
+          <div className="flex flex-wrap gap-2">
+            {post.published ? (
+              <Link
+                href={`/blog/${post.slug}`}
+                target="_blank"
+                className="inline-flex items-center gap-2 rounded-full border border-[#D8E2FF] px-4 py-2 text-sm font-bold text-[#1642F0] transition hover:bg-[#F0F4FF]"
+              >
+                Preview
+                <ExternalLink className="h-4 w-4" />
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={onEdit}
+              className="inline-flex items-center gap-2 rounded-full bg-[#1642F0] px-4 py-2 text-sm font-black text-white transition hover:bg-[#1138D8]"
+            >
+              <PencilLine className="h-4 w-4" />
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function AdminBlogsSkeleton() {
+  return (
+    <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
+      <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm xl:sticky xl:top-28 xl:max-h-[calc(100vh-8.5rem)] xl:overflow-hidden">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="h-7 w-24 animate-pulse rounded-xl bg-[#E8EEFF]" />
+            <div className="mt-3 h-4 w-52 animate-pulse rounded-lg bg-[#EEF3FF]" />
+          </div>
+          <div className="h-10 w-24 animate-pulse rounded-full bg-[#E8EEFF]" />
+        </div>
+
+        <div className="mt-6 space-y-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-y-auto xl:pr-2">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-[#E6EEFF] bg-[#FBFCFF] px-4 py-4"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="h-4 w-40 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-6 w-14 animate-pulse rounded-full bg-[#EEF3FF]" />
+              </div>
+              <div className="mt-3 h-3 w-full animate-pulse rounded-lg bg-[#EEF3FF]" />
+              <div className="mt-2 h-3 w-4/5 animate-pulse rounded-lg bg-[#EEF3FF]" />
+              <div className="mt-4 flex items-center justify-between">
+                <div className="h-3 w-20 animate-pulse rounded-lg bg-[#EEF3FF]" />
+                <div className="h-3 w-24 animate-pulse rounded-lg bg-[#EEF3FF]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <section className="rounded-[32px] border border-[#D8E2FF] bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-col gap-4 border-b border-[#E6EEFF] pb-6 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="h-3 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+            <div className="mt-4 h-10 w-2/3 animate-pulse rounded-2xl bg-[#EEF3FF]" />
+          </div>
+          <div className="h-10 w-36 animate-pulse rounded-full bg-[#EEF3FF]" />
+        </div>
+
+        <div className="mt-8 space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {Array.from({ length: 2 }, (_, index) => (
+              <div key={index}>
+                <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-12 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+            <div className="space-y-6">
+              <div>
+                <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-32 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              </div>
+              <div>
+                <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                <div className="h-[340px] w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index}>
+                  <div className="mb-2 h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
+                  <div className="h-12 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+                </div>
+              ))}
+              <div className="h-16 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              <div className="h-20 w-full animate-pulse rounded-2xl bg-[#F3F6FF]" />
+              <div className="h-48 w-full animate-pulse rounded-[24px] bg-[#F3F6FF]" />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-[#E6EEFF] pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="h-4 w-60 animate-pulse rounded-lg bg-[#E8EEFF]" />
+            <div className="h-12 w-36 animate-pulse rounded-full bg-[#E8EEFF]" />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function AdminBlogsPage() {
+  const postsPerPage = 10;
   const authStore = useAuthStore();
   const [posts, setPosts] = useState<BlogPostRecord[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [isEditorVisible, setIsEditorVisible] = useState(false);
   const [form, setForm] = useState<BlogFormState>(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -85,6 +242,11 @@ export default function AdminBlogsPage() {
     () => posts.find((post) => post.id === selectedPostId) ?? null,
     [posts, selectedPostId]
   );
+  const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * postsPerPage;
+    return posts.slice(startIndex, startIndex + postsPerPage);
+  }, [currentPage, posts]);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -105,6 +267,7 @@ export default function AdminBlogsPage() {
 
       const nextPosts = Array.isArray(data.posts) ? data.posts : [];
       setPosts(nextPosts);
+      setCurrentPage(1);
     } catch (fetchError) {
       setError(fetchError instanceof Error ? fetchError.message : 'Failed to fetch blog posts.');
       setPosts([]);
@@ -126,6 +289,10 @@ export default function AdminBlogsPage() {
   }, [selectedPost]);
 
   useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages));
+  }, [totalPages]);
+
+  useEffect(() => {
     const currentUser = authStore.user;
 
     if (!selectedPostId && currentUser) {
@@ -143,6 +310,15 @@ export default function AdminBlogsPage() {
     }));
   };
 
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) {
+      return;
+    }
+
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const resetForm = () => {
     setSelectedPostId(null);
     setForm({
@@ -154,11 +330,23 @@ export default function AdminBlogsPage() {
     setError(null);
   };
 
+  const openCreateForm = () => {
+    resetForm();
+    setIsEditorVisible(true);
+  };
+
+  const closeEditor = () => {
+    setIsEditorVisible(false);
+    setSuccessMessage(null);
+    setError(null);
+  };
+
   const handleSelectPost = (post: BlogPostRecord) => {
     setSelectedPostId(post.id);
     setForm(mapPostToForm(post));
     setSuccessMessage(null);
     setError(null);
+    setIsEditorVisible(true);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -194,8 +382,10 @@ export default function AdminBlogsPage() {
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         ));
       });
+      setCurrentPage(1);
       setSelectedPostId(savedPost.id);
       setForm(mapPostToForm(savedPost));
+      setIsEditorVisible(true);
       setSuccessMessage(isEditing ? 'Blog post updated.' : 'Blog post created.');
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Failed to save blog post.');
@@ -232,8 +422,9 @@ export default function AdminBlogsPage() {
       }
 
       setPosts((current) => current.filter((post) => post.id !== selectedPostId));
+      closeEditor();
       resetForm();
-      setSuccessMessage('Blog post deleted.');
+      setCurrentPage(1);
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete blog post.');
     } finally {
@@ -280,33 +471,131 @@ export default function AdminBlogsPage() {
   };
 
   if (loading) {
+    return <AdminBlogsSkeleton />;
+  }
+
+  if (!isEditorVisible) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader className="h-8 w-8 animate-spin text-[#1642F0]" />
-      </div>
+      <section className="rounded-[32px] border border-[#D8E2FF] bg-white p-6 shadow-sm md:p-8">
+        <div className="flex flex-col gap-4 border-b border-[#E6EEFF] pb-6 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">
+              Content Library
+            </p>
+            <h1 className="mt-2 text-3xl font-black text-[#0F172A]">Blog posts</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5D74B0]">
+              Browse published posts and drafts in a single grid, then open any item when you want to edit it.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={openCreateForm}
+            className="inline-flex items-center justify-center rounded-full bg-[#1642F0] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1138D8]"
+          >
+            Create new post
+          </button>
+        </div>
+
+        <div className="mt-8 flex items-center justify-between gap-4">
+          <p className="text-sm text-[#5D74B0]">
+            Showing {paginatedPosts.length} of {posts.length} post{posts.length === 1 ? '' : 's'} across drafts and live content.
+          </p>
+          <p className="hidden rounded-full border border-[#D8E2FF] bg-[#F8FAFF] px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-[#1642F0] md:inline-flex">
+            Page {currentPage} of {totalPages}
+          </p>
+        </div>
+
+        {posts.length === 0 ? (
+          <div className="mt-8 rounded-[28px] border border-dashed border-[#D8E2FF] bg-[#FBFCFF] px-6 py-16 text-center">
+            <h2 className="text-2xl font-black text-[#0F172A]">No blog posts yet</h2>
+            <p className="mt-3 text-sm text-[#5D74B0]">
+              Create your first article to populate the admin library and public blog.
+            </p>
+            <button
+              type="button"
+              onClick={openCreateForm}
+              className="mt-6 inline-flex items-center justify-center rounded-full bg-[#1642F0] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1138D8]"
+            >
+              Start writing
+            </button>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
+            {paginatedPosts.map((post) => (
+              <BlogOverviewCard
+                key={post.id}
+                post={post}
+                onEdit={() => handleSelectPost(post)}
+              />
+            ))}
+          </div>
+        )}
+
+        {posts.length > postsPerPage ? (
+          <nav className="mt-10 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C9D8FF] bg-white text-[#1138D8] transition hover:bg-[#F0F4FF] disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => handlePageChange(page)}
+                className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-black transition ${
+                  page === currentPage
+                    ? 'bg-[#1642F0] text-white'
+                    : 'border border-[#C9D8FF] bg-white text-[#1138D8] hover:bg-[#F0F4FF]'
+                }`}
+                aria-current={page === currentPage ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C9D8FF] bg-white text-[#1138D8] transition hover:bg-[#F0F4FF] disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Next page"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </nav>
+        ) : null}
+      </section>
     );
   }
 
   return (
     <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
-      <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm">
+      <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm xl:sticky xl:top-28 xl:max-h-[calc(100vh-8.5rem)] xl:overflow-hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black text-[#0F172A]">Blogs</h1>
             <p className="mt-1 text-sm text-[#5D74B0]">Create and publish what appears on the public blog.</p>
           </div>
 
-          <button
-            type="button"
-            onClick={resetForm}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1642F0] text-white transition hover:bg-[#1138D8]"
-            aria-label="Create new post"
-          >
-            <Plus className="h-5 w-5" />
-          </button>
+          {selectedPost ? (
+            <button
+              type="button"
+              onClick={openCreateForm}
+              className="inline-flex items-center rounded-full border border-[#D8E2FF] px-4 py-2 text-sm font-bold text-[#1642F0] transition hover:bg-[#F0F4FF]"
+            >
+              New post
+            </button>
+          ) : null}
         </div>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-6 space-y-3 xl:max-h-[calc(100vh-14rem)] xl:overflow-y-auto xl:pr-2">
           {posts.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[#D8E2FF] px-4 py-8 text-center text-sm text-[#5D74B0]">
               No posts yet. Create your first article.
@@ -357,16 +646,25 @@ export default function AdminBlogsPage() {
             </h2>
           </div>
 
-          {selectedPost?.published ? (
-            <Link
-              href={`/blog/${selectedPost.slug}`}
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-full border border-[#D8E2FF] px-4 py-2 text-sm font-bold text-[#1642F0] transition hover:bg-[#F0F4FF]"
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={closeEditor}
+              className="inline-flex items-center gap-2 rounded-full border border-[#D8E2FF] px-4 py-2 text-sm font-bold text-[#5D74B0] transition hover:bg-[#F8FAFF]"
             >
-              Preview live post
-              <ExternalLink className="h-4 w-4" />
-            </Link>
-          ) : null}
+              Back to library
+            </button>
+            {selectedPost?.published ? (
+              <Link
+                href={`/blog/${selectedPost.slug}`}
+                target="_blank"
+                className="inline-flex items-center gap-2 rounded-full border border-[#D8E2FF] px-4 py-2 text-sm font-bold text-[#1642F0] transition hover:bg-[#F0F4FF]"
+              >
+                Preview live post
+                <ExternalLink className="h-4 w-4" />
+              </Link>
+            ) : null}
+          </div>
         </div>
 
         {error ? (

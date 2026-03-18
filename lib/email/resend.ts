@@ -1,25 +1,31 @@
 import { Resend } from 'resend';
 import { generateActionToken } from '@/lib/auth/actionTokens';
 import { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { resolveAppUrl } from '@/lib/utils/appUrl';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Spacedey <onboarding@resend.dev>';
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@spacedey.com';
-const PUBLIC_APP_URL = process.env.PUBLIC_APP_URL || 'http://localhost:3000';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@mailing.spacedey.com';
 
 const RESEND_TEMPLATE_IDS = {
   signupVerification: 'email_verification',
   forgotPassword: 'reset-password',
   billingSuccess: 'billing-success',
+  newsletterWelcome: 'newsletter-welcome',
 } as const;
 
 const EMAIL_SUBJECTS = {
   signupVerification: 'Verify your Spacedey account',
   forgotPassword: 'Reset your Spacedey password',
   billingSuccess: 'Your Spacedey payment was successful',
+  newsletterWelcome: 'You are subscribed to Spacedey updates',
 } as const;
 
-type ResendTemplateKey = 'signupVerification' | 'forgotPassword' | 'billingSuccess';
+type ResendTemplateKey =
+  | 'signupVerification'
+  | 'forgotPassword'
+  | 'billingSuccess'
+  | 'newsletterWelcome';
 type TemplateVariables = Record<string, string | number>;
 
 export interface BillingSuccessEmailArgs {
@@ -30,6 +36,7 @@ export interface BillingSuccessEmailArgs {
   amountPaid: number;
   currency: string;
   billingType?: PaymentBillingType;
+  appUrl?: string | null;
 }
 
 let resendClient: Resend | null = null;
@@ -77,6 +84,32 @@ async function sendEmail(args: {
   }
 }
 
+export async function sendDirectEmail(args: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  from?: string;
+}) {
+  const client = getResendClient();
+
+  if (!client) {
+    throw new Error('Resend is not configured.');
+  }
+
+  const { error } = await client.emails.send({
+    from: args.from || RESEND_FROM_EMAIL,
+    to: [args.to],
+    subject: args.subject,
+    html: args.html,
+    text: args.text,
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Failed to send email through Resend.');
+  }
+}
+
 export function isResendConfigured(templateKey?: ResendTemplateKey) {
   const baseConfigured = Boolean(RESEND_API_KEY && RESEND_FROM_EMAIL);
 
@@ -95,6 +128,7 @@ export async function sendSignupVerificationEmail(args: {
   userId: string;
   email: string;
   firstName: string;
+  appUrl?: string | null;
 }) {
   const templateId = getTemplateId('signupVerification');
 
@@ -111,7 +145,8 @@ export async function sendSignupVerificationEmail(args: {
     '24h'
   );
 
-  const verificationUrl = `${PUBLIC_APP_URL}/auth/verify-email?token=${encodeURIComponent(token)}`;
+  const appUrl = resolveAppUrl(args.appUrl);
+  const verificationUrl = `${appUrl}/auth/verify-email?token=${encodeURIComponent(token)}`;
 
   await sendEmail({
     to: args.email,
@@ -131,6 +166,7 @@ export async function sendForgotPasswordEmail(args: {
   userId: string;
   email: string;
   firstName: string;
+  appUrl?: string | null;
 }) {
   const templateId = getTemplateId('forgotPassword');
 
@@ -147,7 +183,8 @@ export async function sendForgotPasswordEmail(args: {
     '1h'
   );
 
-  const resetUrl = `${PUBLIC_APP_URL}/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(args.email)}`;
+  const appUrl = resolveAppUrl(args.appUrl);
+  const resetUrl = `${appUrl}/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(args.email)}`;
 
   await sendEmail({
     to: args.email,
@@ -184,6 +221,8 @@ export async function sendBillingSuccessEmail(args: BillingSuccessEmailArgs) {
     return false;
   }
 
+  const appUrl = resolveAppUrl(args.appUrl);
+
   await sendEmail({
     to: args.to,
     subject: EMAIL_SUBJECTS.billingSuccess,
@@ -194,8 +233,8 @@ export async function sendBillingSuccessEmail(args: BillingSuccessEmailArgs) {
       invoiceNumber: args.invoiceNumber,
       amountPaid: formatCurrency(args.amountPaid, args.currency),
       billingType: getBillingTypeLabel(args.billingType),
-      bookingsUrl: `${PUBLIC_APP_URL}/bookings`,
-      invoicesUrl: `${PUBLIC_APP_URL}/invoices`,
+      bookingsUrl: `${appUrl}/bookings`,
+      invoicesUrl: `${appUrl}/invoices`,
       supportEmail: SUPPORT_EMAIL,
     },
   });
@@ -234,4 +273,30 @@ export async function sendBillingSuccessEmailBatch(args: {
       });
     }
   });
+}
+
+export async function sendNewsletterWelcomeEmail(args: {
+  email: string;
+  appUrl?: string | null;
+}) {
+  const templateId = getTemplateId('newsletterWelcome');
+
+  if (!isResendConfigured('newsletterWelcome') || !templateId) {
+    return false;
+  }
+
+  const appUrl = resolveAppUrl(args.appUrl);
+
+  await sendEmail({
+    to: args.email,
+    subject: EMAIL_SUBJECTS.newsletterWelcome,
+    templateId,
+    variables: {
+      email: args.email,
+      blogUrl: `${appUrl}/blog`,
+      supportEmail: SUPPORT_EMAIL,
+    },
+  });
+
+  return true;
 }

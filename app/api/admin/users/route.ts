@@ -3,6 +3,9 @@ import { connectTypeORM } from '@/lib/db';
 import User from '@/lib/db/entities/User';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
+import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
+import { normalizeEmail } from '@/lib/utils/email';
+import { sendSignupVerificationEmail } from '@/lib/email/resend';
 
 export async function GET(request: NextRequest) {
   const adminCheck = await requireAdmin(request);
@@ -15,9 +18,28 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1', 10) || 1);
+    const pageSize = Math.min(50, Math.max(1, Number.parseInt(searchParams.get('pageSize') || '10', 10) || 10));
+    const search = String(searchParams.get('search') || '').trim().toLowerCase();
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
-    const users = await repo.find();
+    const query = repo
+      .createQueryBuilder('user')
+      .orderBy('user.createdAt', 'DESC')
+      .addOrderBy('user.email', 'ASC');
+
+    if (search) {
+      query.andWhere(
+        '(LOWER(user.email) LIKE :search OR LOWER(user.firstName) LIKE :search OR LOWER(user.lastName) LIKE :search OR LOWER(CONCAT(user.firstName, \' \', user.lastName)) LIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+
+    const [users, total] = await query
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
 
     const formattedUsers = users.map((user) => ({
       id: user.id,
@@ -26,6 +48,7 @@ export async function GET(request: NextRequest) {
       lastName: user.lastName,
       phone: user.phone,
       role: user.role,
+      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     }));
@@ -33,7 +56,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       users: formattedUsers,
-      total: formattedUsers.length,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
     });
   } catch (error) {
     console.error('Get users error:', error);
@@ -54,11 +80,23 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { firstName, lastName, email, password, role } = body;
+    const firstName = String(body?.firstName || '').trim();
+    const lastName = String(body?.lastName || '').trim();
+    const password = String(body?.password || '').trim();
+    const role = body?.role;
+    const email = normalizeEmail(body?.email || '');
 
     if (!firstName || !lastName || !email || !password) {
       return NextResponse.json(
         { ok: false, error: 'firstName, lastName, email, and password are required.' },
+        { status: 400 }
+      );
+    }
+
+    const passwordValidation = validatePasswordStrength(String(password));
+    if (!passwordValidation.isValid) {
+      return NextResponse.json(
+        { ok: false, error: passwordValidation.message || 'Password is too weak.' },
         { status: 400 }
       );
     }
@@ -73,7 +111,7 @@ export async function POST(request: NextRequest) {
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
 
-    const existingUser = await repo.findOne({ where: { email: email.toLowerCase() } });
+    const existingUser = await repo.findOne({ where: { email } });
 
     if (existingUser) {
       return NextResponse.json(
@@ -84,12 +122,25 @@ export async function POST(request: NextRequest) {
     const newUser = repo.create({
       firstName,
       lastName,
-      email: email.toLowerCase(),
+      email,
       password,
       role: role || UserRole.USER,
     } as Partial<User>);
 
     await repo.save(newUser);
+
+    let verificationEmailSent = false;
+
+    try {
+      verificationEmailSent = await sendSignupVerificationEmail({
+        userId: newUser.id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+        appUrl: new URL(request.url).origin,
+      });
+    } catch (mailError) {
+      console.error('Admin create user verification email error:', mailError);
+    }
 
     const userResponse = {
       id: newUser.id,
@@ -98,12 +149,18 @@ export async function POST(request: NextRequest) {
       lastName: newUser.lastName,
       phone: newUser.phone,
       role: newUser.role,
+      emailVerifiedAt: newUser.emailVerifiedAt ? newUser.emailVerifiedAt.toISOString() : null,
       createdAt: newUser.createdAt,
       updatedAt: newUser.updatedAt,
     };
 
     return NextResponse.json(
-      { ok: true, user: userResponse },
+      {
+        ok: true,
+        user: userResponse,
+        verificationEmailSent,
+        requiresEmailVerification: true,
+      },
       { status: 201 }
     );
   } catch (error) {

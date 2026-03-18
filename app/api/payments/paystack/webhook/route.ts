@@ -4,8 +4,11 @@ import { In } from 'typeorm';
 import { connectTypeORM } from '@/lib/db';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
-import { sendBillingSuccessEmailBatch } from '@/lib/email/resend';
 import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
+import {
+  processEmailNotificationsByIds,
+  queueOrderConfirmationNotifications,
+} from '@/lib/services/emailNotifications';
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -72,6 +75,7 @@ function matchesRecurringGroup({
 }
 
 export async function POST(req: Request) {
+  const appUrl = new URL(req.url).origin;
   const rawBody = await req.text();
   const signature = req.headers.get('x-paystack-signature');
 
@@ -158,8 +162,9 @@ export async function POST(req: Request) {
         providerData: event,
       });
 
-      await sendBillingSuccessEmailBatch({
+      const notificationIds = await queueOrderConfirmationNotifications({
         source: 'payments/paystack-webhook-existing',
+        appUrl,
         emails: updatedBookings.map(({ booking, invoice }) => ({
           to: booking.user.email,
           firstName: booking.user.firstName,
@@ -170,6 +175,7 @@ export async function POST(req: Request) {
           billingType: PaymentBillingType.RECURRING,
         })),
       });
+      await processEmailNotificationsByIds(notificationIds);
 
       return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
     }
@@ -234,8 +240,9 @@ export async function POST(req: Request) {
       providerData: event,
     });
 
-    await sendBillingSuccessEmailBatch({
+    const notificationIds = await queueOrderConfirmationNotifications({
       source: 'payments/paystack-webhook-recurring',
+      appUrl,
       emails: updatedBookings.map(({ booking, invoice }) => ({
         to: booking.user.email,
         firstName: booking.user.firstName,
@@ -246,6 +253,7 @@ export async function POST(req: Request) {
         billingType: PaymentBillingType.RECURRING,
       })),
     });
+    await processEmailNotificationsByIds(notificationIds);
 
     return NextResponse.json({ ok: true, processedBookings: updatedBookings.length });
   } catch (error: unknown) {

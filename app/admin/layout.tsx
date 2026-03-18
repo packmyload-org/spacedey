@@ -166,22 +166,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </div>
 
-      <div className={`border-b border-white/10 ${collapsed ? 'px-2.5 py-3' : 'px-4 py-4'}`}>
-        <div className={`rounded-[20px] bg-white/10 backdrop-blur-sm ${collapsed ? 'p-2.5' : 'p-3.5'}`}>
-          <p className={`text-[10px] font-black uppercase tracking-[0.24em] text-white/55 ${collapsed ? 'text-center' : ''}`}>
-            Admin
-          </p>
-          <h1 className={`mt-1.5 text-white ${collapsed ? 'text-center text-sm font-black' : 'text-lg font-black'}`}>
-            {collapsed ? 'HQ' : 'Spacedey HQ'}
-          </h1>
-          {!collapsed && (
-            <p className="mt-1.5 text-xs leading-5 text-white/70">
-              Work with sites, users, and finance in a focused admin workspace.
-            </p>
-          )}
-        </div>
-      </div>
-
       <nav className={`flex-1 space-y-1.5 overflow-y-auto ${collapsed ? 'px-2.5 py-3' : 'px-3.5 py-4'}`}>
         {navItems.map((item) => {
           const isActive = isActiveRoute(item.href);

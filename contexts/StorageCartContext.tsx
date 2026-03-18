@@ -1,6 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { toast } from "sonner";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 export interface StorageUnit {
   unitId?: string | number;
@@ -40,6 +42,8 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [hasHydratedCart, setHasHydratedCart] = useState(false);
+  const { isAuthenticated } = useAuthStore();
+  const hasShownGuestCartToast = useRef(false);
 
   useEffect(() => {
     try {
@@ -86,6 +90,12 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
     }
   }, [cartItems, hasHydratedCart]);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      hasShownGuestCartToast.current = false;
+    }
+  }, [isAuthenticated]);
+
   const openCart = () => {
     setIsOpen(true);
   };
@@ -127,6 +137,21 @@ export function StorageCartProvider({ children }: { children: ReactNode }) {
           : entry
       );
     });
+
+    const isStorageUnit = item.itemType !== "addon";
+
+    if (!isAuthenticated && isStorageUnit && !hasShownGuestCartToast.current) {
+      hasShownGuestCartToast.current = true;
+
+      toast.info("Added to cart. Sign in before checkout so your storage selection stays with you.", {
+        action: {
+          label: "Sign in",
+          onClick: () => {
+            globalThis.location.href = "/auth/signin";
+          },
+        },
+      });
+    }
   };
 
   const removeFromCart = (index: number) => {
