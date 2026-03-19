@@ -1,0 +1,523 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { connectTypeORM } from '@/lib/db';
+import Invoice from '@/lib/db/entities/Invoice';
+import type { InvoiceLineItem } from '@/lib/db/entities/Invoice';
+
+const PAGE_WIDTH = 595.28;
+const PAGE_HEIGHT = 841.89;
+const PAGE_MARGIN = 40;
+const REFERENCE_IMAGE_PATH = path.join(
+  process.cwd(),
+  'public',
+  'images',
+  'invoice',
+  'storeganise-order-reference.jpg'
+);
+
+export interface InvoiceDocumentData {
+  id: string;
+  invoiceNumber: string;
+  currency: string;
+  status: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  createdAt: string;
+  dueDate: string;
+  paidAt: string | null;
+  user: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+  };
+  booking: {
+    status: string;
+    startDate: string;
+    siteName: string;
+    unitTypeName: string;
+    billingType: 'one_time' | 'recurring';
+    billingInterval: string | null;
+  } | null;
+  payment: {
+    provider: string;
+    providerReference: string;
+    status: string;
+    createdAt: string;
+    paymentMode: string | null;
+  } | null;
+  items: Array<{
+    description: string;
+    qty: number;
+    unitPrice: number;
+    total: number;
+  }>;
+}
+
+function escapePdfText(value: string) {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+    .replace(/\r?\n/g, ' ');
+}
+
+function normalizeWhitespace(value: string) {
+  return value.replace(/\s+/g, ' ').trim();
+}
+
+function formatCurrency(amount: number, currency: string) {
+  return new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function formatDate(value: string | null, fallback = 'Not recorded') {
+  if (!value) {
+    return fallback;
+  }
+
+  return new Intl.DateTimeFormat('en-NG', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
+function titleCase(value: string) {
+  return value
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}
+
+function drawFilledRect(x: number, top: number, width: number, height: number, color: [number, number, number]) {
+  const [r, g, b] = color;
+  const y = PAGE_HEIGHT - top - height;
+  return `${r} ${g} ${b} rg ${x} ${y} ${width} ${height} re f`;
+}
+
+function drawStrokedRect(
+  x: number,
+  top: number,
+  width: number,
+  height: number,
+  color: [number, number, number],
+  lineWidth = 1
+) {
+  const [r, g, b] = color;
+  const y = PAGE_HEIGHT - top - height;
+  return `${lineWidth} w ${r} ${g} ${b} RG ${x} ${y} ${width} ${height} re S`;
+}
+
+function drawText(
+  text: string,
+  x: number,
+  top: number,
+  fontSize: number,
+  font: 'F1' | 'F2',
+  color: [number, number, number]
+) {
+  const [r, g, b] = color;
+  const baseline = PAGE_HEIGHT - top - fontSize;
+  return `BT /${font} ${fontSize} Tf ${r} ${g} ${b} rg 1 0 0 1 ${x} ${baseline} Tm (${escapePdfText(
+    normalizeWhitespace(text)
+  )}) Tj ET`;
+}
+
+function drawRule(x: number, top: number, width: number, color: [number, number, number], lineWidth = 1) {
+  const [r, g, b] = color;
+  const y = PAGE_HEIGHT - top;
+  return `${lineWidth} w ${r} ${g} ${b} RG ${x} ${y} m ${x + width} ${y} l S`;
+}
+
+function drawImage(name: string, x: number, top: number, width: number, height: number) {
+  const y = PAGE_HEIGHT - top - height;
+  return `q ${width} 0 0 ${height} ${x} ${y} cm /${name} Do Q`;
+}
+
+function wrapText(text: string, maxCharsPerLine: number) {
+  const words = normalizeWhitespace(text).split(' ');
+  const lines: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length <= maxCharsPerLine) {
+      current = candidate;
+      continue;
+    }
+
+    if (current) {
+      lines.push(current);
+    }
+
+    if (word.length <= maxCharsPerLine) {
+      current = word;
+      continue;
+    }
+
+    let remaining = word;
+    while (remaining.length > maxCharsPerLine) {
+      lines.push(remaining.slice(0, maxCharsPerLine - 1) + '-');
+      remaining = remaining.slice(maxCharsPerLine - 1);
+    }
+    current = remaining;
+  }
+
+  if (current) {
+    lines.push(current);
+  }
+
+  return lines.length > 0 ? lines : [''];
+}
+
+function sanitizeFilename(value: string) {
+  return value.replace(/[^a-zA-Z0-9-_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+}
+
+function serializeItems(items: InvoiceLineItem[] | null | undefined) {
+  return (items || []).map((item) => ({
+    description: item.description,
+    qty: Number(item.qty),
+    unitPrice: Number(item.unitPrice),
+    total: Number(item.total),
+  }));
+}
+
+function serializeInvoiceDocument(invoice: Invoice): InvoiceDocumentData {
+  const bookingMetadata = invoice.booking?.billingMetadata;
+
+  return {
+    id: invoice.id,
+    invoiceNumber: invoice.invoiceNumber,
+    currency: invoice.currency,
+    status: invoice.status,
+    subtotal: Number(invoice.subtotal),
+    tax: Number(invoice.tax),
+    total: Number(invoice.total),
+    createdAt: invoice.createdAt.toISOString(),
+    dueDate: invoice.dueDate.toISOString(),
+    paidAt: invoice.paidAt ? invoice.paidAt.toISOString() : null,
+    user: {
+      firstName: invoice.user.firstName,
+      lastName: invoice.user.lastName,
+      email: invoice.user.email,
+      phone: invoice.user.phone || null,
+    },
+    booking: invoice.booking
+      ? {
+          status: invoice.booking.status,
+          startDate: invoice.booking.startDate.toISOString(),
+          siteName: invoice.booking.site?.name || 'Spacedey storage location',
+          unitTypeName: invoice.booking.unitType?.name || 'Storage unit',
+          billingType: bookingMetadata?.billingType === 'recurring' ? 'recurring' : 'one_time',
+          billingInterval:
+            typeof bookingMetadata?.billingInterval === 'string'
+              ? bookingMetadata.billingInterval
+              : null,
+        }
+      : null,
+    payment: invoice.payment
+      ? {
+          provider: invoice.payment.provider,
+          providerReference: invoice.payment.providerReference,
+          status: invoice.payment.status,
+          createdAt: invoice.payment.createdAt.toISOString(),
+          paymentMode:
+            invoice.payment.metadata && typeof invoice.payment.metadata.paymentMode === 'string'
+              ? invoice.payment.metadata.paymentMode
+              : null,
+        }
+      : null,
+    items: serializeItems(invoice.items),
+  };
+}
+
+async function getInvoiceDocumentRecord(where: {
+  id: string;
+  user?: {
+    id: string;
+  };
+}) {
+  const dataSource = await connectTypeORM();
+  const invoiceRepo = dataSource.getRepository(Invoice);
+
+  return invoiceRepo.findOne({
+    where,
+    relations: ['user', 'booking', 'booking.site', 'booking.unitType', 'payment'],
+  });
+}
+
+export async function getInvoiceDocumentForUser(userId: string, invoiceId: string) {
+  const invoice = await getInvoiceDocumentRecord({
+    id: invoiceId,
+    user: { id: userId },
+  });
+
+  return invoice ? serializeInvoiceDocument(invoice) : null;
+}
+
+export async function getInvoiceDocumentForAdmin(invoiceId: string) {
+  const invoice = await getInvoiceDocumentRecord({
+    id: invoiceId,
+  });
+
+  return invoice ? serializeInvoiceDocument(invoice) : null;
+}
+
+async function readReferenceImage() {
+  try {
+    const bytes = await readFile(REFERENCE_IMAGE_PATH);
+    return {
+      bytes,
+      width: 720,
+      height: 448,
+    };
+  } catch (error) {
+    console.warn('Invoice reference image unavailable:', error);
+    return null;
+  }
+}
+
+export function getInvoiceDocumentFilename(invoiceNumber: string) {
+  return `${sanitizeFilename(invoiceNumber.toLowerCase()) || 'invoice'}.pdf`;
+}
+
+export async function generateInvoicePdf(document: InvoiceDocumentData) {
+  const referenceImage = await readReferenceImage();
+  const customerName = `${document.user.firstName} ${document.user.lastName}`.trim() || 'Spacedey customer';
+  const billingLabel = document.booking?.billingType === 'recurring' ? 'Recurring billing' : 'One-time payment';
+  const paymentStatus = document.paidAt ? 'Paid' : titleCase(document.status);
+  const paymentReference = document.payment?.providerReference || 'Pending payment reference';
+  const providerName = document.payment?.provider ? titleCase(document.payment.provider) : 'Payment provider';
+  const itemDescriptionWidth = 33;
+
+  const commands: string[] = [];
+
+  commands.push(drawFilledRect(0, 0, PAGE_WIDTH, 104, [0.086, 0.259, 0.941]));
+  commands.push(drawText('SPACEDEY', PAGE_MARGIN, 28, 17, 'F2', [1, 1, 1]));
+  commands.push(drawText('Storage invoice', PAGE_MARGIN, 52, 28, 'F2', [1, 1, 1]));
+  commands.push(
+    drawText('A downloadable billing record for your storage booking.', PAGE_MARGIN, 84, 11, 'F1', [0.9, 0.94, 1])
+  );
+
+  commands.push(drawText(document.invoiceNumber, 390, 32, 15, 'F2', [1, 1, 1]));
+  commands.push(drawText(`Issued ${formatDate(document.createdAt)}`, 390, 55, 10, 'F1', [0.92, 0.96, 1]));
+  commands.push(drawText(`Due ${formatDate(document.dueDate)}`, 390, 73, 10, 'F1', [0.92, 0.96, 1]));
+  commands.push(drawText(paymentStatus, 390, 91, 10, 'F2', [1, 1, 1]));
+
+  commands.push(drawFilledRect(PAGE_MARGIN, 130, 310, 160, [0.973, 0.984, 1]));
+  commands.push(drawStrokedRect(PAGE_MARGIN, 130, 310, 160, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Bill to', PAGE_MARGIN + 20, 148, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(customerName, PAGE_MARGIN + 20, 170, 20, 'F2', [0.102, 0.118, 0.18]));
+  commands.push(drawText(document.user.email, PAGE_MARGIN + 20, 198, 11, 'F1', [0.31, 0.36, 0.46]));
+  if (document.user.phone) {
+    commands.push(drawText(document.user.phone, PAGE_MARGIN + 20, 216, 11, 'F1', [0.31, 0.36, 0.46]));
+  }
+  commands.push(drawRule(PAGE_MARGIN + 20, 236, 270, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Storage site', PAGE_MARGIN + 20, 252, 9, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(
+    drawText(document.booking?.siteName || 'Spacedey storage', PAGE_MARGIN + 20, 268, 12, 'F1', [0.1, 0.13, 0.19])
+  );
+  commands.push(drawText('Unit type', PAGE_MARGIN + 160, 252, 9, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(
+    drawText(document.booking?.unitTypeName || 'Storage booking', PAGE_MARGIN + 160, 268, 12, 'F1', [0.1, 0.13, 0.19])
+  );
+
+  commands.push(drawFilledRect(370, 130, 185, 160, [0.988, 0.991, 0.996]));
+  commands.push(drawStrokedRect(370, 130, 185, 160, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Order summary reference', 388, 148, 10, 'F2', [0.365, 0.455, 0.69]));
+  if (referenceImage) {
+    commands.push(drawImage('Im1', 384, 164, 157, 98));
+  } else {
+    commands.push(drawFilledRect(384, 164, 157, 98, [0.93, 0.95, 0.99]));
+    commands.push(drawText('Reference image unavailable', 400, 204, 12, 'F1', [0.4, 0.46, 0.58]));
+  }
+  commands.push(drawText('Styled from the Storeganise order summary flow.', 388, 268, 9, 'F1', [0.45, 0.5, 0.6]));
+
+  commands.push(drawFilledRect(PAGE_MARGIN, 314, 165, 92, [1, 1, 1]));
+  commands.push(drawStrokedRect(PAGE_MARGIN, 314, 165, 92, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Total', PAGE_MARGIN + 16, 332, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(formatCurrency(document.total, document.currency), PAGE_MARGIN + 16, 354, 24, 'F2', [0.09, 0.14, 0.25]));
+  commands.push(drawText(`Subtotal ${formatCurrency(document.subtotal, document.currency)}`, PAGE_MARGIN + 16, 383, 10, 'F1', [0.4, 0.46, 0.58]));
+
+  commands.push(drawFilledRect(PAGE_MARGIN + 175, 314, 165, 92, [1, 1, 1]));
+  commands.push(drawStrokedRect(PAGE_MARGIN + 175, 314, 165, 92, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Payment status', PAGE_MARGIN + 191, 332, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(paymentStatus, PAGE_MARGIN + 191, 354, 20, 'F2', [0.07, 0.44, 0.26]));
+  commands.push(drawText(`Reference ${paymentReference}`, PAGE_MARGIN + 191, 383, 10, 'F1', [0.4, 0.46, 0.58]));
+
+  commands.push(drawFilledRect(PAGE_MARGIN + 350, 314, 165, 92, [1, 1, 1]));
+  commands.push(drawStrokedRect(PAGE_MARGIN + 350, 314, 165, 92, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Billing mode', PAGE_MARGIN + 366, 332, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(billingLabel, PAGE_MARGIN + 366, 354, 18, 'F2', [0.09, 0.14, 0.25]));
+  commands.push(
+    drawText(
+      document.booking?.billingInterval ? `Interval ${document.booking.billingInterval}` : providerName,
+      PAGE_MARGIN + 366,
+      383,
+      10,
+      'F1',
+      [0.4, 0.46, 0.58]
+    )
+  );
+
+  commands.push(drawText('Invoice breakdown', PAGE_MARGIN, 436, 18, 'F2', [0.09, 0.14, 0.25]));
+  commands.push(
+    drawText(
+      'This document captures the charge lines, booking context, and payment details linked to your Spacedey storage order.',
+      PAGE_MARGIN,
+      460,
+      10,
+      'F1',
+      [0.4, 0.46, 0.58]
+    )
+  );
+
+  const tableTop = 488;
+  const col1 = PAGE_MARGIN;
+  const col2 = 330;
+  const col3 = 390;
+  const col4 = 470;
+  commands.push(drawFilledRect(PAGE_MARGIN, tableTop, PAGE_WIDTH - PAGE_MARGIN * 2, 34, [0.973, 0.984, 1]));
+  commands.push(drawStrokedRect(PAGE_MARGIN, tableTop, PAGE_WIDTH - PAGE_MARGIN * 2, 34, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Description', col1 + 12, tableTop + 10, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText('Qty', col2 + 6, tableTop + 10, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText('Unit price', col3 + 6, tableTop + 10, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText('Total', col4 + 20, tableTop + 10, 10, 'F2', [0.365, 0.455, 0.69]));
+
+  let currentTop = tableTop + 34;
+  for (const item of document.items) {
+    const descriptionLines = wrapText(item.description, itemDescriptionWidth);
+    const rowHeight = Math.max(34, descriptionLines.length * 14 + 18);
+    commands.push(drawStrokedRect(PAGE_MARGIN, currentTop, PAGE_WIDTH - PAGE_MARGIN * 2, rowHeight, [0.92, 0.94, 0.97]));
+
+    descriptionLines.forEach((line, index) => {
+      commands.push(drawText(line, col1 + 12, currentTop + 10 + index * 14, 10, 'F1', [0.16, 0.2, 0.29]));
+    });
+    commands.push(drawText(String(item.qty), col2 + 10, currentTop + 10, 10, 'F1', [0.16, 0.2, 0.29]));
+    commands.push(
+      drawText(formatCurrency(item.unitPrice, document.currency), col3 + 6, currentTop + 10, 10, 'F1', [0.16, 0.2, 0.29])
+    );
+    commands.push(
+      drawText(formatCurrency(item.total, document.currency), col4 + 6, currentTop + 10, 10, 'F2', [0.09, 0.14, 0.25])
+    );
+    currentTop += rowHeight;
+  }
+
+  const totalsTop = currentTop + 20;
+  commands.push(drawText('Subtotal', 380, totalsTop, 10, 'F1', [0.31, 0.36, 0.46]));
+  commands.push(drawText(formatCurrency(document.subtotal, document.currency), 470, totalsTop, 10, 'F2', [0.09, 0.14, 0.25]));
+  commands.push(drawText('Tax', 380, totalsTop + 18, 10, 'F1', [0.31, 0.36, 0.46]));
+  commands.push(drawText(formatCurrency(document.tax, document.currency), 470, totalsTop + 18, 10, 'F2', [0.09, 0.14, 0.25]));
+  commands.push(drawRule(380, totalsTop + 42, 120, [0.82, 0.86, 0.93]));
+  commands.push(drawText('Grand total', 380, totalsTop + 50, 11, 'F2', [0.09, 0.14, 0.25]));
+  commands.push(drawText(formatCurrency(document.total, document.currency), 455, totalsTop + 48, 14, 'F2', [0.086, 0.259, 0.941]));
+
+  const footerTop = 744;
+  commands.push(drawRule(PAGE_MARGIN, footerTop, PAGE_WIDTH - PAGE_MARGIN * 2, [0.82, 0.86, 0.93]));
+  commands.push(
+    drawText(
+      `Booking status: ${titleCase(document.booking?.status || 'pending')} | Move-in date: ${formatDate(
+        document.booking?.startDate || null
+      )}`,
+      PAGE_MARGIN,
+      footerTop + 12,
+      10,
+      'F1',
+      [0.31, 0.36, 0.46]
+    )
+  );
+  commands.push(
+    drawText(
+      `Payment recorded ${formatDate(document.payment?.createdAt || document.paidAt)} with ${providerName}.`,
+      PAGE_MARGIN,
+      footerTop + 30,
+      10,
+      'F1',
+      [0.31, 0.36, 0.46]
+    )
+  );
+  commands.push(
+    drawText(
+      'Need help with this invoice? Reply to your billing email or contact support through Spacedey.',
+      PAGE_MARGIN,
+      footerTop + 48,
+      10,
+      'F1',
+      [0.31, 0.36, 0.46]
+    )
+  );
+
+  const contentStream = commands.join('\n');
+  const contentBuffer = Buffer.from(contentStream, 'utf8');
+  const objects: Buffer[] = [];
+
+  objects.push(Buffer.from('<< /Type /Catalog /Pages 2 0 R >>', 'utf8'));
+  objects.push(Buffer.from('<< /Type /Pages /Kids [3 0 R] /Count 1 >>', 'utf8'));
+
+  const pageResources = referenceImage
+    ? '<< /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 6 0 R >> >>'
+    : '<< /Font << /F1 4 0 R /F2 5 0 R >> >>';
+  const contentObjectId = referenceImage ? 7 : 6;
+  objects.push(
+    Buffer.from(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources ${pageResources} /Contents ${contentObjectId} 0 R >>`,
+      'utf8'
+    )
+  );
+  objects.push(Buffer.from('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>', 'utf8'));
+  objects.push(Buffer.from('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>', 'utf8'));
+
+  if (referenceImage) {
+    objects.push(
+      Buffer.concat([
+        Buffer.from(
+          `<< /Type /XObject /Subtype /Image /Width ${referenceImage.width} /Height ${referenceImage.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${referenceImage.bytes.length} >>\nstream\n`,
+          'utf8'
+        ),
+        referenceImage.bytes,
+        Buffer.from('\nendstream', 'utf8'),
+      ])
+    );
+  }
+
+  objects.push(
+    Buffer.concat([
+      Buffer.from(`<< /Length ${contentBuffer.length} >>\nstream\n`, 'utf8'),
+      contentBuffer,
+      Buffer.from('\nendstream', 'utf8'),
+    ])
+  );
+
+  const header = Buffer.from('%PDF-1.4\n%\xFF\xFF\xFF\xFF\n', 'binary');
+  const chunks: Buffer[] = [header];
+  const offsets: number[] = [];
+  let offset = header.length;
+
+  objects.forEach((object, index) => {
+    offsets.push(offset);
+    const prefix = Buffer.from(`${index + 1} 0 obj\n`, 'utf8');
+    const suffix = Buffer.from('\nendobj\n', 'utf8');
+    chunks.push(prefix, object, suffix);
+    offset += prefix.length + object.length + suffix.length;
+  });
+
+  const xrefStart = offset;
+  const xrefEntries = ['0000000000 65535 f ']
+    .concat(offsets.map((value) => `${value.toString().padStart(10, '0')} 00000 n `))
+    .join('\n');
+  const xref = Buffer.from(`xref\n0 ${objects.length + 1}\n${xrefEntries}\n`, 'utf8');
+  const trailer = Buffer.from(
+    `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`,
+    'utf8'
+  );
+  chunks.push(xref, trailer);
+
+  return Buffer.concat(chunks);
+}
