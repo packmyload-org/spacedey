@@ -3,6 +3,7 @@ import { requireAdmin } from '@/lib/auth/admin';
 import { connectTypeORM } from '@/lib/db';
 import Invoice, { InvoiceStatus } from '@/lib/db/entities/Invoice';
 import { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
 import {
   processEmailNotificationsByIds,
   queueOrderConfirmationNotifications,
@@ -34,15 +35,31 @@ export async function POST(
 
     const dataSource = await connectTypeORM();
     const invoiceRepo = dataSource.getRepository(Invoice);
-    const invoice = await invoiceRepo.findOne({
-      where: { id },
-      relations: ['user', 'booking', 'booking.site'],
-    });
+    const invoice = await invoiceRepo
+      .createQueryBuilder('invoice')
+      .withDeleted()
+      .leftJoinAndSelect('invoice.user', 'user')
+      .leftJoinAndSelect('invoice.booking', 'booking')
+      .leftJoinAndSelect('booking.site', 'site')
+      .where('invoice.id = :id', { id })
+      .getOne();
 
     if (!invoice) {
       return NextResponse.json(
         { ok: false, error: 'Invoice not found' },
         { status: 404 }
+      );
+    }
+
+    const user = resolveInvoiceLinkedUser(invoice.user);
+
+    if (user.isFallback) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: 'This invoice is linked to an unavailable account and cannot be resent.',
+        },
+        { status: 400 }
       );
     }
 
@@ -63,8 +80,8 @@ export async function POST(
         appUrl,
         emails: [
           {
-            to: invoice.user.email,
-            firstName: invoice.user.firstName,
+            to: user.email,
+            firstName: user.firstName,
             siteName: invoice.booking?.site?.name || 'Spacedey storage',
             invoiceNumber: invoice.invoiceNumber,
             amountPaid: Number(invoice.total),
@@ -77,10 +94,10 @@ export async function POST(
       const isOverdue = invoice.status === InvoiceStatus.OVERDUE;
       const reminderId = await queueReminderNotification({
         eventKey: `admin-invoice-reminder:${eventKeySuffix}`,
-        recipientEmail: invoice.user.email,
-        recipientName: invoice.user.firstName,
+        recipientEmail: user.email,
+        recipientName: user.firstName,
         subject: isOverdue ? 'Your Spacedey invoice is overdue' : 'Your Spacedey invoice is due soon',
-        intro: `Hi ${invoice.user.firstName || 'there'}, invoice ${invoice.invoiceNumber} for ${invoice.booking?.site?.name || 'your storage booking'} needs your attention.`,
+        intro: `Hi ${user.firstName || 'there'}, invoice ${invoice.invoiceNumber} for ${invoice.booking?.site?.name || 'your storage booking'} needs your attention.`,
         body: [
           `Amount: ${new Intl.NumberFormat('en-NG', {
             style: 'currency',

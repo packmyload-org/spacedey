@@ -147,8 +147,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Image
                 src="/images/logo.png"
                 alt="Spacedey Logo"
-                width={collapsed ? 9 : 8}
-                height={collapsed ? 12 : 6}
+                width={20}
+                height={20}
                 priority
                 className="h-auto w-auto"
               />
@@ -174,15 +174,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Link
               key={item.name}
               href={item.href}
-              className={`group flex items-center rounded-[18px] transition-all ${
-                collapsed
-                  ? 'justify-center px-2 py-2.5'
-                  : 'gap-2.5 px-3 py-2.5'
-              } ${
-                isActive
+              className={`group flex items-center rounded-[18px] transition-all ${collapsed
+                ? 'justify-center px-2 py-2.5'
+                : 'gap-2.5 px-3 py-2.5'
+                } ${isActive
                   ? 'bg-white text-[#1138D8] shadow-[0_18px_45px_rgba(4,16,61,0.2)]'
                   : 'text-white/74 hover:bg-white/10 hover:text-white'
-              }`}
+                }`}
               title={collapsed ? item.name : undefined}
             >
               <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-[#1642F0]' : 'text-white/80'}`} />
@@ -204,9 +202,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <button
             type="button"
             onClick={handleLogout}
-            className={`flex w-full items-center text-left text-white transition-opacity hover:opacity-90 ${
-              collapsed ? 'justify-center' : 'gap-2.5'
-            }`}
+            className={`flex w-full items-center text-left text-white transition-opacity hover:opacity-90 ${collapsed ? 'justify-center' : 'gap-2.5'
+              }`}
             title={collapsed ? 'Log out' : undefined}
           >
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-white text-xs font-black text-[#1642F0]">
@@ -231,9 +228,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     <div className="min-h-screen bg-[#EDF3FF] text-[#0F172A]">
       <div className="flex min-h-screen">
         <aside
-          className={`hidden self-start overflow-hidden border-r border-white/10 bg-[linear-gradient(180deg,#1642F0_0%,#0C2BAA_100%)] text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col ${
-            isDesktopSidebarCollapsed ? 'lg:w-[92px]' : 'lg:w-[288px]'
-          } transition-[width] duration-300`}
+          className={`hidden self-start overflow-hidden border-r border-white/10 bg-[linear-gradient(180deg,#1642F0_0%,#0C2BAA_100%)] text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col ${isDesktopSidebarCollapsed ? 'lg:w-[84px]' : 'lg:w-[244px]'
+            } transition-[width] duration-300`}
         >
           {renderSidebarContent(isDesktopSidebarCollapsed)}
         </aside>
@@ -293,16 +289,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       <div className={`lg:hidden ${isMobileMenuOpen ? '' : 'pointer-events-none'}`}>
         <div
-          className={`fixed inset-0 z-40 bg-[#07153F]/52 transition-opacity duration-300 ${
-            isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`fixed inset-0 z-40 bg-[#07153F]/52 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'
+            }`}
           onClick={() => setIsMobileMenuOpen(false)}
         />
 
         <aside
-          className={`fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-[320px] flex-col bg-[linear-gradient(180deg,#1642F0_0%,#0C2BAA_100%)] text-white shadow-[0_24px_60px_rgba(7,21,63,0.45)] transition-transform duration-300 ${
-            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+          className={`fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-[320px] flex-col bg-[linear-gradient(180deg,#1642F0_0%,#0C2BAA_100%)] text-white shadow-[0_24px_60px_rgba(7,21,63,0.45)] transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
         >
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <p className="text-sm font-black uppercase tracking-[0.24em] text-white/70">Menu</p>

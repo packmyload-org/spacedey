@@ -1,6 +1,7 @@
 import { connectTypeORM } from '@/lib/db';
 import Invoice from '@/lib/db/entities/Invoice';
 import Payment from '@/lib/db/entities/Payment';
+import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
 
 export interface AdminInvoiceSummary {
   id: string;
@@ -77,6 +78,8 @@ export interface AdminInvoiceDetail extends AdminInvoiceSummary {
 }
 
 function serializeInvoice(invoice: Invoice): AdminInvoiceSummary {
+  const user = resolveInvoiceLinkedUser(invoice.user);
+
   return {
     id: invoice.id,
     invoiceNumber: invoice.invoiceNumber,
@@ -90,10 +93,10 @@ function serializeInvoice(invoice: Invoice): AdminInvoiceSummary {
     createdAt: invoice.createdAt.toISOString(),
     updatedAt: invoice.updatedAt.toISOString(),
     user: {
-      id: invoice.user.id,
-      email: invoice.user.email,
-      firstName: invoice.user.firstName,
-      lastName: invoice.user.lastName,
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
     },
     booking: invoice.booking
       ? {
@@ -133,10 +136,16 @@ function serializeInvoice(invoice: Invoice): AdminInvoiceSummary {
 export async function listAdminInvoices(): Promise<AdminInvoiceSummary[]> {
   const dataSource = await connectTypeORM();
   const invoiceRepo = dataSource.getRepository(Invoice);
-  const invoices = await invoiceRepo.find({
-    relations: ['user', 'booking', 'booking.site', 'booking.unitType', 'payment'],
-    order: { createdAt: 'DESC' },
-  });
+  const invoices = await invoiceRepo
+    .createQueryBuilder('invoice')
+    .withDeleted()
+    .leftJoinAndSelect('invoice.user', 'user')
+    .leftJoinAndSelect('invoice.booking', 'booking')
+    .leftJoinAndSelect('booking.site', 'site')
+    .leftJoinAndSelect('booking.unitType', 'unitType')
+    .leftJoinAndSelect('invoice.payment', 'payment')
+    .orderBy('invoice.createdAt', 'DESC')
+    .getMany();
 
   return invoices.map((invoice) => serializeInvoice(invoice));
 }
@@ -146,10 +155,16 @@ export async function getAdminInvoiceDetail(invoiceId: string): Promise<AdminInv
   const invoiceRepo = dataSource.getRepository(Invoice);
   const paymentRepo = dataSource.getRepository(Payment);
 
-  const invoice = await invoiceRepo.findOne({
-    where: { id: invoiceId },
-    relations: ['user', 'booking', 'booking.site', 'booking.unitType', 'payment'],
-  });
+  const invoice = await invoiceRepo
+    .createQueryBuilder('invoice')
+    .withDeleted()
+    .leftJoinAndSelect('invoice.user', 'user')
+    .leftJoinAndSelect('invoice.booking', 'booking')
+    .leftJoinAndSelect('booking.site', 'site')
+    .leftJoinAndSelect('booking.unitType', 'unitType')
+    .leftJoinAndSelect('invoice.payment', 'payment')
+    .where('invoice.id = :invoiceId', { invoiceId })
+    .getOne();
 
   if (!invoice) {
     return null;
@@ -168,16 +183,20 @@ export async function getAdminInvoiceDetail(invoiceId: string): Promise<AdminInv
         })
       : [],
     bookingId
-      ? invoiceRepo.find({
-          where: {
-            booking: { id: bookingId },
-          },
-          order: {
-            createdAt: 'DESC',
-          },
-        })
+      ? invoiceRepo
+          .createQueryBuilder('invoice')
+          .withDeleted()
+          .leftJoin('invoice.booking', 'booking')
+          .where('booking.id = :bookingId', { bookingId })
+          .orderBy('invoice.createdAt', 'DESC')
+          .getMany()
       : [invoice],
   ]);
+  const timelinePayments = [...paymentHistory];
+
+  if (invoice.payment && !timelinePayments.some((payment) => payment.id === invoice.payment.id)) {
+    timelinePayments.unshift(invoice.payment);
+  }
 
   return {
     ...serializeInvoice(invoice),
@@ -187,7 +206,7 @@ export async function getAdminInvoiceDetail(invoiceId: string): Promise<AdminInv
       unitPrice: Number(item.unitPrice),
       total: Number(item.total),
     })),
-    paymentHistory: paymentHistory.map((payment) => ({
+    paymentHistory: timelinePayments.map((payment) => ({
       id: payment.id,
       provider: payment.provider,
       providerReference: payment.providerReference,

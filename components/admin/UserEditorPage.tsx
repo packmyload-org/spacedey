@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader, Mail, Save, ShieldCheck, Trash2, UserRound, UserRoundPlus } from 'lucide-react';
+import { ArrowLeft, Loader, Mail, RotateCcw, Save, ShieldCheck, Trash2, UserRound, UserRoundPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { UserRole } from '@/lib/types/roles';
@@ -16,6 +16,7 @@ interface EditableAdminUser {
   emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
 }
 
 interface UserEditorPageProps {
@@ -30,6 +31,7 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<EditableAdminUser | null>(null);
   const [form, setForm] = useState({
@@ -162,7 +164,7 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
       return;
     }
 
-    if (!window.confirm(`Delete ${form.firstName || user?.firstName || 'this user'}? This action cannot be undone.`)) {
+    if (!window.confirm(`Deactivate ${form.firstName || user?.firstName || 'this user'}? They will be hidden from active users and will no longer be able to sign in.`)) {
       return;
     }
 
@@ -180,18 +182,52 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
       const data = await response.json();
 
       if (!response.ok || !data.ok) {
-        throw new Error(data.error || 'Failed to delete user.');
+        throw new Error(data.error || 'Failed to deactivate user.');
       }
 
-      toast.success('User deleted successfully.');
+      toast.success(data.message || 'User deactivated successfully.');
       router.push('/admin/users');
       router.refresh();
     } catch (deleteError) {
-      const message = deleteError instanceof Error ? deleteError.message : 'Failed to delete user.';
+      const message = deleteError instanceof Error ? deleteError.message : 'Failed to deactivate user.';
       setError(message);
       toast.error(message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (isNew || restoring) {
+      return;
+    }
+
+    try {
+      setRestoring(true);
+      setError(null);
+
+      const response = await fetch(`/api/admin/users/${userId}/restore`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${authStore.accessToken}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'Failed to restore user.');
+      }
+
+      toast.success(data.message || 'User restored successfully.');
+      await fetchUser();
+      router.refresh();
+    } catch (restoreError) {
+      const message = restoreError instanceof Error ? restoreError.message : 'Failed to restore user.';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -215,16 +251,27 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
           Back to users
         </button>
 
-        {!isNew ? (
+        {!isNew ? user?.deletedAt ? (
+          <button
+            type="button"
+            onClick={handleRestore}
+            disabled={restoring}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-200 bg-white px-5 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
+            title="Restore user"
+          >
+            {restoring ? <Loader className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+            Restore user
+          </button>
+        ) : (
           <button
             type="button"
             onClick={handleDelete}
             disabled={deleting || isCurrentUser}
             className="inline-flex items-center justify-center gap-2 rounded-full border border-red-200 bg-white px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-            title={isCurrentUser ? 'You cannot delete your own account.' : 'Delete user'}
+            title={isCurrentUser ? 'You cannot deactivate your own account.' : 'Deactivate user'}
           >
             {deleting ? <Loader className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Delete user
+            Deactivate user
           </button>
         ) : null}
       </div>
@@ -232,6 +279,12 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
       {error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
+        </div>
+      ) : null}
+
+      {!isNew && user?.deletedAt ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          This account is deactivated. Restore it to allow sign-in again.
         </div>
       ) : null}
 
@@ -346,6 +399,8 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
                 <p className="text-sm font-bold text-gray-900">
                   {isNew
                     ? 'Verification starts after creation'
+                    : user?.deletedAt
+                      ? 'Account is deactivated'
                     : user?.emailVerifiedAt
                       ? 'Email verified'
                       : 'Verification pending'}
@@ -353,6 +408,8 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
                 <p className="mt-1 text-sm leading-6 text-gray-500">
                   {isNew
                     ? 'After you create the account, the user must verify their email before they can log in.'
+                    : user?.deletedAt
+                      ? 'The email stays reserved while the account is inactive. Restore the account to give the user access again.'
                     : user?.emailVerifiedAt
                       ? `Verified on ${new Date(user.emailVerifiedAt).toLocaleDateString()}.`
                       : 'The user is blocked from login until they verify their email.'}

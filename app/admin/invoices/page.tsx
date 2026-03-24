@@ -138,8 +138,13 @@ export default function AdminInvoicesPage() {
                                                 <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold text-xs">
                                                     #{invoice.invoiceNumber.split('-').pop()}
                                                 </div>
-                                                <div>
-                                                    <span className="block font-bold text-gray-900 text-sm">{invoice.invoiceNumber}</span>
+                                                <div className="min-w-0">
+                                                    <span
+                                                        className="block max-w-[180px] truncate font-bold text-gray-900 text-sm"
+                                                        title={invoice.invoiceNumber}
+                                                    >
+                                                        {invoice.invoiceNumber}
+                                                    </span>
                                                     <span className="text-xs text-gray-400">{invoice.booking?.site?.name}</span>
                                                 </div>
                                             </div>

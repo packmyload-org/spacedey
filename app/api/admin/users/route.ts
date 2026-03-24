@@ -7,6 +7,12 @@ import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
 import { normalizeEmail } from '@/lib/utils/email';
 import { sendSignupVerificationEmail } from '@/lib/email/resend';
 
+function getEmailUnavailableMessage(user: User) {
+  return user.deletedAt
+    ? 'This email belongs to a deactivated account. Restore the account to use this email again.'
+    : 'User with this email already exists.';
+}
+
 export async function GET(request: NextRequest) {
   const adminCheck = await requireAdmin(request);
 
@@ -26,7 +32,9 @@ export async function GET(request: NextRequest) {
     const repo = appDataSource.getRepository(User);
     const query = repo
       .createQueryBuilder('user')
-      .orderBy('user.createdAt', 'DESC')
+      .withDeleted()
+      .orderBy('user.deletedAt', 'ASC', 'NULLS FIRST')
+      .addOrderBy('user.createdAt', 'DESC')
       .addOrderBy('user.email', 'ASC');
 
     if (search) {
@@ -51,6 +59,7 @@ export async function GET(request: NextRequest) {
       emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      deletedAt: user.deletedAt ? user.deletedAt.toISOString() : null,
     }));
 
     return NextResponse.json({
@@ -111,11 +120,11 @@ export async function POST(request: NextRequest) {
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
 
-    const existingUser = await repo.findOne({ where: { email } });
+    const existingUser = await repo.findOne({ where: { email }, withDeleted: true });
 
     if (existingUser) {
       return NextResponse.json(
-        { ok: false, error: 'User with this email already exists.' },
+        { ok: false, error: getEmailUnavailableMessage(existingUser) },
         { status: 409 }
       );
     }

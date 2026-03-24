@@ -306,19 +306,19 @@ export default function InvoiceDetailsPage({ invoiceId }: Readonly<InvoiceDetail
             </div>
 
             <div className="mt-6 overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full table-fixed text-left">
                 <thead>
                   <tr className="border-b border-gray-100 text-xs font-black uppercase tracking-[0.24em] text-gray-400">
-                    <th className="pb-3">Description</th>
-                    <th className="pb-3">Qty</th>
-                    <th className="pb-3">Unit price</th>
-                    <th className="pb-3 text-right">Total</th>
+                    <th className="w-[42%] pb-3 pr-4">Description</th>
+                    <th className="w-[12%] pb-3">Qty</th>
+                    <th className="w-[23%] pb-3">Unit price</th>
+                    <th className="w-[23%] pb-3 text-right">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {invoice.items.map((item, index) => (
                     <tr key={`${item.description}-${index}`}>
-                      <td className="py-4 pr-4 text-sm text-gray-700">{item.description}</td>
+                      <td className="py-4 pr-4 text-sm text-gray-700 break-words">{item.description}</td>
                       <td className="py-4 text-sm text-gray-700">{item.qty}</td>
                       <td className="py-4 text-sm text-gray-700">{formatCurrency(item.unitPrice, invoice.currency)}</td>
                       <td className="py-4 text-right text-sm font-bold text-gray-900">{formatCurrency(item.total, invoice.currency)}</td>
@@ -343,7 +343,7 @@ export default function InvoiceDetailsPage({ invoiceId }: Readonly<InvoiceDetail
             <div className="mt-6 space-y-4">
               {invoice.paymentHistory.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-sm text-gray-500">
-                  No payments are attached to this booking yet.
+                  No payment events have been recorded for this invoice yet.
                 </div>
               ) : (
                 invoice.paymentHistory.map((payment) => (
