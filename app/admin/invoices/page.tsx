@@ -69,13 +69,6 @@ export default function AdminInvoicesPage() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Invoices</h1>
-                    <p className="text-gray-500 text-sm">Review paid booking receipts and whether each charge came from one-time or recurring billing.</p>
-                </div>
-            </div>
-
             {/* Search & Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="md:col-span-2 relative">

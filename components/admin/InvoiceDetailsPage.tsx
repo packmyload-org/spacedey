@@ -223,28 +223,14 @@ export default function InvoiceDetailsPage({ invoiceId }: Readonly<InvoiceDetail
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => router.push('/admin/invoices')}
-            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-blue-200 hover:text-blue-700"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to invoices
-          </button>
-
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5D74B0]">
-              Invoice detail
-            </p>
-            <h1 className="mt-2 text-3xl font-black text-gray-900">
-              {invoice.invoiceNumber}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-              Review billing context, resend the invoice email, and inspect the payment timeline attached to this booking.
-            </p>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => router.push('/admin/invoices')}
+          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-blue-200 hover:text-blue-700"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to invoices
+        </button>
 
         <div className="flex flex-wrap items-center gap-3">
           <a

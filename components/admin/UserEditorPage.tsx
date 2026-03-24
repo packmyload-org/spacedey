@@ -206,30 +206,14 @@ export default function UserEditorPage({ userId }: Readonly<UserEditorPageProps>
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() => router.push('/admin/users')}
-            className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-blue-200 hover:text-blue-700"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to users
-          </button>
-
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#5D74B0]">
-              {isNew ? 'New account' : 'Edit account'}
-            </p>
-            <h1 className="mt-2 text-3xl font-black text-gray-900">
-              {isNew ? 'Create a user' : 'Manage user account'}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
-              {isNew
-                ? 'Set a temporary password, choose the role, and send the user into the normal email-verification login flow.'
-                : 'Update non-sensitive account details like name, email, and role. Password changes are intentionally excluded from this screen.'}
-            </p>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => router.push('/admin/users')}
+          className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-blue-200 hover:text-blue-700"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to users
+        </button>
 
         {!isNew ? (
           <button
