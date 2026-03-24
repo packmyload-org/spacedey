@@ -143,9 +143,9 @@ export default function LandlordGetInTouch({
     <div id="get-in-touch" className="w-full bg-[#FCF8F1] py-16 px-6 lg:px-12">
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="text-5xl lg:text-4xl font-bold text-blue-900 mb-8">
+        <h2 className="text-5xl lg:text-4xl font-bold text-blue-900 mb-8">
           {title}
-        </h1>
+        </h2>
         <div className="flex justify-center">
           <div className="w-20 h-1 bg-orange-500"></div>
         </div>

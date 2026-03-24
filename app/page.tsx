@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import HomePageContent from "@/components/home/HomePageContent";
+import { HOME_FAQS, HOME_MARKETS, HOME_SERVICE_TYPES } from '@/lib/homeSeoContent';
 import { buildPageMetadata } from '@/lib/seo';
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Best and Affordable Self Storage Units near you | Spacedey',
@@ -14,9 +16,66 @@ export const metadata: Metadata = buildPageMetadata({
     'personal storage nigeria',
     'reserve storage unit online',
   ],
-  "noIndex": false,
+  noIndex: false,
 });
 
 export default function Home() {
-  return <HomePageContent />;
+  const siteUrl = getSiteUrl();
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: HOME_FAQS.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: `${SITE_NAME} self storage`,
+    description: SITE_DESCRIPTION,
+    url: siteUrl,
+    areaServed: HOME_MARKETS.map((market) => ({
+      '@type': 'City',
+      name: market,
+    })),
+    provider: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: siteUrl,
+    },
+    serviceType: [...HOME_SERVICE_TYPES],
+  };
+
+  const webPageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: `${SITE_NAME} home`,
+    url: siteUrl,
+    description: SITE_DESCRIPTION,
+    about: HOME_SERVICE_TYPES,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+      />
+      <HomePageContent />
+    </>
+  );
 }

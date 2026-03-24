@@ -4,10 +4,12 @@
  */
 
 import type { LoggerOptions } from "typeorm";
+import { resolveSiteUrl } from "@/lib/siteUrl";
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isDevelopment = nodeEnv === 'development';
 const isProduction = nodeEnv === 'production';
+const resolvedSiteUrl = resolveSiteUrl();
 
 function readBoolean(value: string | undefined, fallback: boolean): boolean {
   if (value === undefined) {
@@ -98,10 +100,7 @@ export const env = {
     port: readNumber(process.env.PORT, 3000),
     isDevelopment,
     isProduction,
-    url:
-      process.env.PUBLIC_APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000',
+    url: resolvedSiteUrl,
   },
 };
 

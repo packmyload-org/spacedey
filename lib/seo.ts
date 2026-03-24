@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { resolveSiteUrl } from '@/lib/siteUrl';
 
 export const SITE_NAME = 'Spacedey';
 export const SITE_DESCRIPTION =
@@ -17,11 +18,7 @@ export const DEFAULT_KEYWORDS = [
 ];
 
 export function getSiteUrl() {
-  return (
-    process.env.PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    'http://localhost:3000'
-  );
+  return resolveSiteUrl();
 }
 
 export function toAbsoluteUrl(pathname: string) {

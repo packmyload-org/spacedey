@@ -21,7 +21,7 @@ export default function BlogHero({
           <div className="relative w-full h-full">
             <Image
               src={leftImage}
-              alt="blog-list-hero-left"
+              alt="Stacked storage and moving supplies illustration"
               width={300}
               height={400}
               className="w-full h-auto object-contain"
@@ -44,7 +44,7 @@ export default function BlogHero({
           <div className="relative w-full h-full">
             <Image
               src={rightImage}
-              alt="blog-list-hero-right"
+              alt="Organized storage boxes and packing materials illustration"
               width={300}
               height={400}
               className="w-full h-auto object-contain"

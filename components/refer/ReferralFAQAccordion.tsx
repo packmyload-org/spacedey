@@ -64,7 +64,7 @@ export default function ReferralFAQAccordion() {
               <div className="relative aspect-[4/5] w-full">
               <Image
                 src="https://lp.stufstorage.com/hubfs/faqs-content-img.png"
-                alt="faqs-content-img"
+                alt="Illustration of a customer sharing a Spacedey referral"
                 fill
                 unoptimized
                 className="object-contain"

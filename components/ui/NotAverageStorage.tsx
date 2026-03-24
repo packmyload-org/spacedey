@@ -12,9 +12,9 @@ export default function StorageLanding() {
       <div className="max-w-7xl mx-auto px-8 lg:px-16 py-8 lg:py-10">
         {/* Header */}
         <FadeIn direction="up" className="mb-8 sm:mb-10 lg:mb-12">
-          <h1 className="text-3xl  md:text-4xl lg:text-4xl font-bold text-[#003087] mb-5 leading-tight">
+          <h2 className="text-3xl  md:text-4xl lg:text-4xl font-bold text-[#003087] mb-5 leading-tight">
             Not Your Average Storage
-          </h1>
+          </h2>
           <div className="w-16 h-1 bg-[#ff6b35]"></div>
         </FadeIn>
 
