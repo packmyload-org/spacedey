@@ -9,6 +9,7 @@ import EmailNotification, {
 } from '@/lib/db/entities/EmailNotification';
 import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { sendBillingSuccessEmail, sendDirectEmail } from '@/lib/email/resend';
+import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
 import type { PaymentBillingType } from '@/lib/db/entities/Payment';
 import { resolveAppUrl } from '@/lib/utils/appUrl';
 
@@ -300,32 +301,40 @@ export async function queueInvoiceReminderNotifications(now = new Date()) {
   const dataSource = await connectTypeORM();
   const repo = dataSource.getRepository(Invoice);
   const dueSoon = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  const invoices = await repo.find({
-    where: [
+  const invoices = await repo
+    .createQueryBuilder('invoice')
+    .withDeleted()
+    .leftJoinAndSelect('invoice.user', 'user')
+    .leftJoinAndSelect('invoice.booking', 'booking')
+    .leftJoinAndSelect('booking.site', 'site')
+    .where(
+      '(invoice.status = :sentStatus AND invoice.dueDate <= :dueSoon) OR (invoice.status = :overdueStatus AND invoice.dueDate <= :now)',
       {
-        status: InvoiceStatus.SENT,
-        dueDate: LessThanOrEqual(dueSoon),
-      },
-      {
-        status: InvoiceStatus.OVERDUE,
-        dueDate: LessThanOrEqual(now),
-      },
-    ],
-    relations: ['user', 'booking', 'booking.site'],
-  });
+        sentStatus: InvoiceStatus.SENT,
+        overdueStatus: InvoiceStatus.OVERDUE,
+        dueSoon,
+        now,
+      }
+    )
+    .getMany();
 
   const queuedIds: string[] = [];
 
   for (const invoice of invoices) {
+    const user = resolveInvoiceLinkedUser(invoice.user);
+    if (user.isFallback) {
+      continue;
+    }
+
     const overdue = invoice.status === InvoiceStatus.OVERDUE || invoice.dueDate <= now;
     const notification = await queueNotification({
       eventKey: `${overdue ? 'invoice-overdue' : 'invoice-due'}:${invoice.id}`,
       kind: overdue ? EmailNotificationKind.INVOICE_OVERDUE : EmailNotificationKind.INVOICE_DUE,
-      recipientEmail: invoice.user.email,
-      recipientName: invoice.user.firstName,
+      recipientEmail: user.email,
+      recipientName: user.firstName,
       subject: overdue ? 'Your Spacedey invoice is overdue' : 'Your Spacedey invoice is due soon',
       payload: {
-        firstName: invoice.user.firstName,
+        firstName: user.firstName,
         invoiceNumber: invoice.invoiceNumber,
         total: Number(invoice.total),
         currency: invoice.currency,

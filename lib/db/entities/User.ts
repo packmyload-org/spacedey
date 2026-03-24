@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
   BeforeInsert,
   BeforeUpdate,
   BaseEntity,
@@ -47,6 +48,9 @@ export class User extends BaseEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
+
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  deletedAt!: Date | null;
 
   @BeforeInsert()
   @BeforeUpdate()

@@ -60,7 +60,7 @@ export default function MemberBenefits({
               <div className="relative w-64 sm:w-72 md:w-96 lg:w-[520px] h-64 sm:h-80 md:h-96 lg:h-[520px] rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src={image}
-                  alt="Member Benefits"
+                  alt="Moving and packing supplies available through Spacedey"
                   fill
                   className="object-cover"
                   sizes="(max-width: 340px) 70vw, (max-width: 424px) 20vw, 10vw"
@@ -78,7 +78,7 @@ export default function MemberBenefits({
   <div className="-mt-8 relative z-20">
         <Image
           src="/images/LandlordHero2.jpg"
-          alt="Landlord hero"
+          alt="Customers using storage and moving support from Spacedey"
           width={1200}
           height={400}
           className="w-full h-auto rounded-md"

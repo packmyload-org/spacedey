@@ -33,7 +33,7 @@ export default function HeroSection() {
               <div className="relative w-full h-full sm:ml-0 lg:ml-12">
                 <Image
                   src="/images/lanlordHero.png"
-                  alt="Landlord Hero"
+                  alt="Illustration of underused property converted into self storage revenue"
                   fill
                   sizes="(max-width: 768px) 90vw, 50vw"
                   className="object-cover w-full h-full"

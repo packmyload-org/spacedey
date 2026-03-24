@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useDeferredValue, useEffect, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { UserRole } from '@/lib/types/roles';
-import { Loader, Users, Plus, Edit2, Search, Trash2, MailCheck, MailWarning, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader, Users, Plus, Edit2, Search, Trash2, MailCheck, MailWarning, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AdminUser {
@@ -15,6 +15,7 @@ interface AdminUser {
     role: UserRole;
     emailVerifiedAt: string | null;
     createdAt: string;
+    deletedAt: string | null;
 }
 
 const USERS_PER_PAGE = 10;
@@ -29,7 +30,10 @@ export default function AdminUsersPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalUsers, setTotalUsers] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [openActionUserId, setOpenActionUserId] = useState<string | null>(null);
+    const [openActionDirection, setOpenActionDirection] = useState<'up' | 'down'>('down');
     const deferredSearchTerm = useDeferredValue(searchTerm);
+    const actionMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
     const fetchUsers = useCallback(async (page: number, search: string) => {
         try {
@@ -80,13 +84,74 @@ export default function AdminUsersPage() {
         setCurrentPage(1);
     }, [deferredSearchTerm]);
 
-    const handleDeleteUser = async (user: AdminUser) => {
-        if (user.id === authStore.user?.id) {
-            toast.error('You cannot delete your own account.');
+    useEffect(() => {
+        if (!openActionUserId) {
             return;
         }
 
-        if (!window.confirm(`Delete ${user.firstName} ${user.lastName}? This action cannot be undone.`)) {
+        const handlePointerDown = (event: PointerEvent) => {
+            const menu = actionMenuRefs.current[openActionUserId];
+            if (!menu || menu.contains(event.target as Node)) {
+                return;
+            }
+
+            setOpenActionUserId(null);
+        };
+
+        const handleFocusIn = (event: FocusEvent) => {
+            const menu = actionMenuRefs.current[openActionUserId];
+            if (!menu || menu.contains(event.target as Node)) {
+                return;
+            }
+
+            setOpenActionUserId(null);
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setOpenActionUserId(null);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('focusin', handleFocusIn);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('focusin', handleFocusIn);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [openActionUserId]);
+
+    const handleToggleActionMenu = (userId: string) => {
+        if (openActionUserId === userId) {
+            setOpenActionUserId(null);
+            return;
+        }
+
+        const menu = actionMenuRefs.current[userId];
+        if (menu) {
+            const rect = menu.getBoundingClientRect();
+            const estimatedMenuHeight = 120;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            setOpenActionDirection(spaceBelow < estimatedMenuHeight ? 'up' : 'down');
+        } else {
+            setOpenActionDirection('down');
+        }
+
+        setOpenActionUserId(userId);
+    };
+
+    const handleDeleteUser = async (user: AdminUser) => {
+        setOpenActionUserId(null);
+
+        if (user.id === authStore.user?.id) {
+            toast.error('You cannot deactivate your own account.');
+            return;
+        }
+
+        if (!window.confirm(`Deactivate ${user.firstName} ${user.lastName}? They will be hidden from active users and will no longer be able to sign in.`)) {
             return;
         }
 
@@ -101,10 +166,10 @@ export default function AdminUsersPage() {
             const data = await response.json();
 
             if (!response.ok || !data.ok) {
-                throw new Error(data.error || 'Failed to delete user');
+                throw new Error(data.error || 'Failed to deactivate user');
             }
 
-            toast.success(`${user.firstName} ${user.lastName} deleted.`);
+            toast.success(data.message || `${user.firstName} ${user.lastName} deactivated.`);
 
             const nextPage = users.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
 
@@ -114,7 +179,31 @@ export default function AdminUsersPage() {
                 await fetchUsers(nextPage, deferredSearchTerm);
             }
         } catch (deleteError) {
-            toast.error(deleteError instanceof Error ? deleteError.message : 'Failed to delete user');
+            toast.error(deleteError instanceof Error ? deleteError.message : 'Failed to deactivate user');
+        }
+    };
+
+    const handleRestoreUser = async (user: AdminUser) => {
+        setOpenActionUserId(null);
+
+        try {
+            const response = await fetch(`/api/admin/users/${user.id}/restore`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${authStore.accessToken}`,
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.ok) {
+                throw new Error(data.error || 'Failed to restore user');
+            }
+
+            toast.success(data.message || `${user.firstName} ${user.lastName} restored.`);
+            await fetchUsers(currentPage, deferredSearchTerm);
+        } catch (restoreError) {
+            toast.error(restoreError instanceof Error ? restoreError.message : 'Failed to restore user');
         }
     };
 
@@ -143,7 +232,7 @@ export default function AdminUsersPage() {
                 </div>
             ) : null}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-visible">
                 <div className="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="relative flex-1 max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -166,14 +255,14 @@ export default function AdminUsersPage() {
 
                 <div className="flex flex-col gap-3 border-b border-gray-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-sm text-gray-500">
-                        Showing {users.length} of {totalUsers} user{totalUsers === 1 ? '' : 's'}.
+                        Showing {users.length} of {totalUsers} account{totalUsers === 1 ? '' : 's'}.
                     </p>
                     <p className="inline-flex rounded-full border border-[#D8E2FF] bg-[#F8FAFF] px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-[#1642F0]">
                         Page {currentPage} of {totalPages}
                     </p>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-visible">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
@@ -218,16 +307,21 @@ export default function AdminUsersPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${user.emailVerifiedAt
-                                                ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                                                : 'bg-amber-100 text-amber-800 border-amber-200'
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                                                user.deletedAt
+                                                    ? 'bg-slate-100 text-slate-700 border-slate-200'
+                                                    : user.emailVerifiedAt
+                                                        ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                                                        : 'bg-amber-100 text-amber-800 border-amber-200'
                                                 }`}>
-                                                {user.emailVerifiedAt ? (
+                                                {user.deletedAt ? (
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                ) : user.emailVerifiedAt ? (
                                                     <MailCheck className="w-3.5 h-3.5" />
                                                 ) : (
                                                     <MailWarning className="w-3.5 h-3.5" />
                                                 )}
-                                                {user.emailVerifiedAt ? 'Verified' : 'Pending verification'}
+                                                {user.deletedAt ? 'Deactivated' : user.emailVerifiedAt ? 'Verified' : 'Pending verification'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -236,28 +330,56 @@ export default function AdminUsersPage() {
                                             </p>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <details className="relative [&_summary::-webkit-details-marker]:hidden">
-                                                <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-gray-200 bg-white text-lg font-bold text-gray-500 transition hover:border-blue-200 hover:text-blue-700">
+                                            <div
+                                                ref={(node) => {
+                                                    actionMenuRefs.current[user.id] = node;
+                                                }}
+                                                className="relative"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleActionMenu(user.id)}
+                                                    aria-expanded={openActionUserId === user.id}
+                                                    className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-lg font-bold text-gray-500 transition hover:border-blue-200 hover:text-blue-700"
+                                                >
                                                     ...
-                                                </summary>
-                                                <div className="absolute right-0 top-11 z-10 min-w-[170px] rounded-2xl border border-gray-200 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                                                    <button
-                                                        onClick={() => router.push(`/admin/users/${user.id}`)}
-                                                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50"
-                                                    >
-                                                        <Edit2 className="h-4 w-4" />
-                                                        Edit user
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteUser(user)}
-                                                        disabled={user.id === authStore.user?.id}
-                                                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        Delete user
-                                                    </button>
-                                                </div>
-                                            </details>
+                                                </button>
+                                                {openActionUserId === user.id ? (
+                                                    <div className={`absolute right-0 z-10 min-w-[190px] rounded-2xl border border-gray-200 bg-white p-2 shadow-[0_20px_50px_rgba(15,23,42,0.12)] ${openActionDirection === 'up' ? 'bottom-11' : 'top-11'}`}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setOpenActionUserId(null);
+                                                                router.push(`/admin/users/${user.id}`);
+                                                            }}
+                                                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-blue-700 transition hover:bg-blue-50"
+                                                        >
+                                                            <Edit2 className="h-4 w-4" />
+                                                            Edit user
+                                                        </button>
+                                                        {user.deletedAt ? (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRestoreUser(user)}
+                                                                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+                                                            >
+                                                                <RotateCcw className="h-4 w-4" />
+                                                                Restore user
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteUser(user)}
+                                                                disabled={user.id === authStore.user?.id}
+                                                                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                Deactivate user
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ) : null}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

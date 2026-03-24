@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
-import { FileText, Calendar, Tag } from "lucide-react";
+import { Download, FileText, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 
 interface UserInvoice {
@@ -79,6 +79,7 @@ export default function UserInvoicesPage() {
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Billing</th>
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
                                         <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
+                                        <th className="px-8 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Document</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -118,6 +119,15 @@ export default function UserInvoicesPage() {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <span className="font-bold text-blue-900">₦{Number(invoice.total).toLocaleString()}</span>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <a
+                                                    href={`/api/invoices/${invoice.id}/document`}
+                                                    className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                    Download PDF
+                                                </a>
                                             </td>
                                         </tr>
                                     ))}

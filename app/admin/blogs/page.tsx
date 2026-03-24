@@ -477,17 +477,7 @@ export default function AdminBlogsPage() {
   if (!isEditorVisible) {
     return (
       <section className="rounded-[32px] border border-[#D8E2FF] bg-white p-6 shadow-sm md:p-8">
-        <div className="flex flex-col gap-4 border-b border-[#E6EEFF] pb-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">
-              Content Library
-            </p>
-            <h1 className="mt-2 text-3xl font-black text-[#0F172A]">Blog posts</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#5D74B0]">
-              Browse published posts and drafts in a single grid, then open any item when you want to edit it.
-            </p>
-          </div>
-
+        <div className="flex justify-end border-b border-[#E6EEFF] pb-6">
           <button
             type="button"
             onClick={openCreateForm}
@@ -578,12 +568,7 @@ export default function AdminBlogsPage() {
   return (
     <div className="grid gap-8 xl:grid-cols-[360px_minmax(0,1fr)]">
       <aside className="rounded-[28px] border border-[#D8E2FF] bg-white p-5 shadow-sm xl:sticky xl:top-28 xl:max-h-[calc(100vh-8.5rem)] xl:overflow-hidden">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-black text-[#0F172A]">Blogs</h1>
-            <p className="mt-1 text-sm text-[#5D74B0]">Create and publish what appears on the public blog.</p>
-          </div>
-
+        <div className="flex justify-end">
           {selectedPost ? (
             <button
               type="button"
@@ -637,15 +622,6 @@ export default function AdminBlogsPage() {
 
       <section className="rounded-[32px] border border-[#D8E2FF] bg-white p-6 shadow-sm md:p-8">
         <div className="flex flex-col gap-4 border-b border-[#E6EEFF] pb-6 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">
-              {selectedPost ? 'Edit Post' : 'New Post'}
-            </p>
-            <h2 className="mt-2 text-3xl font-black text-[#0F172A]">
-              {selectedPost ? selectedPost.title : 'Write a new article'}
-            </h2>
-          </div>
-
           <div className="flex flex-wrap gap-2">
             <button
               type="button"

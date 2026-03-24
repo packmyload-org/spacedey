@@ -1,38 +1,51 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FileText, Search } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, FileText, Search } from "lucide-react";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 interface AdminInvoice {
     id: string;
     invoiceNumber: string;
-    total: number | string;
+    total: number;
     createdAt: string;
-    status?: string;
-    user?: {
-        email?: string;
-        firstName?: string;
-        lastName?: string;
+    dueDate: string;
+    status: string;
+    user: {
+        email: string;
+        firstName: string;
+        lastName: string;
     };
-    booking?: {
+    booking: {
+        status: string;
         billingMetadata?: {
             billingType?: 'one_time' | 'recurring';
         } | null;
         site?: {
             name?: string;
         };
-    };
+    } | null;
 }
 
 export default function AdminInvoicesPage() {
+    const authStore = useAuthStore();
     const [invoices, setInvoices] = useState<AdminInvoice[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
+        if (!authStore.accessToken) {
+            return;
+        }
+
         async function fetchInvoices() {
             try {
-                const res = await fetch('/api/invoices');
+                const res = await fetch('/api/admin/invoices', {
+                    headers: {
+                        Authorization: `Bearer ${authStore.accessToken}`,
+                    },
+                });
                 const data: { ok?: boolean; invoices?: AdminInvoice[] } = await res.json();
                 if (data.ok) {
                     setInvoices(data.invoices || []);
@@ -44,35 +57,33 @@ export default function AdminInvoicesPage() {
             }
         }
         fetchInvoices();
-    }, []);
+    }, [authStore.accessToken]);
 
     const normalizedQuery = searchQuery.toLowerCase();
     const filteredInvoices = invoices.filter((invoice) =>
         invoice.invoiceNumber.toLowerCase().includes(normalizedQuery) ||
-        (invoice.user?.email || "").toLowerCase().includes(normalizedQuery) ||
-        (invoice.user?.firstName || "").toLowerCase().includes(normalizedQuery)
+        invoice.user.email.toLowerCase().includes(normalizedQuery) ||
+        invoice.user.firstName.toLowerCase().includes(normalizedQuery) ||
+        invoice.user.lastName.toLowerCase().includes(normalizedQuery)
     );
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Invoices</h1>
-                    <p className="text-gray-500 text-sm">Review paid booking receipts and whether each charge came from one-time or recurring billing.</p>
-                </div>
-            </div>
-
             {/* Search & Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="md:col-span-2 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by invoice #, name or email..."
-                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm transition-all"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                <div className="md:col-span-2">
+                    <div className="relative">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <Search className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search by invoice #, name or email..."
+                            className="block w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
                 </div>
                 <div className="bg-white p-4 border border-gray-100 rounded-2xl flex items-center justify-between">
                     <div>
@@ -82,7 +93,7 @@ export default function AdminInvoicesPage() {
                 </div>
                 <div className="bg-white p-4 border border-gray-100 rounded-2xl flex items-center justify-between">
                     <div>
-                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Paid Invoices</p>
+                        <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Tracked Invoices</p>
                         <p className="text-xl font-black text-blue-900 text-sm">{invoices.length}</p>
                     </div>
                 </div>
@@ -100,18 +111,19 @@ export default function AdminInvoicesPage() {
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Amount</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
                                 [1, 2, 3].map(i => (
                                     <tr key={i} className="animate-pulse">
-                                        <td colSpan={6} className="px-6 py-8"><div className="h-4 bg-gray-100 rounded w-full"></div></td>
+                                        <td colSpan={7} className="px-6 py-8"><div className="h-4 bg-gray-100 rounded w-full"></div></td>
                                     </tr>
                                 ))
                             ) : filteredInvoices.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-20 text-center">
+                                    <td colSpan={7} className="px-6 py-20 text-center">
                                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                             <FileText className="w-8 h-8 text-gray-300" />
                                         </div>
@@ -126,16 +138,21 @@ export default function AdminInvoicesPage() {
                                                 <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center font-bold text-xs">
                                                     #{invoice.invoiceNumber.split('-').pop()}
                                                 </div>
-                                                <div>
-                                                    <span className="block font-bold text-gray-900 text-sm">{invoice.invoiceNumber}</span>
+                                                <div className="min-w-0">
+                                                    <span
+                                                        className="block max-w-[180px] truncate font-bold text-gray-900 text-sm"
+                                                        title={invoice.invoiceNumber}
+                                                    >
+                                                        {invoice.invoiceNumber}
+                                                    </span>
                                                     <span className="text-xs text-gray-400">{invoice.booking?.site?.name}</span>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div>
-                                                <span className="block font-medium text-gray-900 text-sm">{invoice.user?.firstName} {invoice.user?.lastName}</span>
-                                                <span className="text-xs text-gray-500">{invoice.user?.email}</span>
+                                                <span className="block font-medium text-gray-900 text-sm">{invoice.user.firstName} {invoice.user.lastName}</span>
+                                                <span className="text-xs text-gray-500">{invoice.user.email}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -158,6 +175,15 @@ export default function AdminInvoicesPage() {
                                                 }`}>
                                                 {invoice.status}
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <Link
+                                                href={`/admin/invoices/${invoice.id}`}
+                                                className="inline-flex items-center gap-2 text-sm font-bold text-[#1642F0] transition hover:text-[#1238D4]"
+                                            >
+                                                View details
+                                                <ArrowRight className="h-4 w-4" />
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))

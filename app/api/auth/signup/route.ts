@@ -5,6 +5,12 @@ import { sendSignupVerificationEmail } from '@/lib/email/resend';
 import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
 import { normalizeEmail } from '@/lib/utils/email';
 
+function getEmailUnavailableMessage(user: User) {
+  return user.deletedAt
+    ? 'We found an inactive account with this email. Contact support and we will help you restore access.'
+    : 'User with this email already exists.';
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -32,11 +38,11 @@ export async function POST(request: Request) {
     const repo = appDataSource.getRepository(User);
 
     // Check if user already exists
-    const existingUser = await repo.findOne({ where: { email } });
+    const existingUser = await repo.findOne({ where: { email }, withDeleted: true });
 
     if (existingUser) {
       return NextResponse.json(
-        { ok: false, error: 'User with this email already exists.' },
+        { ok: false, error: getEmailUnavailableMessage(existingUser) },
         { status: 409 }
       );
     }

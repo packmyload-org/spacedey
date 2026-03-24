@@ -136,16 +136,16 @@ function HeroSection() {
             className="mt-6 flex items-center justify-center gap-1 sm:gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto px-2"
           >
             <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero2.jpg" alt="hero 2" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
+              <Image src="/images/hero2.jpg" alt="Secure self storage facility available through Spacedey" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
             <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero3.jpg" alt="hero 3" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
+              <Image src="/images/hero3.jpg" alt="Storage unit interior prepared for move-in" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
             <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero4.jpg" alt="hero 4" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
+              <Image src="/images/hero4.jpg" alt="Organized storage space for household and business items" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
             <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero5.jpg" alt="hero 5" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
+              <Image src="/images/hero5.jpg" alt="Spacedey-style self storage imagery for customers in Nigeria" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
             </div>
           </motion.div>
         </div>

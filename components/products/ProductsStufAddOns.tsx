@@ -236,7 +236,7 @@ export default function ProductsSpacedeyAddOns({
     <div>
       <div className="w-full bg-white px-6 py-16 lg:px-16">
         <div className="mb-16 text-center">
-          <h1 className="mb-8 text-3xl font-bold text-blue-900 lg:text-4xl">{title}</h1>
+          <h2 className="mb-8 text-3xl font-bold text-blue-900 lg:text-4xl">{title}</h2>
           <div className="flex justify-center">
             <div className="h-1 w-20 bg-orange-500"></div>
           </div>

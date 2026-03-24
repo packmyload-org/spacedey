@@ -112,11 +112,7 @@ export default function AdminSitesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Storage Locations</h1>
-                    <p className="text-gray-500">Add and manage storage facilities across Nigeria.</p>
-                </div>
+            <div className="flex justify-end">
                 <button
                     onClick={() => router.push('/admin/sites/new')}
                     className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"

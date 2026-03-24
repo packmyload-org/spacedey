@@ -6,6 +6,12 @@ import { UserRole } from '@/lib/types/roles';
 import { normalizeEmail } from '@/lib/utils/email';
 import { sendSignupVerificationEmail } from '@/lib/email/resend';
 
+function getEmailUnavailableMessage(user: User) {
+  return user.deletedAt
+    ? 'This email belongs to a deactivated account. Restore the account to use this email again.'
+    : 'Email already in use';
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -31,7 +37,7 @@ export async function GET(
 
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
-    const user = await repo.findOne({ where: { id } });
+    const user = await repo.findOne({ where: { id }, withDeleted: true });
 
     if (!user) {
       return NextResponse.json(
@@ -50,6 +56,7 @@ export async function GET(
       emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      deletedAt: user.deletedAt ? user.deletedAt.toISOString() : null,
     };
 
     return NextResponse.json({ ok: true, user: userResponse });
@@ -104,7 +111,7 @@ export async function PATCH(
 
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
-    const user = await repo.findOne({ where: { id } });
+    const user = await repo.findOne({ where: { id }, withDeleted: true });
 
     if (!user) {
       return NextResponse.json(
@@ -124,10 +131,10 @@ export async function PATCH(
 
     // Check if email is being changed and if new email already exists
     if (email && email !== user.email) {
-      const existingUser = await repo.findOne({ where: { email } });
-      if (existingUser) {
+      const existingUser = await repo.findOne({ where: { email }, withDeleted: true });
+      if (existingUser && existingUser.id !== user.id) {
         return NextResponse.json(
-          { ok: false, error: 'Email already in use' },
+          { ok: false, error: getEmailUnavailableMessage(existingUser) },
           { status: 409 }
         );
       }
@@ -167,6 +174,7 @@ export async function PATCH(
       emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      deletedAt: user.deletedAt ? user.deletedAt.toISOString() : null,
     };
 
     return NextResponse.json({
@@ -208,8 +216,7 @@ export async function DELETE(
     const appDataSource = await connectTypeORM();
     const repo = appDataSource.getRepository(User);
 
-    // Prevent deleting the admin user (optional, adjust as needed)
-    const user = await repo.findOne({ where: { id } });
+    const user = await repo.findOne({ where: { id }, withDeleted: true });
 
     if (!user) {
       return NextResponse.json(
@@ -221,16 +228,23 @@ export async function DELETE(
     // Prevent self-deletion
     if (user.id === adminCheck.userId) {
       return NextResponse.json(
-        { ok: false, error: 'Cannot delete your own account' },
+        { ok: false, error: 'Cannot deactivate your own account' },
         { status: 400 }
       );
     }
 
-    await repo.remove(user);
+    if (user.deletedAt) {
+      return NextResponse.json(
+        { ok: false, error: 'User is already deactivated.' },
+        { status: 400 }
+      );
+    }
+
+    await repo.softRemove(user);
 
     return NextResponse.json({
       ok: true,
-      message: 'User deleted successfully',
+      message: 'User deactivated successfully',
     });
   } catch (error) {
     console.error('Delete user error:', error);

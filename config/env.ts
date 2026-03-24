@@ -4,10 +4,12 @@
  */
 
 import type { LoggerOptions } from "typeorm";
+import { resolveSiteUrl } from "@/lib/siteUrl";
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isDevelopment = nodeEnv === 'development';
 const isProduction = nodeEnv === 'production';
+const resolvedSiteUrl = resolveSiteUrl();
 
 function readBoolean(value: string | undefined, fallback: boolean): boolean {
   if (value === undefined) {
@@ -81,9 +83,6 @@ export const env = {
       apiSecret: process.env.CLOUDINARY_API_SECRET,
       folderPrefix: process.env.CLOUDINARY_FOLDER_PREFIX || 'spacedey',
     },
-    zendesk: {
-      key: process.env.NEXT_PUBLIC_ZENDESK_KEY,
-    },
     analytics: {
       googleTagManagerId: process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID,
     },
@@ -101,10 +100,7 @@ export const env = {
     port: readNumber(process.env.PORT, 3000),
     isDevelopment,
     isProduction,
-    url:
-      process.env.PUBLIC_APP_URL ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      'http://localhost:3000',
+    url: resolvedSiteUrl,
   },
 };
 

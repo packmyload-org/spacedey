@@ -1,6 +1,5 @@
 import SignupForm from '@/components/auth/SignupForm';
 import Header from '@/components/layout/Header';
-import Link from 'next/link';
 
 export const metadata = {
 	title: 'Sign Up'
