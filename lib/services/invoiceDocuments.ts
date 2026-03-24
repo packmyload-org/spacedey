@@ -1,5 +1,3 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import { connectTypeORM } from '@/lib/db';
 import Invoice from '@/lib/db/entities/Invoice';
 import type { InvoiceLineItem } from '@/lib/db/entities/Invoice';
@@ -7,14 +5,6 @@ import type { InvoiceLineItem } from '@/lib/db/entities/Invoice';
 const PAGE_WIDTH = 595.28;
 const PAGE_HEIGHT = 841.89;
 const PAGE_MARGIN = 40;
-const REFERENCE_IMAGE_PATH = path.join(
-  process.cwd(),
-  'public',
-  'images',
-  'invoice',
-  'storeganise-order-reference.jpg'
-);
-
 export interface InvoiceDocumentData {
   id: string;
   invoiceNumber: string;
@@ -68,11 +58,13 @@ function normalizeWhitespace(value: string) {
 }
 
 function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency,
+  const normalizedCurrency = currency.toUpperCase();
+  const formattedAmount = new Intl.NumberFormat('en-NG', {
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
+
+  return `${normalizedCurrency} ${formattedAmount}`;
 }
 
 function formatDate(value: string | null, fallback = 'Not recorded') {
@@ -133,11 +125,6 @@ function drawRule(x: number, top: number, width: number, color: [number, number,
   const [r, g, b] = color;
   const y = PAGE_HEIGHT - top;
   return `${lineWidth} w ${r} ${g} ${b} RG ${x} ${y} m ${x + width} ${y} l S`;
-}
-
-function drawImage(name: string, x: number, top: number, width: number, height: number) {
-  const y = PAGE_HEIGHT - top - height;
-  return `q ${width} 0 0 ${height} ${x} ${y} cm /${name} Do Q`;
 }
 
 function wrapText(text: string, maxCharsPerLine: number) {
@@ -270,32 +257,21 @@ export async function getInvoiceDocumentForAdmin(invoiceId: string) {
   return invoice ? serializeInvoiceDocument(invoice) : null;
 }
 
-async function readReferenceImage() {
-  try {
-    const bytes = await readFile(REFERENCE_IMAGE_PATH);
-    return {
-      bytes,
-      width: 720,
-      height: 448,
-    };
-  } catch (error) {
-    console.warn('Invoice reference image unavailable:', error);
-    return null;
-  }
-}
-
 export function getInvoiceDocumentFilename(invoiceNumber: string) {
   return `${sanitizeFilename(invoiceNumber.toLowerCase()) || 'invoice'}.pdf`;
 }
 
 export async function generateInvoicePdf(document: InvoiceDocumentData) {
-  const referenceImage = await readReferenceImage();
   const customerName = `${document.user.firstName} ${document.user.lastName}`.trim() || 'Spacedey customer';
   const billingLabel = document.booking?.billingType === 'recurring' ? 'Recurring billing' : 'One-time payment';
   const paymentStatus = document.paidAt ? 'Paid' : titleCase(document.status);
   const paymentReference = document.payment?.providerReference || 'Pending payment reference';
   const providerName = document.payment?.provider ? titleCase(document.payment.provider) : 'Payment provider';
   const itemDescriptionWidth = 33;
+  const billingIntervalLabel = document.booking?.billingInterval
+    ? titleCase(document.booking.billingInterval)
+    : 'Not set';
+  const moveInDateLabel = formatDate(document.booking?.startDate || null);
 
   const commands: string[] = [];
 
@@ -331,14 +307,14 @@ export async function generateInvoicePdf(document: InvoiceDocumentData) {
 
   commands.push(drawFilledRect(370, 130, 185, 160, [0.988, 0.991, 0.996]));
   commands.push(drawStrokedRect(370, 130, 185, 160, [0.89, 0.92, 0.98]));
-  commands.push(drawText('Order summary reference', 388, 148, 10, 'F2', [0.365, 0.455, 0.69]));
-  if (referenceImage) {
-    commands.push(drawImage('Im1', 384, 164, 157, 98));
-  } else {
-    commands.push(drawFilledRect(384, 164, 157, 98, [0.93, 0.95, 0.99]));
-    commands.push(drawText('Reference image unavailable', 400, 204, 12, 'F1', [0.4, 0.46, 0.58]));
-  }
-  commands.push(drawText('Styled from the Storeganise order summary flow.', 388, 268, 9, 'F1', [0.45, 0.5, 0.6]));
+  commands.push(drawText('Billing summary', 388, 148, 10, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawRule(388, 166, 149, [0.89, 0.92, 0.98]));
+  commands.push(drawText('Charge type', 388, 184, 9, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(billingLabel, 388, 200, 12, 'F1', [0.1, 0.13, 0.19]));
+  commands.push(drawText('Billing interval', 388, 223, 9, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(billingIntervalLabel, 388, 239, 12, 'F1', [0.1, 0.13, 0.19]));
+  commands.push(drawText('Move-in date', 388, 262, 9, 'F2', [0.365, 0.455, 0.69]));
+  commands.push(drawText(moveInDateLabel, 388, 278, 12, 'F1', [0.1, 0.13, 0.19]));
 
   commands.push(drawFilledRect(PAGE_MARGIN, 314, 165, 92, [1, 1, 1]));
   commands.push(drawStrokedRect(PAGE_MARGIN, 314, 165, 92, [0.89, 0.92, 0.98]));
@@ -461,10 +437,8 @@ export async function generateInvoicePdf(document: InvoiceDocumentData) {
   objects.push(Buffer.from('<< /Type /Catalog /Pages 2 0 R >>', 'utf8'));
   objects.push(Buffer.from('<< /Type /Pages /Kids [3 0 R] /Count 1 >>', 'utf8'));
 
-  const pageResources = referenceImage
-    ? '<< /Font << /F1 4 0 R /F2 5 0 R >> /XObject << /Im1 6 0 R >> >>'
-    : '<< /Font << /F1 4 0 R /F2 5 0 R >> >>';
-  const contentObjectId = referenceImage ? 7 : 6;
+  const pageResources = '<< /Font << /F1 4 0 R /F2 5 0 R >> >>';
+  const contentObjectId = 6;
   objects.push(
     Buffer.from(
       `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources ${pageResources} /Contents ${contentObjectId} 0 R >>`,
@@ -473,19 +447,6 @@ export async function generateInvoicePdf(document: InvoiceDocumentData) {
   );
   objects.push(Buffer.from('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>', 'utf8'));
   objects.push(Buffer.from('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>', 'utf8'));
-
-  if (referenceImage) {
-    objects.push(
-      Buffer.concat([
-        Buffer.from(
-          `<< /Type /XObject /Subtype /Image /Width ${referenceImage.width} /Height ${referenceImage.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${referenceImage.bytes.length} >>\nstream\n`,
-          'utf8'
-        ),
-        referenceImage.bytes,
-        Buffer.from('\nendstream', 'utf8'),
-      ])
-    );
-  }
 
   objects.push(
     Buffer.concat([
