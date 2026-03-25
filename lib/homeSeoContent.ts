@@ -27,6 +27,8 @@ export const HOME_FAQS = [
 ] as const;
 
 export const HOME_SERVICE_TYPES = [
+  'Best self storage units',
+  'Secure storage solutions',
   'Personal self storage',
   'Business inventory storage',
   'Moving and transition storage',
@@ -42,4 +44,6 @@ export const HOME_MARKETS = [
   'Benin City',
   'Enugu',
   'Abeokuta',
+  'Kaduna',
+  'Plateau',
 ] as const;

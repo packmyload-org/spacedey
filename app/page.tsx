@@ -5,11 +5,14 @@ import { buildPageMetadata } from '@/lib/seo';
 import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Best and Affordable Self Storage Units near you | Spacedey',
+  title: 'Best and Affordable Self Storage Units Near You | Spacedey',
   description:
     'Reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and flexible storage needs.',
   path: '/',
   keywords: [
+    'Best self storage units',
+    'Secure storage solutions',
+    'No 1 self storage nigeria',
     'self storage units in nigeria',
     'self storage lagos nigeria',
     'business storage lagos',
