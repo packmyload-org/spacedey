@@ -82,7 +82,7 @@ export default function LocationSection() {
         {/* Right Image */}
         <div className="flex justify-center z-20 relative">
           <Image
-            src="/images/LocationHero.jpg"
+            src="/images/Lagos.jpg"
             alt="Storage facility"
             width={1450}
             height={860}
