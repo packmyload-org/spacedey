@@ -43,7 +43,7 @@ For each patch release we should:
 ## Active Queue
 
 - [x] `v0.1.0` public beta baseline
-- [ ] `v0.1.1` admin invoice detail, resend flow, and payment-history groundwork
+- [x] `v0.1.1` admin invoice detail, resend flow, and payment-history groundwork
 - [ ] `v0.1.2` manual payment entry and reconciliation support
 - [ ] `v0.1.3` checkout flow upgrade
 - [ ] `v0.1.4` move-in date support

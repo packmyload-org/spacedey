@@ -85,6 +85,7 @@ export const env = {
     },
     analytics: {
       googleTagManagerId: process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER_ID,
+      vercelInsightsEnabled: readBoolean(process.env.ENABLE_VERCEL_INSIGHTS, false),
     },
   },
 

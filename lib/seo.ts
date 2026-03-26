@@ -30,6 +30,10 @@ export function getDefaultSeoImage() {
   return toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH);
 }
 
+export function serializeJsonLd(value: unknown) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
 interface BuildPageMetadataOptions {
   title: string;
   description: string;

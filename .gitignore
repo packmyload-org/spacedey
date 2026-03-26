@@ -55,6 +55,9 @@ gha-creds-*.json
 # gemini-cli
 .gemini/
 GEMINI.md
+
+# agents
+.agents/
 AGENTS.md
 
 # pnpm

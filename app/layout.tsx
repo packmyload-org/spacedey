@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import GoogleTagManager from '@/components/analytics/GoogleTagManager';
 import RouteChangeTracker from '@/components/analytics/RouteChangeTracker';
+import VercelInsights from '@/components/analytics/VercelInsights';
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCart from "@/components/StorageCart";
-import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage } from "@/lib/seo";
+import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage, serializeJsonLd } from "@/lib/seo";
 import { env } from "@/config/env";
 
 const defaultSeoImage = getDefaultSeoImage();
@@ -66,7 +65,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const googleTagManagerId = env.integrations.analytics.googleTagManagerId;
+  const { googleTagManagerId, vercelInsightsEnabled } = env.integrations.analytics;
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -89,8 +88,8 @@ export default function RootLayout({
     url: env.app.url,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${env.app.url}/search?search={search_term_string}`,
-      'query-input': 'required name=search_term_string',
+      target: `${env.app.url}/search?state={state}`,
+      'query-input': 'required name=state',
     },
   };
 
@@ -100,11 +99,11 @@ export default function RootLayout({
         <GoogleTagManager containerId={googleTagManagerId} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
         />
         <StorageCartProvider>
           <SitesProvider>
@@ -124,8 +123,7 @@ export default function RootLayout({
             />
           </SitesProvider>
         </StorageCartProvider>
-        <Analytics />
-        <SpeedInsights />
+        {vercelInsightsEnabled ? <VercelInsights /> : null}
       </body>
     </html>
   );

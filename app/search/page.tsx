@@ -14,6 +14,7 @@ export const metadata: Metadata = buildPageMetadata({
     'storage facilities by city nigeria',
     'book storage unit online nigeria',
   ],
+  noIndex: true,
 });
 
 export default function SearchPage() {

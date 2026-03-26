@@ -27,12 +27,13 @@ export default function HomeSeoSection() {
             Self Storage In Nigeria
           </p>
           <h2 className="mt-4 text-3xl font-black leading-tight text-[#0F172A] md:text-5xl">
-            Flexible self storage for households, businesses, and moves across Nigeria
+            Secure self storage units for households, businesses, and moves across Nigeria
           </h2>
           <p className="mt-5 text-base leading-8 text-[#475569] md:text-lg">
-            Spacedey helps people find, compare, and reserve secure self storage units without the usual friction.
-            Whether you need extra room during a move, safer space for inventory, or a cleaner way to manage household
-            overflow, the platform is built to make storage feel straightforward from the very first search.
+            Spacedey helps people compare and reserve self storage units in Lagos and across Nigeria without the usual
+            friction. Whether you need extra room during a move, safer space for business inventory, or practical
+            household storage, the platform is built to make self storage straightforward from the first search to the
+            final reservation.
           </p>
         </div>
 

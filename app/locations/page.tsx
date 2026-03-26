@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import React from "react";
 import Hero from "@/components/locations/Hero";
 import LocationDiscoveryLinks from '@/components/locations/LocationDiscoveryLinks';
 import LocationsSection from "@/components/locations/LocationsSection";
 import StorageLocationsMap from "@/components/locations/StorageLocationsMap";
+import { listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
@@ -20,12 +20,17 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
-export default function LocationsPage() {
+export default async function LocationsPage() {
+  const [cityPages, statePages] = await Promise.all([
+    listCityLandingPages(),
+    listStateLandingPages(),
+  ]);
+
   return (
     <main className="flex flex-col min-h-screen pt-20">
       <Hero />
-      <LocationsSection />
-      <LocationDiscoveryLinks />
+      <LocationsSection cityPages={cityPages} statePages={statePages} />
+      <LocationDiscoveryLinks cityPages={cityPages} statePages={statePages} />
       <StorageLocationsMap />
     </main>
   );

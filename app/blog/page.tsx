@@ -3,6 +3,7 @@ import BlogHero from '@/components/blog/BlogHero';
 import BlogList from '@/components/blog/BlogList';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
+import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
@@ -18,12 +19,14 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
-export default function Page() {
+export default async function Page() {
+  const posts = await listPublishedBlogPosts();
+
   return (
     <div>
       <Header />
       <BlogHero />
-      <BlogList/>
+      <BlogList initialPosts={posts} />
       <Footer />
     </div>
   )

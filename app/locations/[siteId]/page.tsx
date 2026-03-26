@@ -5,7 +5,7 @@ import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
 import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
-import { buildPageMetadata, toAbsoluteUrl } from '@/lib/seo';
+import { buildPageMetadata, serializeJsonLd, toAbsoluteUrl } from '@/lib/seo';
 import { getSiteCity, getSiteState } from '@/lib/utils/siteLocations';
 
 async function getSiteByIdFromDB(siteId: string) {
@@ -190,11 +190,11 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
     <main className="min-h-screen bg-gray-50 pt-[80px]">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(localBusinessJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <SiteDetails site={siteData} />
     </main>

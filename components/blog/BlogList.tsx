@@ -4,17 +4,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
+import type { SerializedBlogPost } from '@/lib/services/blogPosts';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  image: string | null;
-  author: string;
-  publishedAt: string | null;
-}
+type BlogPost = Pick<SerializedBlogPost, 'id' | 'title' | 'slug' | 'excerpt' | 'image' | 'author' | 'publishedAt'>;
 
 function formatBlogDate(value: string | null) {
   if (!value) {
@@ -91,95 +84,12 @@ function BlogCard({
   );
 }
 
-function BlogCardSkeleton({ featured = false }: { featured?: boolean }) {
-  return (
-    <div
-      className={`overflow-hidden rounded-3xl border border-[#D8E2FF] bg-white shadow-[0_18px_45px_rgba(17,56,216,0.08)] ${
-        featured ? 'lg:min-h-[540px]' : ''
-      }`}
-    >
-      <div
-        className={`animate-pulse bg-[#EAF0FF] ${
-          featured ? 'h-72 md:h-80 lg:h-[340px]' : 'h-64'
-        }`}
-      />
-
-      <div className="space-y-4 p-6">
-        <div className="h-4 w-28 animate-pulse rounded-lg bg-[#E8EEFF]" />
-        <div className={`animate-pulse rounded-xl bg-[#EEF3FF] ${featured ? 'h-12 w-4/5' : 'h-10 w-full'}`} />
-        <div className="h-4 w-full animate-pulse rounded-lg bg-[#F1F5FF]" />
-        <div className="h-4 w-5/6 animate-pulse rounded-lg bg-[#F1F5FF]" />
-        <div className="border-t border-[#E5ECFF] pt-4">
-          <div className="flex items-center justify-between">
-            <div className="h-4 w-24 animate-pulse rounded-lg bg-[#E8EEFF]" />
-            <div className="h-4 w-20 animate-pulse rounded-lg bg-[#EEF3FF]" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+interface BlogListProps {
+  initialPosts: BlogPost[];
 }
 
-function BlogListSkeleton() {
-  return (
-    <>
-      <div>
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <div>
-            <div className="h-3 w-24 animate-pulse rounded-lg bg-[#DDE7FF]" />
-            <div className="mt-3 h-4 w-72 animate-pulse rounded-lg bg-[#E8EEFF]" />
-          </div>
-          <div className="hidden h-9 w-28 animate-pulse rounded-full bg-white md:block" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-3">
-          <div className="xl:col-span-2">
-            <BlogCardSkeleton featured />
-          </div>
-          <BlogCardSkeleton />
-          <BlogCardSkeleton />
-          <BlogCardSkeleton />
-          <BlogCardSkeleton />
-        </div>
-      </div>
-
-      <div className="my-10 grid gap-8 xl:grid-cols-3 xl:items-stretch">
-        <div className="rounded-[32px] border border-[#BFD3FF] bg-[radial-gradient(circle_at_top_left,#2D63FF_0%,#1642F0_44%,#1233A3_100%)] p-6 shadow-[0_26px_80px_rgba(17,56,216,0.2)] md:p-8">
-          <div className="h-8 w-32 animate-pulse rounded-full bg-white/15" />
-          <div className="mt-5 h-10 w-5/6 animate-pulse rounded-2xl bg-white/18" />
-          <div className="mt-3 h-4 w-full animate-pulse rounded-lg bg-white/12" />
-          <div className="mt-2 h-4 w-4/5 animate-pulse rounded-lg bg-white/12" />
-          <div className="mt-6 flex flex-wrap gap-3">
-            <div className="h-9 w-28 animate-pulse rounded-full bg-white/12" />
-            <div className="h-9 w-32 animate-pulse rounded-full bg-white/12" />
-            <div className="h-9 w-24 animate-pulse rounded-full bg-white/12" />
-          </div>
-          <div className="mt-8 space-y-4">
-            <div className="h-12 w-full animate-pulse rounded-2xl bg-white/95" />
-            <div className="h-12 w-full animate-pulse rounded-full bg-white/20" />
-          </div>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2 xl:col-span-2">
-          <BlogCardSkeleton />
-          <BlogCardSkeleton />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
-        <BlogCardSkeleton />
-        <BlogCardSkeleton />
-        <BlogCardSkeleton />
-      </div>
-    </>
-  );
-}
-
-export default function BlogList() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function BlogList({ initialPosts }: Readonly<BlogListProps>) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [newsletterMessage, setNewsletterMessage] = useState<string | null>(null);
   const [newsletterError, setNewsletterError] = useState<string | null>(null);
@@ -187,33 +97,7 @@ export default function BlogList() {
 
   const postsPerPage = 10;
   const leadPostsCount = 5;
-
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/blog/posts');
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(data?.error || 'Failed to load blog posts.');
-        }
-
-        setPosts(Array.isArray(data.posts) ? data.posts : []);
-      } catch (fetchError) {
-        setError(fetchError instanceof Error ? fetchError.message : 'Failed to load blog posts.');
-        setPosts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPosts();
-  }, []);
-
-  const totalPages = Math.max(1, Math.ceil(posts.length / postsPerPage));
+  const totalPages = Math.max(1, Math.ceil(initialPosts.length / postsPerPage));
 
   useEffect(() => {
     setCurrentPage((page) => Math.min(page, totalPages));
@@ -221,8 +105,8 @@ export default function BlogList() {
 
   const currentPosts = useMemo(() => {
     const startIndex = (currentPage - 1) * postsPerPage;
-    return posts.slice(startIndex, startIndex + postsPerPage);
-  }, [currentPage, posts]);
+    return initialPosts.slice(startIndex, startIndex + postsPerPage);
+  }, [currentPage, initialPosts]);
   const leadPosts = currentPosts.slice(0, leadPostsCount);
   const remainingPosts = currentPosts.slice(leadPostsCount);
   const postsBesideNewsletter = remainingPosts.slice(0, 2);
@@ -284,13 +168,7 @@ export default function BlogList() {
           </p>
         </div>
 
-        {isLoading ? (
-          <BlogListSkeleton />
-        ) : error ? (
-          <div className="rounded-3xl border border-red-200 bg-red-50 px-6 py-6 text-sm text-red-700">
-            {error}
-          </div>
-        ) : posts.length === 0 ? (
+        {initialPosts.length === 0 ? (
           <div className="rounded-3xl border border-[#D8E2FF] bg-white px-6 py-16 text-center">
             <h3 className="text-2xl font-black text-[#0F172A]">No blog posts yet</h3>
             <p className="mt-3 text-sm text-[#5D74B0]">Published posts from the admin dashboard will show up here.</p>
