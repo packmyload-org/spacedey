@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import HomePageContent from "@/components/home/HomePageContent";
 import { HOME_FAQS, HOME_MARKETS, HOME_SERVICE_TYPES } from '@/lib/homeSeoContent';
-import { buildPageMetadata } from '@/lib/seo';
-import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
+import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Best and Affordable Self Storage Units Near You | Spacedey',
@@ -10,16 +9,14 @@ export const metadata: Metadata = buildPageMetadata({
     'Reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and flexible storage needs.',
   path: '/',
   keywords: [
-    'Best storage',
-    'No 1',
-    'Affordable storage solutions near me',
-    'Secure storage solutions',
-    'storage in nigeria',
+    'affordable self storage nigeria',
+    'self storage near me nigeria',
     'storage units in nigeria',
-    'storage lagos nigeria',
+    'self storage lagos nigeria',
+    'secure storage units nigeria',
     'business storage lagos',
     'personal storage nigeria',
-    'reserve storage unit online',
+    'reserve self storage online',
   ],
   noIndex: false,
 });
@@ -70,15 +67,15 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(webPageJsonLd) }}
       />
       <HomePageContent />
     </>

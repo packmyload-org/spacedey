@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
 import { getPublishedBlogPostBySlug, listPublishedBlogPosts } from '@/lib/services/blogPosts';
-import { getBlogKeywords, SITE_NAME, toAbsoluteUrl } from '@/lib/seo';
+import { getBlogKeywords, serializeJsonLd, SITE_NAME, toAbsoluteUrl } from '@/lib/seo';
 
 export const dynamicParams = false;
 
@@ -141,11 +141,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       <Header />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogPostingJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(blogPostingJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
 
       <main className="px-6 pb-20 pt-28 lg:px-24">

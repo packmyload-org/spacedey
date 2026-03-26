@@ -51,7 +51,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes.map((route) => ({
       url: `${siteUrl}${route}`,
-      lastModified: new Date(),
       changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
       priority: route === '' ? 1 : 0.8,
     })),
@@ -63,13 +62,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
     ...cityPages.map((city) => ({
       url: `${siteUrl}/locations/city/${city.slug}`,
-      lastModified: city.sites[0]?.updatedAt || new Date(),
+      lastModified: city.sites[0]?.updatedAt,
       changeFrequency: 'weekly' as const,
       priority: 0.86,
     })),
     ...statePages.map((state) => ({
       url: `${siteUrl}/locations/state/${state.slug}`,
-      lastModified: state.sites[0]?.updatedAt || new Date(),
+      lastModified: state.sites[0]?.updatedAt,
       changeFrequency: 'weekly' as const,
       priority: 0.82,
     })),

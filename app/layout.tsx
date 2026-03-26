@@ -10,7 +10,7 @@ import RouteChangeTracker from '@/components/analytics/RouteChangeTracker';
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCart from "@/components/StorageCart";
-import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage } from "@/lib/seo";
+import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage, serializeJsonLd } from "@/lib/seo";
 import { env } from "@/config/env";
 
 const defaultSeoImage = getDefaultSeoImage();
@@ -89,8 +89,8 @@ export default function RootLayout({
     url: env.app.url,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${env.app.url}/search?search={search_term_string}`,
-      'query-input': 'required name=search_term_string',
+      target: `${env.app.url}/search?state={state}`,
+      'query-input': 'required name=state',
     },
   };
 
@@ -100,11 +100,11 @@ export default function RootLayout({
         <GoogleTagManager containerId={googleTagManagerId} />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
         />
         <StorageCartProvider>
           <SitesProvider>
