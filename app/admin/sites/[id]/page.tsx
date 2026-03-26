@@ -237,18 +237,14 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
             if (data.ok) {
                 if (isNew) {
                     toast.success('Site created successfully');
-                    router.push(`/admin/sites/${data.site.id}`);
                 } else {
-                    setSite(data.site);
                     toast.success('Site updated successfully');
                 }
-            } else {
-                setError(data.error);
-                toast.error(data.error || 'Failed to save site');
+                router.refresh();
             }
-        } catch {
-            setError('An error occurred while saving');
-            toast.error('An error occurred while saving');
+        } catch (error) {
+            toast.error('Failed to save site');
+            console.error(error);
         } finally {
             setSaving(false);
         }
@@ -647,11 +643,10 @@ export default function SiteEditorPage({ params }: { params: Promise<{ id: strin
                                                         type="button"
                                                         onClick={() => addPresetUnitTypeToDraft(preset)}
                                                         disabled={isSelected}
-                                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                                                            isSelected
-                                                                ? 'border-green-200 bg-green-50 text-green-700'
-                                                                : 'border-blue-200 bg-white hover:border-blue-400 hover:bg-blue-50'
-                                                        }`}
+                                                        className={`rounded-xl border px-4 py-3 text-left transition-colors ${isSelected
+                                                            ? 'border-green-200 bg-green-50 text-green-700'
+                                                            : 'border-blue-200 bg-white hover:border-blue-400 hover:bg-blue-50'
+                                                            }`}
                                                     >
                                                         <p className="font-semibold text-gray-900">{preset.name}</p>
                                                         <p className="mt-1 text-sm text-gray-500">
