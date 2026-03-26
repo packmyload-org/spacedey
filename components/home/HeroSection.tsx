@@ -68,9 +68,9 @@ function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
             className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8"
           >
-            Self-Storage In Your
+            Affordable Self Storage
 
-            Neighborhood
+            in Nigeria
           </motion.h1>
 
           <motion.p
@@ -79,7 +79,7 @@ function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
             className="text-base sm:text-xl lg:text-2xl text-white/95 pb-2 mx- mb-6"
           >
-            No hidden fees. Fast booking. A smarter way to store.
+            Compare secure storage units in Lagos and across Nigeria for personal items, business inventory, and moves.
           </motion.p>
 
           <motion.div

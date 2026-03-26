@@ -1,16 +1,20 @@
 import Link from 'next/link';
-import { listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
+import type { CityLandingData, StateLandingData } from '@/lib/services/locationLandingPages';
 import { LocationLinkCard } from '@/components/locations/LocationSeoSections';
 
-export default async function LocationDiscoveryLinks() {
-  const [cityPages, statePages] = await Promise.all([
-    listCityLandingPages(),
-    listStateLandingPages(),
-  ]);
-  const featuredCities = cityPages.slice(0, 6);
-  const featuredStates = statePages.slice(0, 4);
+interface LocationDiscoveryLinksProps {
+  cityPages: CityLandingData[];
+  statePages: StateLandingData[];
+}
 
-  if (featuredCities.length === 0 && featuredStates.length === 0) {
+export default function LocationDiscoveryLinks({
+  cityPages,
+  statePages,
+}: Readonly<LocationDiscoveryLinksProps>) {
+  const additionalCities = cityPages.slice(6, 18);
+  const additionalStates = statePages.slice(4, 12);
+
+  if (additionalCities.length === 0 && additionalStates.length === 0) {
     return null;
   }
 
@@ -28,16 +32,16 @@ export default async function LocationDiscoveryLinks() {
           </p>
         </div>
 
-        {featuredCities.length > 0 ? (
+        {additionalCities.length > 0 ? (
           <div className="mt-10">
             <div className="mb-5 flex items-center justify-between gap-4">
-              <h3 className="text-xl font-black text-[#102A72]">Popular city pages</h3>
+              <h3 className="text-xl font-black text-[#102A72]">More city pages</h3>
               <Link href="/search" className="text-sm font-bold text-[#1642F0]">
                 Search all locations
               </Link>
             </div>
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-              {featuredCities.map((city) => (
+              {additionalCities.map((city) => (
                 <LocationLinkCard
                   key={city.slug}
                   title={`Storage in ${city.name}`}
@@ -49,7 +53,7 @@ export default async function LocationDiscoveryLinks() {
           </div>
         ) : null}
 
-        {featuredStates.length > 0 ? (
+        {additionalStates.length > 0 ? (
           <div className="mt-12">
             <div className="mb-5">
               <h3 className="text-xl font-black text-[#102A72]">State coverage pages</h3>
@@ -58,7 +62,7 @@ export default async function LocationDiscoveryLinks() {
               </p>
             </div>
             <div className="grid gap-5 md:grid-cols-2">
-              {featuredStates.map((state) => (
+              {additionalStates.map((state) => (
                 <LocationLinkCard
                   key={state.slug}
                   title={`${state.name} storage guide`}

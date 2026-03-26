@@ -1,77 +1,109 @@
-'use client';
+import Link from 'next/link';
+import { LocationLinkCard, LocationStatCard } from '@/components/locations/LocationSeoSections';
+import type { CityLandingData, StateLandingData } from '@/lib/services/locationLandingPages';
 
-import React, { useMemo } from 'react';
-import Link from "next/link";
-import { useSitesData } from '@/contexts/SitesContext';
-import { getAvailableCities } from '@/lib/utils/cities';
-import { toLocationSlug } from '@/lib/utils/locationSeo';
-import { getUniqueSiteCities } from '@/lib/utils/siteLocations';
+interface LocationsSectionProps {
+  cityPages: CityLandingData[];
+  statePages: StateLandingData[];
+}
 
-const LocationsSection = () => {
-  const { sites, isLoading } = useSitesData();
-  const locations = useMemo(() => {
-    const seededCities = getAvailableCities().map((city) => city.name);
-    const siteCities = getUniqueSiteCities(sites);
+export default function LocationsSection({
+  cityPages,
+  statePages,
+}: Readonly<LocationsSectionProps>) {
+  const featuredCities = cityPages.slice(0, 6);
+  const featuredStates = statePages.slice(0, 4);
+  const totalFacilities = statePages.reduce((sum, state) => sum + state.totalSites, 0);
+  const totalAvailableUnits = statePages.reduce((sum, state) => sum + state.totalAvailableUnits, 0);
 
-    return [...seededCities, ...siteCities].filter(
-      (city, index, allCities) => city && allCities.indexOf(city) === index
-    );
-  }, [sites]);
-  const loading = isLoading && sites.length === 0;
+  if (featuredCities.length === 0 && featuredStates.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="py-12 px-6 lg:px-20">
-      <h2 className="text-center capitalize text-blue-900 text-3xl lg:text-4xl font-bold">
-        Discover Our Locations
-      </h2>
+    <section className="bg-white px-6 py-12 lg:px-20 lg:py-16">
+      <div className="mx-auto max-w-7xl">
+        <div className="max-w-3xl text-center mx-auto">
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">
+            Location Discovery
+          </p>
+          <h2 className="mt-3 text-3xl font-black text-[#102A72] md:text-4xl">
+            Compare storage by city and state before you choose a facility
+          </h2>
+          <p className="mt-4 text-sm leading-7 text-[#5D74B0] md:text-base">
+            These pages group Spacedey inventory by local demand so searchers can move from broad location research to
+            city guides, state coverage pages, and specific facilities without relying on client-side filtering first.
+          </p>
+        </div>
 
-      <hr className="h-[3px] w-[50px] mt-6 mb-10 lg:mb-[72px] mx-auto bg-orange-500 border-0 " />
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <LocationStatCard
+            label="City guides"
+            value={String(cityPages.length)}
+            detail="Indexable city landing pages with local facility and pricing context."
+          />
+          <LocationStatCard
+            label="State pages"
+            value={String(statePages.length)}
+            detail="State-level coverage hubs that link into the city pages that matter most."
+          />
+          <LocationStatCard
+            label="Facilities"
+            value={String(totalFacilities)}
+            detail="Published storage facilities currently discoverable through the location hub."
+          />
+          <LocationStatCard
+            label="Available units"
+            value={String(totalAvailableUnits)}
+            detail="Live inventory totals surfaced across the strongest local landing pages."
+          />
+        </div>
 
-      <div className="flex gap-6 lg:flex-wrap lg:justify-center overflow-scroll lg:overflow-hidden min-h-[200px]">
-        {loading ? (
-          <div className="flex gap-6 w-full justify-center">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-[200px] w-full lg:w-[31%] min-w-[280px] bg-gray-100 animate-pulse rounded-2xl" />
-            ))}
-          </div>
-        ) : locations.length === 0 ? (
-          <p className="text-gray-400 italic">No locations available yet.</p>
-        ) : (
-          locations.map((location) => (
-            <Link
-              key={location}
-              href={`/locations/city/${toLocationSlug(location)}`}
-              className="flex items-center justify-between gap-6 p-10 border border-blue-600 bg-gray-50 text-2xl font-semibold cursor-pointer rounded-2xl w-full lg:w-[31%] min-w-[280px] hover:bg-gray-100 transition-colors"
-            >
-              <span>{location}</span>
+        {featuredCities.length > 0 ? (
+          <div className="mt-12">
+            <div className="mb-5 flex items-center justify-between gap-4">
               <div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  fill="currentColor"
-                  viewBox="0 0 256 256"
-                >
-                  <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"></path>
-                </svg>
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5D74B0]">Featured cities</p>
+                <h3 className="mt-2 text-2xl font-black text-[#102A72]">Popular city storage guides</h3>
               </div>
-            </Link>
-          ))
-        )}
-      </div>
+              <Link href="/search" className="text-sm font-bold text-[#1642F0]">
+                Search all locations
+              </Link>
+            </div>
 
-      <div className="flex justify-center mt-10">
-        <Link href="/search">
-          <button
-            type="button"
-            className="px-6 py-3 border-1 border-blue-600 text-blue-600 font-medium rounded-full hover:bg-blue-50 transition-colors"
-          >
-            Find storage near me
-          </button>
-        </Link>
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {featuredCities.map((city) => (
+                <LocationLinkCard
+                  key={city.slug}
+                  title={`Storage in ${city.name}`}
+                  detail={`${city.totalSites} facilities, ${city.totalAvailableUnits} available units, and local coverage across ${city.state}.`}
+                  href={`/locations/city/${city.slug}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {featuredStates.length > 0 ? (
+          <div className="mt-12">
+            <div className="mb-5">
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#5D74B0]">State coverage</p>
+              <h3 className="mt-2 text-2xl font-black text-[#102A72]">State-level storage hubs</h3>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              {featuredStates.map((state) => (
+                <LocationLinkCard
+                  key={state.slug}
+                  title={`${state.name} storage guide`}
+                  detail={`${state.cities.length} city pages, ${state.totalSites} facilities, and ${state.totalAvailableUnits} available units in one view.`}
+                  href={`/locations/state/${state.slug}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
       </div>
-    </div>
+    </section>
   );
-};
-
-export default LocationsSection;
+}

@@ -4,9 +4,9 @@ import { HOME_FAQS, HOME_MARKETS, HOME_SERVICE_TYPES } from '@/lib/homeSeoConten
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Best and Affordable Self Storage Units Near You | Spacedey',
+  title: 'Affordable Self Storage in Nigeria',
   description:
-    'Reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and flexible storage needs.',
+    'Compare and reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and moving support.',
   path: '/',
   keywords: [
     'affordable self storage nigeria',
