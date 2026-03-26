@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import GoogleTagManager from '@/components/analytics/GoogleTagManager';
 import RouteChangeTracker from '@/components/analytics/RouteChangeTracker';
+import VercelInsights from '@/components/analytics/VercelInsights';
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCart from "@/components/StorageCart";
@@ -66,7 +65,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const googleTagManagerId = env.integrations.analytics.googleTagManagerId;
+  const { googleTagManagerId, vercelInsightsEnabled } = env.integrations.analytics;
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -124,8 +123,7 @@ export default function RootLayout({
             />
           </SitesProvider>
         </StorageCartProvider>
-        <Analytics />
-        <SpeedInsights />
+        {vercelInsightsEnabled ? <VercelInsights /> : null}
       </body>
     </html>
   );
