@@ -18,12 +18,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/landlord',
   ];
 
-  const blogPosts = await listPublishedBlogPosts();
-  const [cityPages, statePages] = await Promise.all([
+  const [blogPostsResult, cityPagesResult, statePagesResult] = await Promise.allSettled([
+    listPublishedBlogPosts(),
     listCityLandingPages(),
     listStateLandingPages(),
   ]);
+  const blogPosts = blogPostsResult.status === 'fulfilled' ? blogPostsResult.value : [];
+  const cityPages = cityPagesResult.status === 'fulfilled' ? cityPagesResult.value : [];
+  const statePages = statePagesResult.status === 'fulfilled' ? statePagesResult.value : [];
   let locationRoutes: MetadataRoute.Sitemap = [];
+
+  if (blogPostsResult.status === 'rejected') {
+    console.error('Failed to build blog sitemap entries', blogPostsResult.reason);
+  }
+
+  if (cityPagesResult.status === 'rejected') {
+    console.error('Failed to build city sitemap entries', cityPagesResult.reason);
+  }
+
+  if (statePagesResult.status === 'rejected') {
+    console.error('Failed to build state sitemap entries', statePagesResult.reason);
+  }
 
   try {
     const appDataSource = await connectTypeORM();
