@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
+import { extractFaqsFromBlogContent, getBlogActionLinks } from '@/lib/blogSeo';
 import { getPublishedBlogPostBySlug, listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { getBlogKeywords, serializeJsonLd, SITE_NAME, toAbsoluteUrl } from '@/lib/seo';
 
@@ -98,6 +99,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     .slice(0, 3);
   const articleUrl = toAbsoluteUrl(`/blog/${post.slug}`);
   const keywords = getBlogKeywords(post.title, post.excerpt);
+  const faqs = extractFaqsFromBlogContent(post.content);
+  const actionLinks = getBlogActionLinks(post.title, post.excerpt);
   const blogPostingJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -135,6 +138,20 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       },
     ],
   };
+  const faqJsonLd = faqs.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map((faq) => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer,
+          },
+        })),
+      }
+    : null;
 
   return (
     <div className="min-h-screen bg-[#F5F8FF]">
@@ -147,6 +164,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
+      {faqJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
+        />
+      ) : null}
 
       <main className="px-6 pb-20 pt-28 lg:px-24">
         <div className="mx-auto max-w-5xl">
@@ -180,6 +203,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <article className="mt-10 whitespace-pre-line text-base leading-8 text-[#334155]">
               {post.content}
             </article>
+
+            <section className="mt-10 rounded-[28px] border border-[#D8E2FF] bg-[#F8FAFF] p-6">
+              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">Next steps</p>
+              <h2 className="mt-3 text-2xl font-black text-[#0F172A]">Keep the research moving</h2>
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                {actionLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="rounded-3xl border border-[#D8E2FF] bg-white p-5 transition hover:-translate-y-1"
+                  >
+                    <p className="text-base font-black text-[#0F172A]">{link.label}</p>
+                    <p className="mt-3 text-sm leading-6 text-[#475569]">{link.description}</p>
+                  </Link>
+                ))}
+              </div>
+            </section>
           </div>
 
           {relatedPosts.length > 0 ? (

@@ -1,39 +1,40 @@
 export const HOME_FAQS = [
   {
+    question: 'Which self storage units offer the best security?',
+    answer:
+      'The best self storage units combine controlled access, clear visibility, reliable locking, clean facilities, and transparent policies. Spacedey helps customers compare secure storage options before they reserve.',
+  },
+  {
+    question: 'Which storage is safest?',
+    answer:
+      'The safest storage is the option that matches your items, access needs, and timeline while still giving you confidence about facility quality, booking clarity, and ongoing support.',
+  },
+  {
+    question: 'What is the safest type of storage?',
+    answer:
+      'For most people and businesses, the safest type of storage is a professionally managed self storage unit with strong access control, practical unit sizes, and a straightforward reservation process.',
+  },
+  {
+    question: 'What is the most reliable type of storage?',
+    answer:
+      'Reliable storage is storage that stays easy to use over time. That means predictable monthly pricing, the right unit size, secure handling, and a location that remains convenient when you need to retrieve items.',
+  },
+  {
     question: 'How does Spacedey pricing work?',
     answer:
-      'Spacedey keeps pricing transparent with visible monthly rates, clear booking steps, and flexible payment plans so customers can compare storage options before they reserve.',
-  },
-  {
-    question: 'Who is Spacedey storage designed for?',
-    answer:
-      'The platform supports personal storage, business inventory storage, moving transitions, renovation overflow, student storage, and any situation where secure extra space is needed.',
-  },
-  {
-    question: 'Which cities can customers search on Spacedey?',
-    answer:
-      'Customers can browse storage options across Lagos and other growing Nigerian markets through city and state landing pages, then narrow down by location, facility, and unit size.',
-  },
-  {
-    question: 'Can customers book a unit online?',
-    answer:
-      'Yes. Spacedey helps customers compare storage locations, select a unit, choose a move-in timeline, and complete their reservation online without a complicated offline process.',
-  },
-  {
-    question: 'What makes Spacedey different from traditional storage search?',
-    answer:
-      'Spacedey focuses on neighborhood convenience, transparent pricing, flexible plans, and a modern booking flow that helps customers discover and reserve self storage faster.',
+      'Spacedey keeps pricing transparent with visible monthly rates, clear booking steps, and flexible payment plans so customers can compare storage options in Lagos and across Nigeria before they reserve.',
   },
 ] as const;
 
 export const HOME_SERVICE_TYPES = [
-  'Best self storage units',
+  'Secure self storage units',
   'Secure storage solutions',
   'Personal self storage',
   'Business inventory storage',
   'Moving and transition storage',
   'Student storage',
   'Flexible monthly storage plans',
+  'Storage size guidance',
 ] as const;
 
 export const HOME_MARKETS = [

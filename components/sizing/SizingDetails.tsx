@@ -166,8 +166,12 @@ const SizingDetails = () => {
           {/* Section Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-bold text-blue-900 mb-4">
-              Sizing details
+              How big are common storage units and what do they hold?
             </h2>
+            <p className="mx-auto max-w-3xl text-base leading-7 text-[#475569] md:text-lg">
+              This guide answers the most common size questions, including how big a 5 x 10 unit is, how much a 10 x
+              10 unit can hold, and what size usually works for a 2-bedroom home.
+            </p>
             <hr className="h-1 w-12 bg-brand-orange border-0 mx-auto" />
           </div>
 

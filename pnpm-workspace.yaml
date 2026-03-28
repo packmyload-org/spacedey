@@ -1,0 +1,6 @@
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - bcrypt
+  - esbuild
+  - sharp
+  - unrs-resolver

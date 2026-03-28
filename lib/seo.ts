@@ -146,5 +146,21 @@ export function getBlogKeywords(title: string, excerpt: string) {
     topicKeywords.push('lagos self storage');
   }
 
+  if (normalizedTitle.includes('security') || normalizedExcerpt.includes('security')) {
+    topicKeywords.push('secure self storage nigeria', 'storage security tips');
+  }
+
+  if (normalizedTitle.includes('price') || normalizedTitle.includes('cost') || normalizedExcerpt.includes('price')) {
+    topicKeywords.push('storage pricing nigeria', 'self storage cost lagos');
+  }
+
+  if (normalizedTitle.includes('size') || normalizedExcerpt.includes('size')) {
+    topicKeywords.push('storage unit sizes nigeria', 'what size storage unit do i need');
+  }
+
+  if (normalizedTitle.includes('not to store') || normalizedExcerpt.includes('not to store')) {
+    topicKeywords.push('what not to store in self storage', 'storage safety rules');
+  }
+
   return [...DEFAULT_KEYWORDS, ...topicKeywords];
 }

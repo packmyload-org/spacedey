@@ -8,7 +8,8 @@ import StorageUnitSizes from "@/components/sizing/StorageUnitSizes";
 import SizingDetails from "@/components/sizing/SizingDetails";
 import WhyStoreWithus from "@/components/sizing/SizingWhyStoreWithUs";
 import SizingFaq from "@/components/sizing/SizingFaq";
-import { buildPageMetadata } from '@/lib/seo';
+import { buildPageMetadata, serializeJsonLd } from '@/lib/seo';
+import { SIZING_FAQS } from '@/lib/sizingSeoContent';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Storage Unit Sizes Guide',
@@ -21,12 +22,32 @@ export const metadata: Metadata = buildPageMetadata({
     'self storage size guide lagos',
     'storage sizing guide nigeria',
     'small medium large storage units',
+    'what is the most popular self-storage size',
+    'how many rooms will a 10x10 storage unit hold',
+    'how big is a 5x10 storage unit',
   ],
 });
 
 export default function SizingPage() {
+    const faqJsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: SIZING_FAQS.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    };
+
     return (
         <>
+           <script
+             type="application/ld+json"
+             dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
+           />
            <Header />
            <SizingHero />
            <ComparisonSizesSection />
