@@ -51,7 +51,7 @@ export default function HomeSeoSection() {
           ))}
         </div>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+        {/* <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
           <div className="rounded-[32px] border border-[#D9E4FF] bg-white p-7 shadow-sm md:p-10">
             <h3 className="text-2xl font-black text-[#0F172A]">
               How Spacedey answers the storage questions people ask before they book
@@ -94,7 +94,7 @@ export default function HomeSeoSection() {
               {HOME_MARKETS.join(', ')}
             </p>
           </aside>
-        </div>
+        </div> */}
 
         <div className="mt-14 rounded-[32px] border border-[#D9E4FF] bg-white p-7 shadow-sm md:p-10">
           <div className="max-w-3xl">
