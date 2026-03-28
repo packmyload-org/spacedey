@@ -1,67 +1,9 @@
 'use client'; // This component uses client-side hooks like useState
 
 import React, { useState } from 'react';
+import { SIZING_FAQS } from '@/lib/sizingSeoContent';
 
-// Define the structure for a single FAQ item
-interface FaqItem {
-  question: string;
-  answer: string;
-}
-
-// Define the data for the FAQ section
-const faqData: FaqItem[] = [
-  {
-    question: 'How do I know what size is the right size?',
-    answer:
-      "We offer a size guide to help you choose based on what you're storing. Our team is also available to recommend the best fit.",
-  },
-  {
-    question: 'How tall are storage units?',
-    answer:
-      'Standard storage unit heights typically range from 8 to 10 feet. It’s always best to check the specific unit details for exact dimensions.',
-  },
-  {
-    question: 'How much does each size cost?',
-    answer:
-      'Pricing varies based on location, unit size, and availability. Please use our location finder and select a size for current rates.',
-  },
-  {
-    question: 'Can I switch to a different size later?',
-    answer:
-      'Yes, subject to availability, you can usually switch to a larger or smaller unit. Contact our facility manager for assistance with transfers.',
-  },
-  {
-    question: 'Can I store a vehicle in a unit?',
-    answer:
-      // 'Some locations offer vehicle storage, including car, boat, and RV parking. Check the specific location pages for available options and restrictions.',
-      'Coming soon!'
-  },
-  {
-    question: 'What size do I need for a studio apartment?',
-    answer:
-      'A small unit, such as a 5x10, is typically recommended for the contents of a studio or small one-bedroom apartment.',
-  },
-  {
-    question: 'What size do I need for a 1-bedroom apartment?',
-    answer:
-      'A medium unit, such as a 10x10, is generally sufficient for a fully furnished one-bedroom apartment.',
-  },
-  {
-    question: 'What size do I need for a 2-bedroom apartment?',
-    answer:
-      'A 10x15 unit is often the best fit for a two-bedroom home or apartment, holding large appliances and multiple furniture sets.',
-  },
-  {
-    question: 'What size do I need for a 3-bedroom house?',
-    answer:
-      'A large unit, like a 10x20, can accommodate the contents of a standard three-bedroom house, including major appliances.',
-  },
-  {
-    question: 'What size do I need for a 4-bedroom house?',
-    answer:
-      'A 10x30 unit is ideal for a four-bedroom house or a large home with a garage full of items.',
-  },
-];
+type FaqItem = (typeof SIZING_FAQS)[number];
 
 // Reusable component for the Chevron Icon (SVG path remains the same)
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -150,7 +92,7 @@ const SizingFaq = () => {
         <div className="w-full bg-gray-50 rounded-xl px-6 lg:px-8 py-8 shadow-sm">
         <div className="lg:mb-12 mb-10">
           {/* Map through the FAQ data to render Accordion items */}
-          {faqData.map((item, index) => (
+          {SIZING_FAQS.map((item, index) => (
             <FaqAccordionItem key={index} item={item} index={index} />
           ))}
         </div>

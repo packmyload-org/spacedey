@@ -54,30 +54,23 @@ export default function HomeSeoSection() {
         <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
           <div className="rounded-[32px] border border-[#D9E4FF] bg-white p-7 shadow-sm md:p-10">
             <h3 className="text-2xl font-black text-[#0F172A]">
-              Why this storage experience ranks better for real customers
+              How Spacedey answers the storage questions people ask before they book
             </h3>
             <div className="mt-5 space-y-5 text-sm leading-8 text-[#475569] md:text-base">
               <p>
-                Transparent storage pricing matters because searchers are usually comparing urgency, convenience, and
-                trust at the same time. Spacedey gives people a clearer path to reserve storage by showing location
-                options, unit availability, and a direct booking flow instead of making customers chase pricing across
-                phone calls or disconnected listings. That clarity supports both conversion and SEO because the page can
-                answer the exact intent behind searches like &quot;self storage in Lagos&quot;, &quot;storage units near me&quot;,
-                or &quot;business storage in Nigeria&quot;.
+                Searchers usually compare security, price, and convenience at the same time. Spacedey helps them do that
+                faster by showing location options, visible pricing signals, available unit sizes, and a direct path from
+                research into reservation instead of pushing every question into offline calls.
               </p>
               <p>
-                The strongest storage pages also need enough substance to prove expertise. This homepage now explains
-                how Spacedey supports personal storage, business storage, and moving-related needs while reinforcing the
-                practical reasons people search for self storage in the first place: security, flexible rental terms,
-                easier access, and confidence about what comes next after checkout. That broader topical coverage helps
-                the homepage support city pages, state pages, and facility pages instead of competing with them.
+                That structure supports the exact intent behind searches like &quot;which storage is safest&quot;,
+                &quot;how much should you pay for storage&quot;, and &quot;what size storage unit do I need&quot;. The goal is not only
+                to rank for those questions, but to answer them clearly enough that the next step feels obvious.
               </p>
               <p>
-                Local relevance is another major ranking signal for a marketplace-style storage brand. Spacedey already
-                connects searchers to facility pages and geographic landing pages across Nigeria, and this section makes
-                that intent more explicit for both users and search engines. When someone wants storage for home items,
-                retail inventory, renovation overflow, or a move between apartments, the site should communicate that it
-                understands the local use case and has a practical next step ready.
+                Because Spacedey serves personal storage, business inventory, and moving-related use cases in Nigeria, the
+                homepage can support city pages, sizing pages, and facility pages without competing with them. It sets
+                trust and context while the deeper pages handle location, price, and unit-size detail.
               </p>
             </div>
           </div>
@@ -94,8 +87,8 @@ export default function HomeSeoSection() {
 
             <h3 className="mt-8 text-xl font-black text-[#0F172A]">Active search markets</h3>
             <p className="mt-3 text-sm leading-7 text-[#475569] md:text-base">
-              Spacedey&apos;s discoverability strategy already extends beyond one city, with search and location
-              experiences that support growth across:
+              Spacedey&apos;s location coverage is designed to support commercial searches in Nigeria first, with Lagos as a
+              lead market and expanding city and state discovery pages for broader demand.
             </p>
             <p className="mt-4 text-sm font-bold leading-7 text-[#1642F0] md:text-base">
               {HOME_MARKETS.join(', ')}

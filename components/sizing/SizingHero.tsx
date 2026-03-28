@@ -21,7 +21,8 @@ const StorageHeroSection = () => {
 
         {/* Subheading */}
         <p className="text-lg sm:text-base lg:text-lg font-normal text-white mb-8 sm:mb-10 lg:mb-12 leading-relaxed">
-          Get a clear picture of what fits inside a 5x10 or 10x10 unit.
+          Compare what fits inside a 5x10, 10x10, or 10x15 unit and choose the right storage size for your move,
+          home, or business inventory in Nigeria.
         </p>
 
         {/* CTA Button */}

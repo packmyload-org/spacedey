@@ -53,10 +53,14 @@ export default function StorageUnitSizes() {
         {/* Title: 'Storage unit sizes' */}
         <div className="text-center mb-10">
           <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
-            Storage unit sizes
+            What can fit in a 5x10 or 10x10 storage unit?
             {/* Orange underline for the title */}
             <span className="absolute left-1/2 transform -translate-x-1/2 bottom-1 w-12 h-1 bg-orange-500 rounded-full"></span>
           </h2>
+          <p className="mx-auto max-w-3xl text-base leading-7 text-[#475569] md:text-lg">
+            Use the visual guide below to estimate what fits in the most common storage sizes, from compact box storage
+            to roomier units for furniture, inventory, and 2-bedroom home overflow.
+          </p>
         </div>
 
         {/* Main Content Area: Flex container for the two-column layout */}

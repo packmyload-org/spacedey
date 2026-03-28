@@ -207,15 +207,20 @@ export default async function CityLocationPage({
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="rounded-[32px] border border-[#D8E2FF] bg-white p-7 shadow-sm md:p-8">
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">Storage guide</p>
-            <h2 className="mt-3 text-3xl font-black text-[#0F172A]">What to know before you book in {city.name}</h2>
+            <h2 className="mt-3 text-3xl font-black text-[#0F172A]">What to know before you book storage in {city.name}</h2>
             <div className="mt-6 space-y-4 text-sm leading-7 text-[#475569] md:text-base">
               <p>
                 Start by checking how much access you need, how long you plan to store, and the kind of items you are moving in.
                 That usually makes it easier to narrow down the right facility and unit format.
               </p>
               <p>
-                For most customers in {city.name}, the best choice comes down to location convenience, available space,
-                and whether the site is a better fit for personal items, moving support, or business inventory.
+                For most customers in {city.name}, the best choice comes down to location convenience, visible monthly
+                pricing, available space, and whether the site is a better fit for personal items, moving support, or
+                business inventory.
+              </p>
+              <p>
+                If you are comparing which storage is safest or which option is the best value, start with facilities
+                that clearly show current availability, practical size options, and pricing from {formatPriceFromAmount(city.minMonthlyPrice)}.
               </p>
             </div>
           </div>

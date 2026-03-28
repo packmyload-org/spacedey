@@ -78,9 +78,15 @@ const ComparisonSizes = () => {
       {/* Content */}
       <div className="relative z-10">
         {/* Title */}
-        <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
-          Compare sizes before you rent
-        </h2>
+        <div className="mx-auto mb-6 max-w-3xl text-center lg:mb-12">
+          <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
+            Most popular self-storage sizes in Nigeria
+          </h2>
+          <p className="text-base leading-7 text-[#475569] md:text-lg">
+            5 x 10 and 10 x 10 units are common starting points because they suit moving, personal storage, and small
+            business overflow. Use this table to compare the sizes people ask about most before renting.
+          </p>
+        </div>
 
         {/* Divider */}
         <div className="flex justify-center mb-6 lg:mb-12">
