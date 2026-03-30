@@ -1,209 +1,133 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
-import { useSitesData } from "@/contexts/SitesContext";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import FadeIn from "@/components/ui/FadeIn";
-import { getAvailableCities } from "@/lib/utils/cities";
-import { toLocationSlug } from '@/lib/utils/locationSeo';
-import { getLocationDetails } from "@/lib/utils/sampleLocations";
-import { getSiteCity } from "@/lib/utils/siteLocations";
+import { toLocationSlug } from "@/lib/utils/locationSeo";
 
-type Location = {
+type FeaturedLocation = {
   city: string;
   image: string;
 };
 
-const DEFAULT_IMAGE = "/images/Lagos.jpg";
+const FEATURED_LOCATIONS: FeaturedLocation[] = [
+  { city: "Lagos", image: "/images/Lagos.jpg" },
+  { city: "Abuja", image: "/images/Abuja.jpeg" },
+  { city: "Kano", image: "/images/Kano.png" },
+  { city: "Ibadan", image: "/images/Ibadan.jpg" },
+];
 
-function buildKnownLocations(): Location[] {
-  return getAvailableCities().map(({ name }) => ({
-    city: name,
-    image: getLocationDetails(name).image || DEFAULT_IMAGE,
-  }));
+function getVisibleSlides(width: number) {
+  if (width < 768) {
+    return 1;
+  }
+
+  if (width < 1200) {
+    return 2;
+  }
+
+  return 3;
 }
 
 export default function FeatureList() {
-  const router = useRouter();
-  const { sites, isLoading: isSitesLoading } = useSitesData();
   const [visibleSlides, setVisibleSlides] = useState(3);
-  const [currentIndex, setCurrentIndex] = useState(3);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
-  const [transitionDisabled, setTransitionDisabled] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const locations = useMemo(() => {
-    if (sites.length === 0) {
-      return buildKnownLocations();
-    }
-
-    const uniqueCities = new Map<string, string>();
-
-    sites.forEach((site) => {
-      const city = getSiteCity(site);
-
-      if (!city || uniqueCities.has(city)) {
-        return;
-      }
-
-      uniqueCities.set(city, site.image || getLocationDetails(city).image || DEFAULT_IMAGE);
-    });
-
-    buildKnownLocations().forEach(({ city, image }) => {
-      if (!uniqueCities.has(city)) {
-        uniqueCities.set(city, image);
-      }
-    });
-
-    return Array.from(uniqueCities.entries()).map(([city, image]) => ({ city, image }));
-  }, [sites]);
-  const loading = isSitesLoading && sites.length === 0;
-
-  // 2. Responsive slides
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
-      if (width < 768) setVisibleSlides(1);
-      else if (width < 1024) setVisibleSlides(2);
-      else setVisibleSlides(3);
+      setVisibleSlides(getVisibleSlides(window.innerWidth));
     };
+
     handleResize();
     window.addEventListener("resize", handleResize);
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // 3. Carousel logic helpers
-  const realLength = locations.length;
-  const cloneCount = Math.min(3, realLength);
-  const safeCurrentIndex = realLength === 0
-    ? 0
-    : Math.min(Math.max(currentIndex, cloneCount), cloneCount + realLength - 1);
-
-  const extendedSlides = useMemo(() => {
-    if (realLength === 0) return [];
-    return [
-      ...locations.slice(-cloneCount),
-      ...locations,
-      ...locations.slice(0, cloneCount),
-    ];
-  }, [locations, cloneCount, realLength]);
-
-  const startIndex = cloneCount;
-
-  const nextSlide = useCallback(() => {
-    setCurrentIndex((prev) => prev + 1);
-  }, []);
-
-  const prevSlide = useCallback(() => {
-    setCurrentIndex((prev) => prev - 1);
-  }, []);
-
-  const goToSlide = useCallback((idx: number) => {
-    setCurrentIndex(startIndex + idx);
-  }, [startIndex]);
-
-  const normalizedIndex = realLength > 0
-    ? ((safeCurrentIndex - startIndex) % realLength + realLength) % realLength
-    : 0;
-
-  // 4. Autoplay and Keyboard
-  useEffect(() => {
-    const interval = isAutoPlay && realLength > 0
-      ? setInterval(nextSlide, 4000)
-      : null;
-    return () => { if (interval) clearInterval(interval); };
-  }, [isAutoPlay, realLength, nextSlide]);
+  const maxIndex = Math.max(0, FEATURED_LOCATIONS.length - visibleSlides);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight") nextSlide();
-      if (e.key === "ArrowLeft") prevSlide();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [nextSlide, prevSlide]);
+    setCurrentIndex((previousIndex) => Math.min(previousIndex, maxIndex));
+  }, [maxIndex]);
 
-  const handleTransitionEnd = () => {
-    if (safeCurrentIndex >= startIndex + realLength) {
-      setTransitionDisabled(true);
-      setCurrentIndex(safeCurrentIndex - realLength);
-      setTimeout(() => setTransitionDisabled(false), 20);
-    } else if (safeCurrentIndex < startIndex) {
-      setTransitionDisabled(true);
-      setCurrentIndex(safeCurrentIndex + realLength);
-      setTimeout(() => setTransitionDisabled(false), 20);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="py-20 flex justify-center items-center">
-        <Loader className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  const translatePercentage = currentIndex * (100 / visibleSlides);
 
   return (
-    <section
-      className="py-12 px-4 bg-white"
-      onMouseEnter={() => setIsAutoPlay(false)}
-      onMouseLeave={() => setIsAutoPlay(true)}
-    >
-      <div className="max-w-7xl mx-auto">
-        <FadeIn direction="up" className="text-center mb-12">
-          <Link href="/locations">
-            <button className="text-xl font-bold text-[#1642F0] hover:bg-blue-50 px-6 py-3 rounded-full transition-colors">
+    <section className="bg-white px-4 py-14 sm:py-16">
+      <div className="mx-auto max-w-7xl">
+        <div className="relative text-[#1642F0] hover:text-[#0F2FB4]">
+          <FadeIn direction="up" className="text-center">
+            <Link
+              href="/locations"
+              className="inline-flex items-center justify-center px-6 py-3 text-xl font-black  transition-colors "
+            >
               Explore All Locations
-            </button>
-          </Link>
-          <div className="w-16 h-1 bg-[#D96541] mx-auto mt-4" />
-        </FadeIn>
+            </Link>
+            <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-[#D96541]" />
+          </FadeIn>
 
-        <div className="relative overflow-hidden">
-          <div
-            className={`flex ${transitionDisabled ? "" : "transition-transform duration-500 ease-in-out"}`}
-            style={{ transform: `translateX(-${(safeCurrentIndex * 100) / visibleSlides}%)` }}
-            onTransitionEnd={handleTransitionEnd}
-          >
-            {extendedSlides.map((loc, idx) => (
-              <div key={idx} className="w-full sm:w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:border-blue-200 transition-all">
-                  <div className="relative h-48 sm:h-56">
-                    <Image src={loc.image} alt={loc.city} fill className="object-cover" />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-blue-900 mb-4">Storage in {loc.city}</h3>
-                    <button
-                      onClick={() => router.push(`/locations/city/${toLocationSlug(loc.city)}`)}
-                      className="w-full py-3 border-2 border-blue-600 text-blue-600 rounded-full font-bold hover:bg-blue-600 hover:text-white transition-all"
-                    >
-                      View All Facilities
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="mt-6 flex justify-center gap-3 md:absolute md:right-0 md:top-1/2 md:mt-0 md:-translate-y-1/2">
+            <button
+              type="button"
+              onClick={() => setCurrentIndex((value) => Math.max(0, value - 1))}
+              disabled={currentIndex === 0}
+              aria-label="Show previous locations"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-[#E6EAF5] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.10)] transition hover:-translate-y-0.5 text-[#1642F0] disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentIndex((value) => Math.min(maxIndex, value + 1))}
+              disabled={currentIndex >= maxIndex}
+              aria-label="Show next locations"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-[#E6EAF5] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.10)] transition hover:-translate-y-0.5 text-[#1642F0] disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
           </div>
         </div>
 
-        <div className="flex justify-center items-center gap-4 mt-10">
-          <button onClick={prevSlide} className="p-3 rounded-full border border-gray-200 shadow-md hover:bg-gray-50 transition-colors">
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
-          <div className="flex gap-2">
-            {locations.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => goToSlide(idx)}
-                className={`h-2.5 rounded-full transition-all ${normalizedIndex === idx ? "bg-blue-600 w-8" : "bg-gray-200 w-2.5"}`}
-              />
+        <div className="mt-12 overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${translatePercentage}%)` }}
+          >
+            {FEATURED_LOCATIONS.map((location) => (
+              <article
+                key={location.city}
+                style={{ width: `${100 / visibleSlides}%` }}
+                className="shrink-0 px-3"
+              >
+                <div className="flex h-full flex-col rounded-[30px] border border-[#EFF3FB] bg-white p-5 shadow-[0_20px_50px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_60px_rgba(15,23,42,0.12)]">
+                  <div className="relative h-48 overflow-hidden rounded-[22px] sm:h-52">
+                    <Image
+                      src={location.image}
+                      alt={`Storage in ${location.city}`}
+                      fill
+                      sizes="(max-width: 767px) 100vw, (max-width: 1199px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="flex flex-1 flex-col pt-5 hover:text-white text-[#355EFA]">
+                    <h4 className="text-xl font-bold tracking-[-0.01em] text-[#16316B]">
+                      Storage in {location.city}
+                    </h4>
+
+                    <Link
+                      href={`/search?city=${toLocationSlug(location.city)}`}
+                      className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-[#5B7BFF] px-6 py-3 text-base font-bold  transition hover:bg-[#355EFA]"
+                    >  
+                    View All Facilities
+                    </Link>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
-          <button onClick={nextSlide} className="p-3 rounded-full border border-gray-200 shadow-md hover:bg-gray-50 transition-colors">
-            <ChevronRight className="w-6 h-6 text-gray-600" />
-          </button>
         </div>
       </div>
     </section>
