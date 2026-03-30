@@ -57,8 +57,8 @@ export default function FeatureList() {
   return (
     <section className="bg-white px-4 py-14 sm:py-16">
       <div className="mx-auto max-w-7xl">
-        <div className="relative ">
-          <FadeIn direction="up" className="text-center ">
+        <div className="relative text-[#1642F0] hover:text-[#0F2FB4]">
+          <FadeIn direction="up" className="text-center">
             <Link
               href="/locations"
               className="inline-flex items-center justify-center px-6 py-3 text-xl font-black  transition-colors "
