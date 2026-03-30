@@ -6,6 +6,7 @@ import { PaymentProvider } from '@/lib/db/entities/Payment';
 import { UserRole } from '@/lib/types/roles';
 import type { PaymentMethodsResponse, PaymentMethodStatus } from '@/lib/types/local';
 import { Loader, Users, MapPin, Box, FileText, TrendingUp } from 'lucide-react';
+import Loading from './loading';
 
 interface DashboardUser {
   role: UserRole;
@@ -111,13 +112,8 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <Loading />;
+  
 
   const statCards = [
     { name: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-100' },

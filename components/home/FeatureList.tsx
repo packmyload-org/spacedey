@@ -59,7 +59,6 @@ export default function FeatureList() {
 
     return Array.from(uniqueCities.entries()).map(([city, image]) => ({ city, image }));
   }, [sites]);
-  const loading = isSitesLoading && sites.length === 0;
 
   // 2. Responsive slides
   useEffect(() => {
@@ -137,13 +136,6 @@ export default function FeatureList() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="py-20 flex justify-center items-center">
-        <Loader className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
 
   return (
     <section
