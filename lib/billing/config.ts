@@ -1,8 +1,16 @@
+import {
+  DEFAULT_RECURRING_DURATION_MONTHS,
+  MAX_RECURRING_DURATION_MONTHS,
+  MIN_RECURRING_DURATION_MONTHS,
+} from '@/lib/types/constants';
+
 export type BillingType = "one_time" | "recurring";
 
-export const MIN_RECURRING_DURATION_MONTHS = 2;
-export const MAX_RECURRING_DURATION_MONTHS = 24;
-export const DEFAULT_RECURRING_DURATION_MONTHS = 6;
+export {
+  DEFAULT_RECURRING_DURATION_MONTHS,
+  MAX_RECURRING_DURATION_MONTHS,
+  MIN_RECURRING_DURATION_MONTHS,
+};
 
 export function normalizeRecurringDurationMonths(value: unknown): number | null {
   const normalizedValue = Number(value);

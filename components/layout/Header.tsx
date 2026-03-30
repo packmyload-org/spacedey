@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
+import { DEFAULT_SUPPORT_PHONE } from "@/lib/types/constants";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useStorageCart } from "@/contexts/StorageCartContext";
 import {
@@ -143,7 +144,7 @@ export default function Header() {
             <Link href="/referral" className={navLinkClass}>
               Refer a Friend
             </Link>
-            <a href="tel:09166680777" className={navLinkClass}>
+            <a href={`tel:${DEFAULT_SUPPORT_PHONE}`} className={navLinkClass}>
               Call Us
             </a>
           </nav>
@@ -354,11 +355,11 @@ export default function Header() {
           {/* Call Us & Actions */}
           <div className="mt-auto space-y-4">
             <a
-              href="tel:09166680777"
+              href={`tel:${DEFAULT_SUPPORT_PHONE}`}
               className="flex items-center justify-center gap-3 w-full py-4 px-6 rounded-2xl bg-[#F0F4FF] text-[#1642F0] font-bold border border-[#DCE4FF] hover:bg-[#1642F0] hover:text-white active:bg-[#1642F0] active:text-white focus:bg-[#1642F0] focus:text-white transition-all"
             >
               <Phone className="w-5 h-5" />
-              <span>Call Us: 09166680777</span>
+              <span>Call Us: {DEFAULT_SUPPORT_PHONE}</span>
             </a>
 
             <PrimaryButton

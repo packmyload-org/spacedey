@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import NewsletterSubscriber from '@/lib/db/entities/NewsletterSubscriber';
 import { sendNewsletterWelcomeEmail } from '@/lib/email/resend';
+import { EMAIL_PATTERN } from '@/lib/types/constants';
 import { normalizeEmail } from '@/lib/utils/email';
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: Request) {
   try {

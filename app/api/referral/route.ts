@@ -4,9 +4,8 @@ import { connectTypeORM } from '@/lib/db';
 import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
 import { verifyToken } from '@/lib/auth/jwt';
 import { initializeReferralConversation } from '@/lib/services/referralConversationService';
+import { EMAIL_PATTERN } from '@/lib/types/constants';
 import { normalizeEmail } from '@/lib/utils/email';
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type ReferralRequest = {
   firstName?: string;

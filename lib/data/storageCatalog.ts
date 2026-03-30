@@ -1,5 +1,6 @@
 import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
+import { DEFAULT_SUPPORT_EMAIL } from '@/lib/types/constants';
 
 export interface SeedUnitType {
   name: string;
@@ -29,7 +30,7 @@ export interface SeedSite {
 }
 
 const DEFAULT_CONTACT_PHONE = '+234123456789';
-const DEFAULT_CONTACT_EMAIL = 'info@mailing.spacedey.com';
+const DEFAULT_CONTACT_EMAIL = DEFAULT_SUPPORT_EMAIL;
 const DEFAULT_MEASURING_UNIT = 'ft';
 const DEFAULT_AVAILABLE_COUNT = 5;
 

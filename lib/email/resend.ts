@@ -1,11 +1,12 @@
 import { Resend } from 'resend';
 import { generateActionToken } from '@/lib/auth/actionTokens';
 import { PaymentBillingType } from '@/lib/db/entities/Payment';
+import { DEFAULT_SUPPORT_EMAIL } from '@/lib/types/constants';
 import { resolveAppUrl } from '@/lib/utils/appUrl';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'Spacedey <onboarding@resend.dev>';
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@mailing.spacedey.com';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
 
 const RESEND_TEMPLATE_IDS = {
   signupVerification: 'email_verification',

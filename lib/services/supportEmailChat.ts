@@ -4,11 +4,16 @@ import { connectTypeORM } from '@/lib/db';
 import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
 import SupportConversation from '@/lib/db/entities/SupportConversation';
 import { createConfiguredResendAdapter, createResendThread } from '@/lib/services/emailChatConfig';
+import {
+  DEFAULT_SUPPORT_EMAIL,
+  DEFAULT_SUPPORT_HOURS,
+  DEFAULT_SUPPORT_PHONE,
+} from '@/lib/types/constants';
 
 const DEFAULT_FROM_NAME = 'Spacedey Support';
-const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'info@mailing.spacedey.com';
-const SUPPORT_PHONE = process.env.SUPPORT_PHONE || '09166680777';
-const SUPPORT_HOURS = process.env.SUPPORT_HOURS || 'Monday to Friday, 9am to 6pm';
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || DEFAULT_SUPPORT_EMAIL;
+const SUPPORT_PHONE = process.env.SUPPORT_PHONE || DEFAULT_SUPPORT_PHONE;
+const SUPPORT_HOURS = process.env.SUPPORT_HOURS || DEFAULT_SUPPORT_HOURS;
 
 let supportEmailChat: Chat | null = null;
 let supportResendAdapter: ReturnType<typeof createConfiguredResendAdapter> | null = null;

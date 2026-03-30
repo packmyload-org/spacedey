@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { startSupportConversation } from '@/lib/services/supportConversationService';
+import { EMAIL_PATTERN } from '@/lib/types/constants';
 import { normalizeEmail } from '@/lib/utils/email';
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type SupportConversationRequest = {
   firstName?: string;
