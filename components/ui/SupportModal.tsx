@@ -217,9 +217,6 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
             onSendMessage={handleSendReply}
             isSending={isSendingReply}
             className="flex-1"
-            showHeader={false}
-            emptyLabel="In-app support thread"
-            helperText="Reply here with any extra detail, screenshots, booking email, location, or invoice number."
           />
         ) : (
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto bg-[#F7F9FF] px-4 py-4 sm:px-5">

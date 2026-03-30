@@ -4,6 +4,8 @@ import Site from '@/lib/db/entities/Site';
 import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
 import { getSiteUrl } from '@/lib/seo';
+import { ChangeFrequency } from '@/lib/enums/changeFrequency';
+import { SitemapPriority } from '@/lib/enums/sitemapPriority';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
@@ -56,8 +58,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     locationRoutes = sites.map((site) => ({
       url: `${siteUrl}/locations/${site.id}`,
       lastModified: site.updatedAt,
-      changeFrequency: 'weekly' as const,
-      priority: 0.85,
+      changeFrequency: ChangeFrequency.WEEKLY,
+      priority: SitemapPriority.LOCATION,
     }));
   } catch (error) {
     console.error('Failed to build location sitemap entries', error);
@@ -66,26 +68,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes.map((route) => ({
       url: `${siteUrl}${route}`,
-      changeFrequency: route === '' ? 'daily' as const : 'weekly' as const,
-      priority: route === '' ? 1 : 0.8,
+      changeFrequency: route === '' ? ChangeFrequency.DAILY : ChangeFrequency.WEEKLY,
+      priority: route === '' ? SitemapPriority.HOME : SitemapPriority.STATIC,
     })),
     ...blogPosts.map((post) => ({
       url: `${siteUrl}/blog/${post.slug}`,
       lastModified: post.updatedAt,
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
+      changeFrequency: ChangeFrequency.MONTHLY,
+      priority: SitemapPriority.BLOG_POST,
     })),
     ...cityPages.map((city) => ({
       url: `${siteUrl}/locations/city/${city.slug}`,
       lastModified: city.sites[0]?.updatedAt,
-      changeFrequency: 'weekly' as const,
-      priority: 0.86,
+      changeFrequency: ChangeFrequency.WEEKLY,
+      priority: SitemapPriority.CITY_LOCATION,
     })),
     ...statePages.map((state) => ({
       url: `${siteUrl}/locations/state/${state.slug}`,
       lastModified: state.sites[0]?.updatedAt,
-      changeFrequency: 'weekly' as const,
-      priority: 0.82,
+      changeFrequency: ChangeFrequency.WEEKLY,
+      priority: SitemapPriority.STATE_LOCATION,
     })),
     ...locationRoutes,
   ];

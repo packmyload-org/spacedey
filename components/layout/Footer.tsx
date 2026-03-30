@@ -6,8 +6,7 @@ import Image from "next/image";
 import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
 import SupportModal from "@/components/ui/SupportModal";
 import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
-
-const SUPPORT_EMAIL = "info@mailing.spacedey.com";
+import { DEFAULT_SUPPORT_EMAIL, DEFAULT_SUPPORT_PHONE } from "@/lib/types/constants";
 
 export default function Footer() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
@@ -53,8 +52,8 @@ export default function Footer() {
             <h3 className="uppercase font-bold text-sm mb-3 text-white">
               Reach Out To Us
             </h3>
-            <p className="mb-2 text-white">09166680777</p>
-            <p className="mb-4 text-white">{SUPPORT_EMAIL}</p>
+            <p className="mb-2 text-white">{DEFAULT_SUPPORT_PHONE}</p>
+            <p className="mb-4 text-white">{DEFAULT_SUPPORT_EMAIL}</p>
             <div className="w-12 h-[2px] bg-[#e65c3a] mb-6"></div>
             <div className="flex gap-4 text-white">
               <a

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { ConversationMessage } from "@/lib/conversations/messages";
 
@@ -9,10 +9,6 @@ interface SpaceyConversationPanelProps {
   onSendMessage: (message: string) => Promise<void>;
   isSending: boolean;
   className?: string;
-  showHeader?: boolean;
-  title?: string;
-  emptyLabel?: string;
-  helperText?: string;
 }
 
 export default function SpaceyConversationPanel({
@@ -20,10 +16,6 @@ export default function SpaceyConversationPanel({
   onSendMessage,
   isSending,
   className,
-  showHeader = true,
-  title = "Spacey",
-  emptyLabel = "Continue the conversation with Spacey",
-  helperText = "Replies stay in this chat thread.",
 }: SpaceyConversationPanelProps) {
   const [draft, setDraft] = useState("");
 
@@ -45,6 +37,7 @@ export default function SpaceyConversationPanel({
     }
 
     setDraft("");
+
     try {
       await onSendMessage(trimmed);
     } catch {
@@ -55,39 +48,33 @@ export default function SpaceyConversationPanel({
   return (
     <div className={className}>
       <div className="flex min-h-[320px] flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        {showHeader ? (
-          <div className="flex items-center gap-3 border-b border-slate-200 bg-slate-950 px-4 py-4 text-white sm:px-5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white">
-              <Bot className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">{title}</p>
-              <p className="text-xs text-slate-300">{emptyLabel}</p>
-            </div>
-          </div>
-        ) : null}
-
         <div className="flex-1 space-y-3 overflow-y-auto bg-slate-100 px-4 py-4 sm:px-5">
-          {sortedMessages.map((message) => {
-            const isAssistant = message.role === "assistant";
+          {sortedMessages.length > 0 ? (
+            sortedMessages.map((message) => {
+              const isAssistant = message.role === "assistant";
 
-            return (
-              <div
-                key={message.id}
-                className={isAssistant ? "max-w-[88%]" : "ml-auto max-w-[88%]"}
-              >
+              return (
                 <div
-                  className={`rounded-3xl px-4 py-3 text-sm leading-6 shadow-sm whitespace-pre-wrap ${
-                    isAssistant
-                      ? "rounded-bl-md bg-white text-slate-800"
-                      : "rounded-br-md bg-blue-600 text-white"
-                  }`}
+                  key={message.id}
+                  className={isAssistant ? "max-w-[88%]" : "ml-auto max-w-[88%]"}
                 >
-                  {message.content}
+                  <div
+                    className={`whitespace-pre-wrap rounded-3xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                      isAssistant
+                        ? "rounded-bl-md bg-white text-slate-800"
+                        : "rounded-br-md bg-blue-600 text-white"
+                    }`}
+                  >
+                    {message.content}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-white/70 px-4 py-5 text-sm text-slate-500">
+              Continue the conversation with Spacey.
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="border-t border-slate-200 bg-white px-4 py-4 sm:px-5">
@@ -99,8 +86,10 @@ export default function SpaceyConversationPanel({
               placeholder="Reply to Spacey..."
               className="min-h-[84px] w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400"
             />
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-[#DFE8FF] pt-3">
-              <p className="text-[11px] font-medium text-slate-500">{helperText}</p>
+            <div className="mt-3 flex w-full items-center justify-between gap-3 border-t border-[#DFE8FF] pt-3">
+              <p className="text-[11px] font-medium text-slate-500">
+                Replies stay in this chat thread.
+              </p>
               <button
                 type="submit"
                 disabled={isSending || draft.trim().length === 0}

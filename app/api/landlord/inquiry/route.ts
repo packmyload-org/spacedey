@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import { connectTypeORM } from '@/lib/db';
 import LandlordInquiry from '@/lib/db/entities/LandlordInquiry';
 import { initializeLandlordConversation } from '@/lib/services/landlordConversationService';
+import { EMAIL_PATTERN } from '@/lib/types/constants';
 import { normalizeEmail } from '@/lib/utils/email';
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type LandlordInquiryRequest = {
   firstName?: string;
