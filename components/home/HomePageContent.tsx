@@ -8,22 +8,20 @@ import FinalCtaBlock from "@/components/ui/FinalCtaBlock";
 import NotAverageStorage from "@/components/ui/NotAverageStorage";
 import CitiesStatesNav from "@/components/home/CitiesStatesNav";
 import FeatureList from "@/components/home/FeatureList";
-import HomeSeoSection from "@/components/home/HomeSeoSection";
 
 export default function HomePageContent() {
   return (
-    <>
+    <main>
       <Header />
-      <main>
+      <>
         <HeroSection />
         <FeatureList />
-        <HomeSeoSection />
         <FinalCtaBlock />
         <WhyStoreWithUs />
         <NotAverageStorage />
         <CitiesStatesNav />
-      </main>
+      </>
       <Footer />
-    </>
+    </main>
   );
 }

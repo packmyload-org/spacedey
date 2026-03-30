@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/useAuthStore';
-import SpaceyConversationPanel from '@/components/chat/SpaceyConversationPanel';
 import type { ConversationMessage } from '@/lib/conversations/messages';
+import { useUserConversationStore } from '@/lib/store/useUserConversationStore';
 import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 
 interface FormData {
@@ -34,6 +34,8 @@ const LOCATIONS = [
 
 export default function ReferralHero() {
   const { isAuthenticated, user } = useAuthStore();
+  const openUserConversation = useUserConversationStore((state) => state.openPanel);
+  const resetUserConversation = useUserConversationStore((state) => state.resetPanel);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
@@ -79,6 +81,33 @@ export default function ReferralHero() {
     }
   }, [hasPopulatedYourInfo]);
 
+  useEffect(() => {
+    if (!conversationId) {
+      return;
+    }
+
+    openUserConversation({
+      emptyLabel: 'Referral follow-up',
+      helperText:
+        'Share the best time to contact them, what storage need they mentioned, or any move-in timing.',
+      statusMessage:
+        'Your referral is logged. Keep chatting with Spacey here if there is any timing, urgency, or extra context we should attach to it.',
+      messages: conversationMessages,
+      isSending: isSendingFollowUp,
+      onSendMessage: handleSendFollowUp,
+    });
+  }, [
+    conversationId,
+    conversationMessages,
+    isSendingFollowUp,
+    openUserConversation,
+    handleSendFollowUp,
+  ]);
+
+  useEffect(() => () => {
+    resetUserConversation();
+  }, [resetUserConversation]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -122,7 +151,7 @@ export default function ReferralHero() {
     }
   };
 
-  const handleSendFollowUp = async (message: string) => {
+  async function handleSendFollowUp(message: string) {
     if (!conversationId) {
       return;
     }
@@ -153,7 +182,7 @@ export default function ReferralHero() {
     } finally {
       setIsSendingFollowUp(false);
     }
-  };
+  }
 
   return (
     <section className="bg-[#1642F0] px-4 py-16 sm:px-5 lg:px-24 lg:pb-16 lg:pt-20">
@@ -173,16 +202,35 @@ export default function ReferralHero() {
             {/* Form */}
             {conversationId ? (
               <div className="space-y-4 rounded-b-[28px] bg-white p-4 sm:p-5">
-                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                  Your referral is logged. Keep chatting with Spacey here if there is any timing, urgency, or extra context we should attach to it.
+                <div className="rounded-[24px] border border-blue-100 bg-blue-50 px-5 py-5 text-sm text-blue-900">
+                  <p className="text-base font-bold">Referral submitted</p>
+                  <p className="mt-2 leading-6 text-blue-800">
+                    Spacey moved this thread into the shared chat panel for user pages. Use the panel on this page to add timing, urgency, or any other follow-up context.
+                  </p>
                 </div>
-                <SpaceyConversationPanel
-                  messages={conversationMessages}
-                  onSendMessage={handleSendFollowUp}
-                  isSending={isSendingFollowUp}
-                  emptyLabel="Referral follow-up"
-                  helperText="Share the best time to contact them, what storage need they mentioned, or any move-in timing."
-                />
+                {error ? (
+                  <div className="rounded-lg border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                    {error}
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() =>
+                    openUserConversation({
+                      emptyLabel: 'Referral follow-up',
+                      helperText:
+                        'Share the best time to contact them, what storage need they mentioned, or any move-in timing.',
+                      statusMessage:
+                        'Your referral is logged. Keep chatting with Spacey here if there is any timing, urgency, or extra context we should attach to it.',
+                      messages: conversationMessages,
+                      isSending: isSendingFollowUp,
+                      onSendMessage: handleSendFollowUp,
+                    })
+                  }
+                  className="inline-flex rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Open Spacey chat
+                </button>
               </div>
             ) : (
             <form onSubmit={handleSubmit} className="space-y-5 rounded-b-[28px] bg-white p-4 sm:p-5">
