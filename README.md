@@ -1,4 +1,4 @@
-# Spacedey 🗃️
+# Spacedey
 
 > **Find, compare, and book storage units across Nigeria — simple, fast, and secure.**
 
@@ -220,18 +220,6 @@ spacedey/
 - All admin routes verify role server-side
 - Admins cannot delete their own account
 - `.env.local` is gitignored — never commit secrets
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Email verification for new accounts
-- [ ] Two-factor authentication (2FA)
-- [ ] Password reset email flow
-- [ ] User activity logging & audit trail
-- [ ] Role-based permission customization
-- [ ] User groups / organizations
-- [ ] Email notifications
 
 ---
 
