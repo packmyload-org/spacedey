@@ -1,4 +1,8 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+@source "../app";
+@source "../components";
+@source "../contexts";
+@source "../lib";
 
 :root {
   --background: #111827;
