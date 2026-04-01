@@ -39,12 +39,7 @@ const pooledDatabaseUrl = process.env.DATABASE_URL;
 const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
 
 const useDirectUrl = process.env.DB_USE_DIRECT_URL === 'true';
-const shouldUseDirectUrl = useDirectUrl
-  || (isBuildProcess && Boolean(directDatabaseUrl));
-const runtimePoolMax = isProduction ? 2 : 10;
-const buildPoolMax = 1;
-const selectedDatabaseUrl = shouldUseDirectUrl
-  ? directDatabaseUrl || pooledDatabaseUrl
+const selectedDatabaseUrl = useDirectUrl ? directDatabaseUrl || pooledDatabaseUrl
   : pooledDatabaseUrl || directDatabaseUrl;
 
 const defaultSsl = selectedDatabaseUrl
@@ -62,8 +57,8 @@ export const env = {
     url: selectedDatabaseUrl,
     pooledUrl: pooledDatabaseUrl,
     directUrl: directDatabaseUrl,
-    useDirectUrl: shouldUseDirectUrl,
-    poolMax: isBuildProcess ? buildPoolMax : runtimePoolMax,
+    useDirectUrl,
+    poolMax: readNumber(process.env.DB_POOL_MAX, isProduction ? 2 : 10),
     ssl: readBoolean(process.env.DB_SSL, defaultSsl),
     sslRejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
     synchronize: readBoolean(process.env.DB_SYNCHRONIZE, false),

@@ -63,7 +63,7 @@ export default function HeroSection({ states }: Readonly<HeroSectionProps>) {
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-4 pb-12">
-        <div className="mx-auto w-full max-w-6xl text-center">
+        <div className="mx-auto w-full max-w-7xl text-center">
           <h1 className="mt-2 mb-8 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-6xl">
             Self-Storage In Your Neighborhood
           </h1>
@@ -74,16 +74,16 @@ export default function HeroSection({ states }: Readonly<HeroSectionProps>) {
 
           <HeroSearch states={states} />
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-1 px-2 sm:gap-2">
-            {HERO_GALLERY.map((image) => (
+          <div className="mt-6 w-full flex flex-wrap items-center justify-center gap-1 px-2 sm:gap-2">
+            {HERO_GALLERY.map((image, i) => (
               <div
-                key={image.src}
+                key={image.src + i}
                 className="min-w-0 flex-1 basis-[22%] sm:w-[300px] sm:flex-none"
               >
                 <Image
                   src={image.src}
                   alt={image.alt}
-                  width={300}
+                  width={250}
                   height={340}
                   quality={60}
                   sizes="(max-width: 639px) 23vw, 300px"

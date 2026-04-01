@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.app.url),
   applicationName: SITE_NAME,
   title: {
-    default: `${SITE_NAME} | Self Storage in Nigeria`,
+    default: `Affordable Secure Self Storage in Nigeria | ${SITE_NAME} `,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
