@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: 'standalone',
   serverExternalPackages: ['pg', 'typeorm', 'reflect-metadata'],
+  experimental: {
+    // Keep build-time static generation within the current database connection ceiling.
+    cpus: 1,
+  },
 
   allowedDevOrigins: ['localhost', '127.0.0.1', '::1'],
   /* config options here */

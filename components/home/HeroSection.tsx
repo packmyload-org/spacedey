@@ -1,168 +1,99 @@
-import React, { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { useSitesData } from "@/contexts/SitesContext";
-import PrimaryButton from "../ui/PrimaryButton";
-import InputSearch from "../ui/InputSearch";
-import { getUniqueSiteStates, resolveStateFromQuery } from "@/lib/utils/siteLocations";
+import HeroSearch from "@/components/home/HeroSearch";
 
-function HeroSection() {
-  const router = useRouter();
-  const { sites, isLoading: isSitesLoading } = useSitesData();
-  const [query, setQuery] = useState("");
-  const [activeState, setActiveState] = useState("");
-  const states = React.useMemo(() => {
-    const nextStates = getUniqueSiteStates(sites);
-    return nextStates.length > 0 ? nextStates : [];
-  }, [sites]);
-  const loadingStates = isSitesLoading && sites.length === 0;
+const TRUSTED_USERS = [
+  { src: "/images/Ellipse1.png", className: "bg-amber-200" },
+  { src: "/images/Ellipse2.png", className: "bg-rose-200" },
+  { src: "/images/Ellipse3.png", className: "bg-blue-200" },
+  { src: "/images/Ellipse4.png", className: "hidden sm:block bg-green-200" },
+];
 
-  const handleStateClick = (state: string) => {
-    setActiveState(state);
-    setQuery(state);
-  };
+const HERO_GALLERY = [
+  {
+    src: "/images/hero2.jpg",
+    alt: "Secure self storage facility available through Spacedey",
+  },
+  {
+    src: "/images/hero3.jpg",
+    alt: "Storage unit interior prepared for move-in",
+  },
+  {
+    src: "/images/hero4.jpg",
+    alt: "Organized storage space for household and business items",
+  },
+  {
+    src: "/images/hero5.jpg",
+    alt: "Spacedey-style self storage imagery for customers in Nigeria",
+  },
+];
 
-  const handleReserve = () => {
-    const resolvedState = resolveStateFromQuery(query || activeState, sites);
+interface HeroSectionProps {
+  states: string[];
+}
 
-    if (resolvedState) {
-      router.push(`/search?state=${encodeURIComponent(resolvedState)}`);
-    }
-  };
-
+export default function HeroSection({ states }: Readonly<HeroSectionProps>) {
   return (
-    <section className="relative min-h-screen flex flex-col bg-[#1642F0] overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full flex justify-center pb-10 pt-24"
-      >
-        <div className="bg-white rounded-xl shadow-lg flex items-center px-3 py-1 sm:px-6 sm:py-2 gap-3 torch-sweep">
+    <section className="relative flex min-h-screen flex-col overflow-hidden bg-[#1642F0]">
+      <div className="w-full px-4 pb-10 pt-24">
+        <div className="mx-auto flex w-fit items-center gap-3 rounded-xl bg-white px-3 py-1 shadow-lg sm:px-6 sm:py-2">
           <div className="flex -ml-1 items-center">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-200 border-2 border-white -ml-2 sm:-ml-3">
-              <Image src="/images/Ellipse1.png" alt="" width={32} height={32} className="rounded-full object-cover" />
-            </div>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-rose-200 border-2 border-white -ml-2 sm:-ml-3">
-              <Image src="/images/Ellipse2.png" alt="" width={32} height={32} className="rounded-full object-cover" />
-            </div>
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-200 border-2 border-white -ml-2 sm:-ml-3">
-              <Image src="/images/Ellipse3.png" alt="" width={32} height={32} className="rounded-full object-cover" />
-            </div>
-            <div className="hidden sm:block w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-green-200 border-2 border-white -ml-2 sm:-ml-3">
-              <Image src="/images/Ellipse4.png" alt="" width={32} height={32} className="rounded-full object-cover" />
-            </div>
-          </div>
-          <p className="text-xs sm:text-sm text-neutral-700">
-            Trusted by thousands of renters across <span className="text-neutral-400">7 cities</span>
-          </p>
-        </div>
-      </motion.div>
-
-      <div className="flex-1 flex flex-col items-center w-full justify-center mb-2 px-4">
-        <div className="max-w-6xl mx-auto text-center items-center w-full">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mt-2 mb-8"
-          >
-            Self-Storage In Your Neighborhood
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="text-base sm:text-xl lg:text-2xl text-white/95 pb-2 mx- mb-6"
-          >
-            No hidden fees. Fast booking. A smarter way to store.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-            className="bg-white rounded-2xl shadow-2xl max-w-none sm:max-w-6xl mx-2 py-4"
-          >
-            <div className="flex flex-wrap justify-center border-b border-neutral-200 gap-2 sm:gap-10 mb-5 px-2 sm:px-0 min-h-[44px] items-center">
-              {loadingStates ? (
-                <div className="flex gap-4 items-center">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-4 w-16 bg-gray-100 animate-pulse rounded"></div>
-                  ))}
-                </div>
-              ) : (
-                states.map((state) => (
-                  <button
-                    key={state}
-                    onClick={() => handleStateClick(state)}
-                    className={`text-sm sm:text-base font-medium transition-colors ${activeState === state
-                      ? "text-neutral-900 border-b-2 border-[#1642F0]"
-                      : "text-neutral-600 hover:text-neutral-900"
-                      }`}
-                  >
-                    {state}
-                  </button>
-                ))
-              )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row py-2 mx-4 gap-3">
-              <InputSearch
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter your state, city, or site"
-                className="flex-1"
-                inputClassName="text-base border-neutral-300 focus:ring-orange-500"
-              />
-              <PrimaryButton
-                onClick={handleReserve}
-                variant="primary"
-                className="bg-[#D96541] hover:bg-[#B85737] text-white px-8 py-4 whitespace-nowrap border-0 rounded-lg focus:ring-orange-500"
+            {TRUSTED_USERS.map((user, index) => (
+              <div
+                key={user.src}
+                className={`-ml-2 h-6 w-6 rounded-full border-2 border-white sm:-ml-3 sm:h-8 sm:w-8 ${user.className} ${
+                  index === 0 ? "ml-0" : ""
+                }`}
               >
-                Reserve now
-              </PrimaryButton>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-            className="mt-6 flex items-center justify-center gap-1 sm:gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto px-2"
-          >
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero2.jpg" alt="Secure self storage facility available through Spacedey" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
-            </div>
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero3.jpg" alt="Storage unit interior prepared for move-in" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
-            </div>
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero4.jpg" alt="Organized storage space for household and business items" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
-            </div>
-            <div className="flex-1 sm:flex-none sm:w-[300px] flex-shrink-0 hover:scale-105 transition-transform duration-300">
-              <Image src="/images/hero5.jpg" alt="Spacedey-style self storage imagery for customers in Nigeria" width={300} height={340} className="w-full h-auto object-cover rounded-md" />
-            </div>
-          </motion.div>
+                <Image
+                  src={user.src}
+                  alt=""
+                  width={32}
+                  height={32}
+                  sizes="32px"
+                  className="rounded-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-neutral-700 sm:text-sm">
+            Trusted by thousands of renters across{" "}
+            <span className="text-neutral-400">7 cities</span>
+          </p>
         </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-8 left-8"
-      >
-        <button className="flex items-center text-white hover:text-white/80 transition-colors gap-2">
-          <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
-            <span className="text-xs font-bold">?</span>
+      <div className="flex flex-1 flex-col items-center justify-center px-4 pb-12">
+        <div className="mx-auto w-full max-w-6xl text-center">
+          <h1 className="mt-2 mb-8 text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-6xl">
+            Self-Storage In Your Neighborhood
+          </h1>
+
+          <p className="mx-auto mb-6 max-w-3xl text-base text-white/95 sm:text-xl lg:text-2xl">
+            No hidden fees. Fast booking. A smarter way to store.
+          </p>
+
+          <HeroSearch states={states} />
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-1 px-2 sm:gap-2">
+            {HERO_GALLERY.map((image) => (
+              <div
+                key={image.src}
+                className="min-w-0 flex-1 basis-[22%] sm:w-[300px] sm:flex-none"
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  width={300}
+                  height={340}
+                  quality={60}
+                  sizes="(max-width: 639px) 23vw, 300px"
+                  className="h-auto w-full rounded-md object-cover"
+                />
+              </div>
+            ))}
           </div>
-        </button>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 }
-
-export default HeroSection;

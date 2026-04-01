@@ -93,6 +93,8 @@ If you are using Supabase, set `DATABASE_URL` and `DIRECT_DATABASE_URL` first.
 
 If you prefer a local database, start a Postgres 15 instance however you normally manage local services, then point `.env.local` at it with `DATABASE_URL` and `DIRECT_DATABASE_URL`.
 
+For production builds that prerender DB-backed pages, keep `DIRECT_DATABASE_URL` available. The app automatically prefers the direct URL during `pnpm build` and uses a fixed pool of `1` so static generation does not exhaust pooled session-mode connections.
+
 ### 5. Run migrations
 
 Create the schema first:

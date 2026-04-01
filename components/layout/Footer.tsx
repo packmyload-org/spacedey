@@ -1,12 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
-import SupportModal from "@/components/ui/SupportModal";
-import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 import { DEFAULT_SUPPORT_EMAIL, DEFAULT_SUPPORT_PHONE } from "@/lib/types/constants";
+
+const SupportModal = dynamic(() => import("@/components/ui/SupportModal"), {
+  loading: () => null,
+  ssr: false,
+});
+
+const ExploreLocationsModal = dynamic(
+  () => import("@/components/locations/ExploreLocationsModal"),
+  {
+    loading: () => null,
+    ssr: false,
+  }
+);
 
 export default function Footer() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
@@ -19,14 +31,18 @@ export default function Footer() {
 
   return (
     <>
-      <SupportModal
-        isOpen={isSupportModalOpen}
-        onClose={() => setIsSupportModalOpen(false)}
-      />
-      <ExploreLocationsModal
-        isOpen={isLocationsModalOpen}
-        onClose={() => setIsLocationsModalOpen(false)}
-      />
+      {isSupportModalOpen ? (
+        <SupportModal
+          isOpen={isSupportModalOpen}
+          onClose={() => setIsSupportModalOpen(false)}
+        />
+      ) : null}
+      {isLocationsModalOpen ? (
+        <ExploreLocationsModal
+          isOpen={isLocationsModalOpen}
+          onClose={() => setIsLocationsModalOpen(false)}
+        />
+      ) : null}
       <footer className="bg-[#0d1d73] text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 flex flex-col md:flex-row items-start sm:justify-center lg:justify-center gap-12">
           <div className="w-full md:w-1/5 text-left">
@@ -44,7 +60,6 @@ export default function Footer() {
                   height={28}
                   style={{ height: 'auto' }}
                   className="rounded-xl"
-                  priority
                 />
               </Link>
             </div>

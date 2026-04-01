@@ -1,25 +1,17 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Link from "next/link";
-import { useSitesData } from '@/contexts/SitesContext';
-import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
-import { getUniqueSiteCities, getUniqueSiteStates } from '@/lib/utils/siteLocations';
+interface CitiesStatesNavProps {
+  cities: string[];
+  states: string[];
+}
 
-const fallbackCities = Object.values(LOCATION_DETAILS).map((detail) => detail.city);
-const fallbackStates = Array.from(new Set(Object.values(LOCATION_DETAILS).map((detail) => detail.state)));
-
-export default function CitiesStatesNav() {
-  const { sites } = useSitesData();
+export default function CitiesStatesNav({
+  cities,
+  states,
+}: Readonly<CitiesStatesNavProps>) {
   const [activeTab, setActiveTab] = useState('cities');
-  const cities = useMemo(() => {
-    const nextCities = getUniqueSiteCities(sites);
-    return nextCities.length > 0 ? nextCities : fallbackCities;
-  }, [sites]);
-  const states = useMemo(() => {
-    const nextStates = getUniqueSiteStates(sites);
-    return nextStates.length > 0 ? nextStates : fallbackStates;
-  }, [sites]);
 
   return (
     <section className="bg-white min-h-full px-10 p-8">

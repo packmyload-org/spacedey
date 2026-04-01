@@ -9,6 +9,8 @@ import { resolveSiteUrl } from "@/lib/siteUrl";
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isDevelopment = nodeEnv === 'development';
 const isProduction = nodeEnv === 'production';
+const isBuildProcess = process.env.npm_lifecycle_event === 'build'
+  || process.env.NEXT_PHASE === 'phase-production-build';
 const resolvedSiteUrl = resolveSiteUrl();
 
 function readBoolean(value: string | undefined, fallback: boolean): boolean {
@@ -37,7 +39,11 @@ const pooledDatabaseUrl = process.env.DATABASE_URL;
 const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
 
 const useDirectUrl = process.env.DB_USE_DIRECT_URL === 'true';
-const selectedDatabaseUrl = useDirectUrl
+const shouldUseDirectUrl = useDirectUrl
+  || (isBuildProcess && Boolean(directDatabaseUrl));
+const runtimePoolMax = isProduction ? 2 : 10;
+const buildPoolMax = 1;
+const selectedDatabaseUrl = shouldUseDirectUrl
   ? directDatabaseUrl || pooledDatabaseUrl
   : pooledDatabaseUrl || directDatabaseUrl;
 
@@ -56,8 +62,8 @@ export const env = {
     url: selectedDatabaseUrl,
     pooledUrl: pooledDatabaseUrl,
     directUrl: directDatabaseUrl,
-    useDirectUrl,
-    poolMax: readNumber(process.env.DB_POOL_MAX, isProduction ? 2 : 10),
+    useDirectUrl: shouldUseDirectUrl,
+    poolMax: isBuildProcess ? buildPoolMax : runtimePoolMax,
     ssl: readBoolean(process.env.DB_SSL, defaultSsl),
     sslRejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
     synchronize: readBoolean(process.env.DB_SYNCHRONIZE, false),
@@ -100,6 +106,7 @@ export const env = {
     nodeEnv,
     port: readNumber(process.env.PORT, 3000),
     isDevelopment,
+    isBuildProcess,
     isProduction,
     url: resolvedSiteUrl,
   },

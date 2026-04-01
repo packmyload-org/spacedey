@@ -7,7 +7,7 @@ import RouteChangeTracker from '@/components/analytics/RouteChangeTracker';
 import VercelInsights from '@/components/analytics/VercelInsights';
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
-import StorageCart from "@/components/StorageCart";
+import StorageCartMount from "@/components/StorageCartMount";
 import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage, serializeJsonLd } from "@/lib/seo";
 import { env } from "@/config/env";
 
@@ -110,7 +110,7 @@ export default function RootLayout({
               <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
             </Suspense>
             {children}
-            <StorageCart />
+            <StorageCartMount />
             <Toaster
               position="top-right"
               richColors

@@ -27,7 +27,6 @@
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "chat": "^4.20.2",
-    "dotenv": "^17.2.3",
     "framer-motion": "^12.29.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.544.0",
@@ -46,7 +45,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/axios": "^0.14.4",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20",

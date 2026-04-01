@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useEffectEvent, useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import PrimaryButton from "@/components/ui/PrimaryButton";
-import ExploreLocationsModal from "@/components/locations/ExploreLocationsModal";
 import { DEFAULT_SUPPORT_PHONE } from "@/lib/types/constants";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useStorageCart } from "@/contexts/StorageCartContext";
@@ -23,6 +23,14 @@ import {
   Linkedin,
   X
 } from "lucide-react";
+
+const ExploreLocationsModal = dynamic(
+  () => import("@/components/locations/ExploreLocationsModal"),
+  {
+    loading: () => null,
+    ssr: false,
+  }
+);
 
 export default function Header() {
   const [open, setOpen] = React.useState(false);
@@ -62,13 +70,9 @@ export default function Header() {
     }
   };
 
-  const closeMenus = useEffectEvent(() => {
+  useEffect(() => {
     setIsLocationsModalOpen(false);
     setIsProfileOpen(false);
-  });
-
-  useEffect(() => {
-    closeMenus();
   }, [pathname]);
 
   const profileLinks = [
@@ -257,7 +261,6 @@ export default function Header() {
                 alt="Spacedey Logo"
                 width={107}
                 height={28}
-                priority
               />
             </div>
             <button
@@ -401,10 +404,12 @@ export default function Header() {
       </div>
 
       {/* Locations Modal */}
-      <ExploreLocationsModal
-        isOpen={isLocationsModalOpen}
-        onClose={() => setIsLocationsModalOpen(false)}
-      />
+      {isLocationsModalOpen ? (
+        <ExploreLocationsModal
+          isOpen={isLocationsModalOpen}
+          onClose={() => setIsLocationsModalOpen(false)}
+        />
+      ) : null}
     </header>
   );
 }

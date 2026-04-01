@@ -1,5 +1,3 @@
-'use client';
-
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
@@ -9,18 +7,24 @@ import NotAverageStorage from "@/components/ui/NotAverageStorage";
 import CitiesStatesNav from "@/components/home/CitiesStatesNav";
 import FeatureList from "@/components/home/FeatureList";
 
-export default function HomePageContent() {
+interface HomePageContentProps {
+  cities: string[];
+  states: string[];
+}
+
+export default function HomePageContent({
+  cities,
+  states,
+}: Readonly<HomePageContentProps>) {
   return (
     <main>
       <Header />
-      <>
-        <HeroSection />
-        <FeatureList />
-        <FinalCtaBlock />
-        <WhyStoreWithUs />
-        <NotAverageStorage />
-        <CitiesStatesNav />
-      </>
+      <HeroSection states={states} />
+      <FeatureList />
+      <FinalCtaBlock />
+      <WhyStoreWithUs />
+      <NotAverageStorage />
+      <CitiesStatesNav cities={cities} states={states} />
       <Footer />
     </main>
   );

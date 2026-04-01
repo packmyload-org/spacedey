@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import HomePageContent from "@/components/home/HomePageContent";
 import { HOME_FAQS, HOME_MARKETS, HOME_SERVICE_TYPES } from '@/lib/homeSeoContent';
+import { getSiteDirectory } from '@/lib/services/siteDirectory';
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Affordable Self Storage in Nigeria',
+  title: 'Affordable, Best And Largest Secure Self Storage in Nigeria & West Africa',
   description:
     'Compare and reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and moving support.',
   path: '/',
@@ -24,8 +25,9 @@ export const metadata: Metadata = buildPageMetadata({
   noIndex: false,
 });
 
-export default function Home() {
+export default async function Home() {
   const siteUrl = getSiteUrl();
+  const locationDirectory = await getSiteDirectory();
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -80,7 +82,10 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(webPageJsonLd) }}
       />
-      <HomePageContent />
+      <HomePageContent
+        cities={locationDirectory.cities}
+        states={locationDirectory.states}
+      />
     </>
   );
 }
