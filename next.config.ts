@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['localhost', '127.0.0.1', '::1'],
   /* config options here */
   images: {
+    qualities: [60, 65, 75],
     unoptimized: false,
     remotePatterns: [
       {

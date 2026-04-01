@@ -29,9 +29,9 @@ export default function Loading() {
             </div>
 
             <div className="hidden items-center gap-8 lg:flex">
-              {navSkeletonWidths.map((width) => (
+              {navSkeletonWidths.map((width, i) => (
                 <div
-                  key={width}
+                  key={width + i}
                   className={`h-4 ${width} animate-pulse rounded-full bg-white/25`}
                 />
               ))}
