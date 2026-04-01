@@ -9,7 +9,7 @@ Spacedey is a full-stack web platform that connects individuals and businesses w
 ## ✨ Features
 
 | Feature | Description |
-|---|---|
+| --- | --- |
 | 🗺️ **Location Search** | Map-based search (OpenStreetMap + Leaflet) to discover storage units in Lagos, Abuja, and more |
 | 📐 **Unit Sizing Guides** | Visual size comparisons to help users pick the right unit |
 | 📅 **Booking** | Streamlined reservation and checkout flow |
@@ -23,7 +23,7 @@ Spacedey is a full-stack web platform that connects individuals and businesses w
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | **Framework** | [Next.js 16](https://nextjs.org/) (App Router + Turbopack) |
 | **Language** | TypeScript |
 | **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) |
@@ -117,13 +117,6 @@ pnpm run seed:data
 
 For a local Postgres instance, `pnpm run seed:data` is also fine.
 
-This creates two default accounts:
-
-| Role | Email | Password |
-|---|---|---|
-| Admin | `spacedeystorage@gmail.com` | `Admin@123` |
-| User | `user@spacedey.com` | `user123456` |
-
 > ⚠️ **Change these passwords before deploying to production!**
 
 ### 7. Start the development server
@@ -139,7 +132,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## 📜 Scripts
 
 | Command | Description |
-|---|---|
+| --- | --- |
 | `pnpm dev` | Development server with Turbopack |
 | `pnpm build` | Production build |
 | `pnpm start` | Start the production server |
@@ -177,7 +170,7 @@ spacedey/
 ## 📚 Documentation
 
 | Document | Description |
-|---|---|
+| --- | --- |
 | [Admin Portal Guide](./docs/ADMIN_PORTAL.md) | Role-based access, admin API endpoints, frontend usage, security checklist |
 | [Supabase + Vercel DB Setup](./docs/SUPABASE_VERCEL.md) | Managed Postgres setup using Supabase with Vercel-friendly env vars |
 | [Database Workflow](./docs/DATABASE_WORKFLOW.md) | Migrations, baselining, and seeding guidance |
@@ -189,7 +182,7 @@ spacedey/
 ### Auth
 
 | Method | Endpoint | Description |
-|---|---|---|
+| --- | --- | --- |
 | `POST` | `/api/auth/signup` | Register a new user |
 | `POST` | `/api/auth/login` | Sign in and receive a JWT |
 | `POST` | `/api/auth/forgot-password` | Request a password reset |
@@ -198,13 +191,13 @@ spacedey/
 ### Storage
 
 | Method | Endpoint | Description |
-|---|---|---|
+| --- | --- | --- |
 | `GET` | `/api/sites` | List all storage sites and unit types |
 
 ### Admin _(requires admin JWT)_
 
 | Method | Endpoint | Description |
-|---|---|---|
+| --- | --- | --- |
 | `GET` | `/api/admin/users` | List all users |
 | `POST` | `/api/admin/users` | Create a new user |
 | `GET` | `/api/admin/users/:id` | Get a single user |
