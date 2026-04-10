@@ -34,7 +34,7 @@ function isLocalConnectionString(connectionString: string): boolean {
   return /localhost|127\.0\.0\.1/.test(connectionString);
 }
 
-const pooledDatabaseUrl = process.env.DATABASE_URL;
+const pooledDatabaseUrl = process.env.POSTGRES_URL;
 
 const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
 
