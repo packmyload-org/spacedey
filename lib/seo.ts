@@ -7,11 +7,11 @@ export const SITE_DESCRIPTION =
 export const DEFAULT_OG_IMAGE_PATH = '/images/hero1.jpg';
 
 export const DEFAULT_KEYWORDS = [
-  'self storage nigeria',
-  'storage units lagos',
+  'Storage companies in nigeria and prices',
+  'best storage facilities in nigeria',
+  'self storage units lagos',
   'secure storage nigeria',
-  'self storage lagos',
-  'business storage nigeria',
+  'Storage compaines in Lagos',
   'personal storage lagos',
   'storage facility nigeria',
   'warehouse and self storage nigeria',
@@ -132,6 +132,7 @@ export function getBlogKeywords(title: string, excerpt: string) {
   const normalizedTitle = title.toLowerCase();
   const normalizedExcerpt = excerpt.toLowerCase();
   const topicKeywords = [
+    'storage companies in nigeria and prices',
     'self storage tips',
     'storage organization',
     'moving storage guide',
@@ -139,11 +140,11 @@ export function getBlogKeywords(title: string, excerpt: string) {
   ];
 
   if (normalizedTitle.includes('business') || normalizedExcerpt.includes('business')) {
-    topicKeywords.push('business storage nigeria');
+    topicKeywords.push('Best storage companies in nigeria');
   }
 
   if (normalizedTitle.includes('lagos') || normalizedExcerpt.includes('lagos')) {
-    topicKeywords.push('lagos self storage');
+    topicKeywords.push('storage facilities in Lagos', 'storage facilities in Lekki');
   }
 
   if (normalizedTitle.includes('security') || normalizedExcerpt.includes('security')) {
@@ -151,7 +152,7 @@ export function getBlogKeywords(title: string, excerpt: string) {
   }
 
   if (normalizedTitle.includes('price') || normalizedTitle.includes('cost') || normalizedExcerpt.includes('price')) {
-    topicKeywords.push('storage pricing nigeria', 'self storage cost lagos');
+    topicKeywords.push('storage companies in nigeria and prices','storage pricing nigeria', 'self storage cost lagos');
   }
 
   if (normalizedTitle.includes('size') || normalizedExcerpt.includes('size')) {
