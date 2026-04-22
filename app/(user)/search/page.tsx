@@ -3,15 +3,15 @@ import SearchPageContent from '@/components/search/SearchPageContent';
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Find Storage Facilities in Nigeria',
+  title: 'Storage Facilities in Nigeria',
   description:
     'Search Spacedey storage facilities by city and state, compare locations on the map, and find the right self storage unit in Nigeria.',
   path: '/search',
   keywords: [
-    'find storage near me nigeria',
-    'search storage locations lagos',
+    'No.1 storage facilities in Nigeria',
+    'storage facilities near me nigeria',
+    'storage facilities lagos',
     'self storage map nigeria',
-    'storage facilities by city nigeria',
     'book storage unit online nigeria',
   ],
   noIndex: true,

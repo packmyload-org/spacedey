@@ -17,7 +17,7 @@ export const metadata: Metadata = buildPageMetadata({
     'Compare storage unit sizes, understand what fits in each option, and choose the right Spacedey unit for personal or business storage in Nigeria.',
   path: '/sizing',
   keywords: [
-    'storage unit sizes nigeria',
+    'storage facilities in nigeria and their prices',
     'what size storage unit do i need',
     'self storage size guide lagos',
     'storage sizing guide nigeria',

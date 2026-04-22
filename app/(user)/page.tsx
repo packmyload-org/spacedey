@@ -5,16 +5,18 @@ import { getSiteDirectory } from '@/lib/services/siteDirectory';
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Affordable And Largest Secure Self Storage in Nigeria & West Africa',
+  title: 'Affordable And Largest Secure Storage Facilities in Lagos, Nigeria & West Africa',
   description:
-    'Compare and reserve secure self storage units in Lagos and across Nigeria for personal items, business inventory, and moving support.',
+    'Compare and reserve secure self storage facilities in Lagos and across Nigeria for personal items, business inventory, and moving support.',
   path: '/',
   keywords: [
+    'Best', 'Africa', 'storage', 'facilities', 'Lagos', 'Nigeria', 'secure', 'affordable', 'self storage',
+    'No.1 storage facilities in Nigeria',
     'affordable self storage nigeria',
     'self storage near me nigeria',
-    'storage units in nigeria',
-    'self storage lagos nigeria',
-    'secure storage units nigeria',
+    'storage facilities in nigeria',
+    'storage facilities in lagos nigeria',
+    'secure storage facilities nigeria',
     'which storage is safest',
     'safest type of self storage',
     'business storage lagos',

@@ -7,7 +7,7 @@ import { listCityLandingPages, listStateLandingPages } from '@/lib/services/loca
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Storage Locations Across Nigeria',
+  title: 'Storage Facilities in Nigeria',
   description:
     'Browse Spacedey self storage locations across Lagos and other Nigerian cities, compare facilities, and reserve the right unit online.',
   path: '/locations',
