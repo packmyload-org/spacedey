@@ -17,7 +17,7 @@ export default function HomePageContent({
   states,
 }: Readonly<HomePageContentProps>) {
   return (
-    <main>
+    <main className="flex min-h-screen flex-col z-0">
       <Header />
       <HeroSection states={states} />
       <FeatureList />

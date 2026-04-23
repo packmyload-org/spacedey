@@ -40,9 +40,8 @@ export default function HeroSection({ states }: Readonly<HeroSectionProps>) {
             {TRUSTED_USERS.map((user, index) => (
               <div
                 key={user.src}
-                className={`-ml-2 h-6 w-6 rounded-full border-2 border-white sm:-ml-3 sm:h-8 sm:w-8 ${user.className} ${
-                  index === 0 ? "ml-0" : ""
-                }`}
+                className={`-ml-2 h-6 w-6 rounded-full border-2 border-white sm:-ml-3 sm:h-8 sm:w-8 ${user.className} ${index === 0 ? "ml-0" : ""
+                  }`}
               >
                 <Image
                   src={user.src}

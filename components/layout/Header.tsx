@@ -106,7 +106,7 @@ export default function Header() {
                 alt="Spacedey Logo"
                 width={107}
                 height={28}
-                style={{ height: 'auto' }}
+                style={{ height: 'auto' , width: 'auto' }}
                 className="rounded-xl"
                 priority
               />
@@ -261,6 +261,8 @@ export default function Header() {
                 alt="Spacedey Logo"
                 width={107}
                 height={28}
+                style={{ height: 'auto', width: 'auto' }}
+                priority
               />
             </div>
             <button

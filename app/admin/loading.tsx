@@ -23,7 +23,7 @@ export default function Loading() {
                 width={107}
                 height={28}
                 priority
-                style={{ height: "auto" }}
+                style={{ height: "auto", width: "auto" }}
                 className="rounded-xl"
               />
             </div>
@@ -126,7 +126,7 @@ export default function Loading() {
               alt="Spacedey Logo"
               width={107}
               height={28}
-              style={{ height: "auto" }}
+              style={{ height: "auto", width: "auto" }}
               className="rounded-xl"
             />
             <div className="mt-6 h-4 w-32 animate-pulse rounded-full bg-white/25" />

@@ -46,24 +46,6 @@ export default function Footer() {
       <footer className="bg-[#0d1d73] text-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-10 flex flex-col md:flex-row items-start sm:justify-center lg:justify-center gap-12">
           <div className="w-full md:w-1/5 text-left">
-            {/* <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 bg-white rounded-md"><img src="/images/spacelg.jpg
-            " alt="" /></div>
-            <span className="text-2xl font-bold">spacedey</span>
-          </div> */}
-            <div>
-              <Link href="/" aria-label="Logo">
-                <Image
-                  src="/images/logo.png"
-                  alt="Spacedey Logo"
-                  width={107}
-                  height={28}
-                  style={{ height: 'auto' }}
-                  className="rounded-xl"
-                />
-              </Link>
-            </div>
-
             <h3 className="uppercase font-bold text-sm mb-3 text-white">
               Reach Out To Us
             </h3>
@@ -107,76 +89,52 @@ export default function Footer() {
           </div>
 
           <div className="w-full md:w-1/5 text-left">
+            <h3 className="uppercase font-bold text-sm mb-3 text-white">
+              Company
+            </h3>
             <ul className="space-y-3">
               <li>
-                <button
-                  type="button"
-                  onClick={() => setIsLocationsModalOpen(true)}
-                  className={footerLinkClass}
-                >
+                <a href="/about" className={footerLinkClass}>
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="/services" className={footerLinkClass}>
+                  Services
+                </a>
+              </li>
+              <li>
+                <a href="/locations" className={footerLinkClass}>
                   Locations
-                </button>
-              </li>
-              <li>
-                <Link href="/sizing" className={footerLinkClass}>
-                  Sizing
-                </Link>
-              </li>
-              <li>
-                <Link href="/sizing" className={footerLinkClass}>
-                  FAQ
-                </Link>
-              </li>
-              <li>
-                <Link href="/search" className={footerLinkClass}>
-                  Self-storage near me
-                </Link>
-              </li>
-              <li>
-                <Link href="/blog" className={footerLinkClass}>
-                  News
-                </Link>
-              </li>
-              <li>
-                <Link href="/referral" className={footerLinkClass}>
-                  Refer a Friend
-                </Link>
+                </a>
               </li>
             </ul>
           </div>
 
           <div className="w-full md:w-1/5 text-left">
+            <h3 className="uppercase font-bold text-sm mb-3 text-white">
+              Legal
+            </h3>
             <ul className="space-y-3">
               <li>
-                {/* <Link href="/landlord" className="hover:text-gray-300">
-                  Landlord
-                </Link> */}
-              </li>
-              <li>
-                <Link href="/products" className={footerLinkClass}>
-                  Perks
-                </Link>
-              </li>
-              <li>
-                <Link href="/products" className={footerLinkClass}>
-                  Products
-                </Link>
-              </li>
-              <li>
-                <a href="#" className={footerLinkClass}>
+                <a href="/privacy-policy" className={footerLinkClass}>
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="#" className={footerLinkClass}>
-                  Terms of Service
+                <a href="/cookie-policy" className={footerLinkClass}>
+                  Cookie Policy
+                </a>
+              </li>
+              <li>
+                <a href="/terms-and-conditions" className={footerLinkClass}>
+                  Terms & Conditions
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* <div className="border-1 border-[#e65c3a] w-12 mx-auto"></div> */}
         <div className="w-12 h-[2px] bg-[#e65c3a] mb-6 mx-auto"></div>
         <div className="text-center text-sm py-6">
           Copyright © {new Date().getFullYear()} Packmyload Inc. All rights

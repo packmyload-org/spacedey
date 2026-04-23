@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+// @ts-ignore
 import "./globals.css";
+import type { Metadata } from "next";
+import Script from 'next/script';
 import { Suspense } from 'react';
 import { Toaster } from 'sonner';
 import GoogleTagManager from '@/components/analytics/GoogleTagManager';
@@ -10,6 +12,7 @@ import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCartMount from "@/components/StorageCartMount";
 import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage, serializeJsonLd } from "@/lib/seo";
 import { env } from "@/config/env";
+import CookieConsent from '@/components/ui/CookieConsent';
 
 const defaultSeoImage = getDefaultSeoImage();
 
@@ -111,6 +114,7 @@ export default function RootLayout({
             </Suspense>
             {children}
             <StorageCartMount />
+            <CookieConsent />
             <Toaster
               position="top-right"
               richColors
@@ -124,6 +128,26 @@ export default function RootLayout({
         </StorageCartProvider>
         {vercelInsightsEnabled ? <VercelInsights /> : null}
       </body>
+      <Script id="gtm-consent" strategy="afterInteractive" data-cookieconsent="ignore">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            window.dataLayer.push(arguments);
+          }
+          gtag("consent", "default", {
+            ad_personalization: "denied",
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            analytics_storage: "granted",
+            functionality_storage: "granted",
+            personalization_storage: "granted",
+            security_storage: "granted",
+            wait_for_update: 500,
+          });
+          gtag("set", "ads_data_redaction", true);
+          gtag("set", "url_passthrough", false);
+        `}
+      </Script>
     </html>
   );
 }

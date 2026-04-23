@@ -64,6 +64,7 @@ export default function MemberBenefits({
                   fill
                   className="object-cover"
                   sizes="(max-width: 340px) 70vw, (max-width: 424px) 20vw, 10vw"
+                  priority
                 />
               </div>
             </div>
@@ -82,6 +83,7 @@ export default function MemberBenefits({
           width={1200}
           height={400}
           className="w-full h-auto rounded-md"
+          priority
         />
       </div>
     </div>
