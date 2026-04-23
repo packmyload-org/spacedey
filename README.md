@@ -216,6 +216,8 @@ spacedey/
 - Admins cannot delete their own account
 - `.env.local` is gitignored — never commit secrets
 
+We take security seriously. Please refer to our [Security Policy](./docs/SECURITY.md) for information on reporting vulnerabilities and supported versions.
+
 ---
 
 ## 📄 License
