@@ -206,7 +206,7 @@ export default function PrivacyPolicy() {
               <a className="text-[#0d1d73] underline" href="mailto:customercare@spacedey.com">
                 customercare@spacedey.com
               </a>{' '}
-              or <span className="font-medium">+234 7065277686</span> if you suspect a breach.
+            if you suspect a breach.
             </p>
           </section>
 
