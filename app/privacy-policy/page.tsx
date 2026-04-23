@@ -51,8 +51,8 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 mt-4">
               We have a designated Data Protection Officer (DPO). For questions about how we
               manage personal information, contact us at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:spacedeystorage@gmail.com">
-                spacedeystorage@gmail.com
+              <a className="text-[#0d1d73] underline" href="mailto:info@spacedey.com">
+                info@spacedey.com
               </a>
               .
             </p>
@@ -148,8 +148,8 @@ export default function PrivacyPolicy() {
             </p>
             <p className="text-gray-700">
               To exercise your rights, contact us at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:spacedeystorage@gmail.com">
-                spacedeystorage@gmail.com
+              <a className="text-[#0d1d73] underline" href="mailto:customercare@spacedey.com">
+                customercare@spacedey.com
               </a>
               .
             </p>
@@ -203,8 +203,8 @@ export default function PrivacyPolicy() {
             </p>
             <p className="text-gray-700">
               Contact us immediately at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:spacedeystorage@gmail.com">
-                spacedeystorage@gmail.com
+              <a className="text-[#0d1d73] underline" href="mailto:customercare@spacedey.com">
+                customercare@spacedey.com
               </a>{' '}
               or <span className="font-medium">+234 7065277686</span> if you suspect a breach.
             </p>
