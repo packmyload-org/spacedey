@@ -11,6 +11,26 @@ export default function GoogleTagManager({ containerId }: GoogleTagManagerProps)
 
   return (
     <>
+      <Script id="gtm-consent" strategy="afterInteractive" data-cookieconsent="ignore">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag() {
+            window.dataLayer.push(arguments);
+          }
+          gtag("consent", "default", {
+            ad_personalization: "denied",
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            analytics_storage: "granted",
+            functionality_storage: "granted",
+            personalization_storage: "granted",
+            security_storage: "granted",
+            wait_for_update: 500,
+          });
+          gtag("set", "ads_data_redaction", true);
+          gtag("set", "url_passthrough", false);
+        `}
+      </Script>
       <Script id="gtm-data-layer" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
