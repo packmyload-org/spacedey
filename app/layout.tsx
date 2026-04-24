@@ -25,11 +25,11 @@ export const metadata: Metadata = {
   description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
   keywords: DEFAULT_KEYWORDS,
   alternates: {
-    canonical: '/',
+    canonical: new URL(env.app.url),
   },
   openGraph: {
     type: 'website',
-    url: '/',
+    url: new URL(env.app.url),
     siteName: SITE_NAME,
     title: `${SITE_NAME} | Secure Storage Facilities in Lagos, Nigeria`,
     description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",

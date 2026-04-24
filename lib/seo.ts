@@ -6,16 +6,7 @@ export const SITE_DESCRIPTION =
   'Spacedey helps people and businesses find, compare, and reserve secure self storage units across Lagos and the rest of Nigeria with flexible payment plans.';
 export const DEFAULT_OG_IMAGE_PATH = '/images/hero1.jpg';
 
-export const DEFAULT_KEYWORDS = [
-  'Storage companies in nigeria and prices',
-  'best storage facilities in nigeria',
-  'self storage units lagos',
-  'secure storage nigeria',
-  'Storage compaines in Lagos',
-  'personal storage lagos',
-  'storage facility nigeria',
-  'warehouse and self storage nigeria',
-];
+export const DEFAULT_KEYWORDS = [];
 
 export function getSiteUrl() {
   return resolveSiteUrl();
