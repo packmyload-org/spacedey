@@ -19,20 +19,20 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.app.url),
   applicationName: SITE_NAME,
   title: {
-    default: `Secure Self Storage in Nigeria `,
+    default: `Secure Storage Facilities in Lagos, Nigeria | ${SITE_NAME}`,
     template: `%s | ${SITE_NAME}`,
   },
-  description: SITE_DESCRIPTION,
+  description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
   keywords: DEFAULT_KEYWORDS,
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
-    url: '/',
+    url: new URL(env.app.url),
     siteName: SITE_NAME,
-    title: `${SITE_NAME} | Self Storage in Nigeria`,
-    description: SITE_DESCRIPTION,
+    title: `${SITE_NAME} | Secure Storage Facilities in Lagos, Nigeria`,
+    description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
     locale: 'en_NG',
     images: [
       {
@@ -43,8 +43,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} | Self Storage in Nigeria`,
-    description: SITE_DESCRIPTION,
+    title: `${SITE_NAME} | Secure Storage Facilities in Lagos, Nigeria`,
+    description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
     images: [defaultSeoImage],
   },
   category: 'storage',

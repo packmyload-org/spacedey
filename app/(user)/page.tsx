@@ -5,17 +5,12 @@ import { getSiteDirectory } from '@/lib/services/siteDirectory';
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Secure Storage Facilities in Lagos, Nigeria & West Africa',
+  title: 'Secure Storage Facilities in Lagos, Nigeria | Spacedey',
   description:
     'Compare and reserve secure self storage facilities in Lagos and across Nigeria for personal items, business inventory, and moving support.',
   path: '/',
   keywords: [
-    'Best', 'Africa', 'storage', 'facilities', 'Lagos', 'Nigeria', 'secure', 'affordable', 'self storage',
-    'No.1 storage facilities in Nigeria',
-    'affordable self storage nigeria',
-    'self storage near me nigeria',
-    'storage facilities in nigeria',
-    'storage facilities in lagos nigeria',
+    'Best', 'Storage', 'Top', 'facilities', 'Lagos', 'Nigeria', 'secure', 'affordable', 'self storage',
   ],
   noIndex: false,
 });
