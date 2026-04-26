@@ -7,14 +7,9 @@ export const SITE_DESCRIPTION =
 export const DEFAULT_OG_IMAGE_PATH = '/images/hero1.jpg';
 
 export const DEFAULT_KEYWORDS = [
-  'Storage companies in nigeria and prices',
+  'Storage facilities in nigeria and prices',
   'best storage facilities in nigeria',
-  'self storage units lagos',
-  'secure storage nigeria',
-  'Storage compaines in Lagos',
-  'personal storage lagos',
-  'storage facility nigeria',
-  'warehouse and self storage nigeria',
+  'self storage units lagos'
 ];
 
 export function getSiteUrl() {

@@ -16,13 +16,6 @@ export const metadata: Metadata = buildPageMetadata({
     'self storage near me nigeria',
     'storage facilities in nigeria',
     'storage facilities in lagos nigeria',
-    'secure storage facilities nigeria',
-    'which storage is safest',
-    'safest type of self storage',
-    'business storage lagos',
-    'personal storage nigeria',
-    'storage pricing nigeria',
-    'reserve self storage online',
   ],
   noIndex: false,
 });

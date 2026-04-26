@@ -80,36 +80,10 @@ function buildPriceRange(values: number[]) {
 }
 
 function summarizeDescription({
-  areaName,
-  facilityCount,
-  availableUnits,
-  unitTypes,
-  city,
-  state,
-}: {
-  areaName: string;
-  facilityCount: number;
-  availableUnits: number;
-  unitTypes: string[];
-  city?: string;
-  state?: string;
-}) {
-  const inventoryLine = facilityCount === 1
-    ? `${areaName} currently has 1 active storage facility`
-    : `${areaName} currently has ${facilityCount} active storage facilities`;
-  const availabilityLine = availableUnits > 0
-    ? `with ${availableUnits} units available for quick reservation`
-    : 'with flexible unit options for households and businesses';
-  const unitTypeLine = unitTypes.length > 0
-    ? `across ${unitTypes.slice(0, 3).join(', ')} storage sizes.`
-    : 'with options for personal, business, and moving storage.';
-  const geographyLine = city && state
-    ? `Use this page to compare self storage in ${city}, ${state}, view facility details, and choose the right unit online.`
-    : state
-      ? `Use this page to compare self storage options across ${state}, review city coverage, and choose the right unit online.`
-      : `Use this page to compare storage options in ${areaName} and choose the right unit online.`;
-
-  return `${inventoryLine} ${availabilityLine} ${unitTypeLine} ${geographyLine}`;
+  state
+}: { state: string}) {
+  const description = `Affordable, Secure Storage facilities, Compare and reserve facilities in ${state? state : "Lagos"} and across Nigeria for personal items and moving support`
+  return description;
 }
 
 export const listLocationSites = cache(async (): Promise<LocationSiteSummary[]> => {
@@ -204,12 +178,7 @@ export const listCityLandingPages = cache(async (): Promise<CityLandingData[]> =
         state,
         stateSlug: toLocationSlug(state),
         description: summarizeDescription({
-          areaName: name,
-          facilityCount: citySites.length,
-          availableUnits: citySites.reduce((sum, site) => sum + site.availableUnits, 0),
-          unitTypes: unitTypeLabels,
-          city: name,
-          state,
+          state:name,
         }),
         image: citySites.find((site) => Boolean(site.image))?.image || detailFallback.image,
         sites: citySites.sort((left, right) => left.name.localeCompare(right.name)),
@@ -248,10 +217,6 @@ export const listStateLandingPages = cache(async (): Promise<StateLandingData[]>
         name,
         slug: toLocationSlug(name),
         description: summarizeDescription({
-          areaName: `${name} State`,
-          facilityCount: sites.length,
-          availableUnits: sites.reduce((sum, site) => sum + site.availableUnits, 0),
-          unitTypes: unitTypeLabels,
           state: name,
         }),
         image: sites.find((site) => Boolean(site.image))?.image || detailFallback.image,

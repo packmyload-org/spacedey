@@ -34,17 +34,10 @@ export async function generateMetadata(
   }
 
   return buildPageMetadata({
-    title: `Self Storage in ${state.name}`,
+    title: `Storage facilities in ${state.name}`,
     description: state.description,
     path: `/locations/state/${state.slug}`,
     image: state.image,
-    keywords: [
-      `self storage ${state.name.toLowerCase()}`,
-      `${state.name.toLowerCase()} storage facilities`,
-      `storage units in ${state.name.toLowerCase()}`,
-      `${state.name.toLowerCase()} business storage`,
-      `secure storage ${state.name.toLowerCase()}`,
-    ],
   });
 }
 
