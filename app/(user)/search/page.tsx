@@ -10,11 +10,10 @@ export const metadata: Metadata = buildPageMetadata({
   keywords: [
     'No.1 storage facilities in Nigeria',
     'storage facilities near me nigeria',
-    'storage facilities lagos',
     'self storage map nigeria',
     'book storage unit online nigeria',
   ],
-  noIndex: true,
+  noIndex: false,
 });
 
 export default function SearchPage() {
