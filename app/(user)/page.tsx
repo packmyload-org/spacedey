@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import HomePageContent from "@/components/home/HomePageContent";
-import { HOME_FAQS, HOME_MARKETS, HOME_SERVICE_TYPES } from '@/lib/homeSeoContent';
+import { HOME_FAQS, HOME_SERVICE_TYPES } from '@/lib/homeSeoContent';
 import { getSiteDirectory } from '@/lib/services/siteDirectory';
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
@@ -30,25 +30,6 @@ export default async function Home() {
       },
     })),
   };
-
-  const serviceJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    name: `${SITE_NAME} self storage`,
-    description: SITE_DESCRIPTION,
-    url: siteUrl,
-    areaServed: HOME_MARKETS.map((market) => ({
-      '@type': 'City',
-      name: market,
-    })),
-    provider: {
-      '@type': 'Organization',
-      name: SITE_NAME,
-      url: siteUrl,
-    },
-    serviceType: [...HOME_SERVICE_TYPES],
-  };
-
   const webPageJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
@@ -60,10 +41,6 @@ export default async function Home() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceJsonLd) }}
-      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
