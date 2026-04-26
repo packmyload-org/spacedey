@@ -20,26 +20,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/landlord',
   ];
 
-  const [blogPostsResult, cityPagesResult, statePagesResult] = await Promise.allSettled([
+  const [blogPostsResult] = await Promise.allSettled([
     listPublishedBlogPosts(),
-    listCityLandingPages(),
-    listStateLandingPages(),
   ]);
   const blogPosts = blogPostsResult.status === 'fulfilled' ? blogPostsResult.value : [];
-  const cityPages = cityPagesResult.status === 'fulfilled' ? cityPagesResult.value : [];
-  const statePages = statePagesResult.status === 'fulfilled' ? statePagesResult.value : [];
   let locationRoutes: MetadataRoute.Sitemap = [];
 
   if (blogPostsResult.status === 'rejected') {
     console.error('Failed to build blog sitemap entries', blogPostsResult.reason);
-  }
-
-  if (cityPagesResult.status === 'rejected') {
-    console.error('Failed to build city sitemap entries', cityPagesResult.reason);
-  }
-
-  if (statePagesResult.status === 'rejected') {
-    console.error('Failed to build state sitemap entries', statePagesResult.reason);
   }
 
   try {
@@ -76,18 +64,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: post.updatedAt,
       changeFrequency: ChangeFrequency.MONTHLY,
       priority: SitemapPriority.BLOG_POST,
-    })),
-    ...cityPages.map((city) => ({
-      url: `${siteUrl}/locations/city/${city.slug}`,
-      lastModified: city.sites[0]?.updatedAt,
-      changeFrequency: ChangeFrequency.WEEKLY,
-      priority: SitemapPriority.CITY_LOCATION,
-    })),
-    ...statePages.map((state) => ({
-      url: `${siteUrl}/locations/state/${state.slug}`,
-      lastModified: state.sites[0]?.updatedAt,
-      changeFrequency: ChangeFrequency.WEEKLY,
-      priority: SitemapPriority.STATE_LOCATION,
     })),
     ...locationRoutes,
   ];
