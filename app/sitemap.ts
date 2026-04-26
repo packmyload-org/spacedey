@@ -24,6 +24,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listPublishedBlogPosts(),
   ]);
   const blogPosts = blogPostsResult.status === 'fulfilled' ? blogPostsResult.value : [];
+  let locationRoutes: MetadataRoute.Sitemap = [];
+
+  if (blogPostsResult.status === 'rejected') {
+    console.error('Failed to build blog sitemap entries', blogPostsResult.reason);
+  }
+
+  try {
+    const appDataSource = await connectTypeORM();
+    const repo = appDataSource.getRepository(Site);
+    const sites = await repo.find({
+      select: {
+        id: true,
+        updatedAt: true,
+      },
+      order: {
+        updatedAt: 'DESC',
+      },
+    });
+
+    locationRoutes = sites.map((site) => ({
+      url: `${siteUrl}/locations/${site.id}`,
+      lastModified: site.updatedAt,
+      changeFrequency: ChangeFrequency.WEEKLY,
+      priority: SitemapPriority.LOCATION,
+    }));
+  } catch (error) {
+    console.error('Failed to build location sitemap entries', error);
+  }
 
   return [
     ...staticRoutes.map((route) => ({

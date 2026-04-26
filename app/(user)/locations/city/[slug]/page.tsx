@@ -66,54 +66,8 @@ export default async function CityLocationPage({
     .slice(0, 4);
   const statePage = statePages.find((entry) => entry.slug === city.stateSlug) ?? null;
   const pageUrl = toAbsoluteUrl(`/locations/city/${city.slug}`);
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Locations',
-        item: toAbsoluteUrl('/locations'),
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: city.state,
-        item: toAbsoluteUrl(`/locations/state/${city.stateSlug}`),
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: city.name,
-        item: pageUrl,
-      },
-    ],
-  };
-  const itemListJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    name: `Self storage in ${city.name}, ${city.state}`,
-    description: city.description,
-    url: pageUrl,
-    hasPart: city.sites.map((site, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      url: toAbsoluteUrl(`/locations/${site.id}`),
-      name: site.name,
-    })),
-  };
-
   return (
     <main className="min-h-screen bg-[#F5F8FF] pb-20 pt-24">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(itemListJsonLd) }}
-      />
 
       <section className="px-6 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.1fr)_440px] lg:items-stretch">

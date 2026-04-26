@@ -1,4 +1,3 @@
-import { cache } from 'react';
 import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
@@ -86,7 +85,7 @@ function summarizeDescription({
   return description;
 }
 
-export const listLocationSites = cache(async (): Promise<LocationSiteSummary[]> => {
+export const listLocationSites = (async (): Promise<LocationSiteSummary[]> => {
   const appDataSource = await connectTypeORM();
   const repo = appDataSource.getRepository(Site);
   const sites = await repo.find({
@@ -148,7 +147,7 @@ export const listLocationSites = cache(async (): Promise<LocationSiteSummary[]> 
   });
 });
 
-export const listCityLandingPages = cache(async (): Promise<CityLandingData[]> => {
+export const listCityLandingPages = (async (): Promise<CityLandingData[]> => {
   const sites = await listLocationSites();
   const grouped = new Map<string, LocationSiteSummary[]>();
 
@@ -194,7 +193,7 @@ export const listCityLandingPages = cache(async (): Promise<CityLandingData[]> =
     .sort((left, right) => left.name.localeCompare(right.name));
 });
 
-export const listStateLandingPages = cache(async (): Promise<StateLandingData[]> => {
+export const listStateLandingPages = (async (): Promise<StateLandingData[]> => {
   const cityPages = await listCityLandingPages();
   const grouped = new Map<string, CityLandingData[]>();
 
