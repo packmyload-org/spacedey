@@ -1,7 +1,7 @@
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const DEFAULT_SUPPORT_EMAIL = 'info@mailing.spacedey.com';
-export const DEFAULT_SUPPORT_PHONE = '09166680777';
+export const DEFAULT_SUPPORT_EMAIL = 'hello@spacedey.com';
+export const DEFAULT_SUPPORT_PHONE = '0905-826-5125';
 export const DEFAULT_SUPPORT_HOURS = 'Monday to Friday, 9am to 6pm';
 
 export const MIN_RECURRING_DURATION_MONTHS = 2;

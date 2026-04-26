@@ -5,7 +5,7 @@ import { getSiteDirectory } from '@/lib/services/siteDirectory';
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Affordable And Largest Secure Storage Facilities in Lagos, Nigeria & West Africa',
+  title: 'Secure Storage Facilities in Lagos, Nigeria & West Africa',
   description:
     'Compare and reserve secure self storage facilities in Lagos and across Nigeria for personal items, business inventory, and moving support.',
   path: '/',

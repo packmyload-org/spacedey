@@ -10,7 +10,7 @@ import { SitemapPriority } from '@/lib/enums/sitemapPriority';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
   const staticRoutes = [
-    '',
+    '/',
     '/search',
     '/locations',
     '/sizing',
