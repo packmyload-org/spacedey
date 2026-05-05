@@ -13,10 +13,7 @@
     "db:migrate:show": "pnpm typeorm migration:show",
     "db:baseline": "tsx --tsconfig tsconfig.json scripts/baseline-migrations.ts",
     "db:setup": "pnpm db:migrate && pnpm run seed:data",
-    "billing:clear": "tsx --tsconfig tsconfig.json scripts/clear-billing-and-invoices.ts",
-    "seed:data": "tsx --tsconfig tsconfig.json scripts/seed-db-typeorm.ts",
-    "email:test": "node --import tsx scripts/send-test-emails.ts",
-    "automation:run": "tsx --tsconfig tsconfig.json scripts/process-email-automations.ts"
+    "billing:clear": "tsx --tsconfig tsconfig.json scripts/clear-billing-and-invoices.ts"
   },
   "dependencies": {
     "@chat-adapter/state-memory": "^4.20.2",
