@@ -1,6 +1,6 @@
 'use client';
 
-import SitesMaplibre from '@/components/maps/SitesMaplibre';
+import SitesGoogleMap from '@/components/maps/SitesGoogleMap';
 import type { ApiSite } from '@/lib/types/local';
 
 interface SearchLeafletMapProps {
@@ -18,7 +18,7 @@ export default function SearchLeafletMap({
   sites,
 }: Readonly<SearchLeafletMapProps>) {
   return (
-    <SitesMaplibre
+    <SitesGoogleMap
       initialCenter={center}
       initialZoom={zoom}
       sites={sites}

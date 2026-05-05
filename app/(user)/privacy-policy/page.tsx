@@ -51,8 +51,8 @@ export default function PrivacyPolicy() {
             <p className="text-gray-700 mt-4">
               We have a designated Data Protection Officer (DPO). For questions about how we
               manage personal information, contact us at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:info@spacedey.com">
-                info@spacedey.com
+              <a className="text-[#0d1d73] underline" href="mailto:hello@spacedey.com">
+                hello@spacedey.com
               </a>
               .
             </p>
@@ -148,8 +148,8 @@ export default function PrivacyPolicy() {
             </p>
             <p className="text-gray-700">
               To exercise your rights, contact us at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:customercare@spacedey.com">
-                customercare@spacedey.com
+              <a className="text-[#0d1d73] underline" href="mailto:hello@spacedey.com">
+                hello@spacedey.com
               </a>
               .
             </p>
@@ -203,8 +203,8 @@ export default function PrivacyPolicy() {
             </p>
             <p className="text-gray-700">
               Contact us immediately at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:customercare@spacedey.com">
-                customercare@spacedey.com
+              <a className="text-[#0d1d73] underline" href="mailto:hello@spacedey.com">
+                hello@spacedey.com
               </a>{' '}
             if you suspect a breach.
             </p>
@@ -226,8 +226,8 @@ export default function PrivacyPolicy() {
           <div className="mt-12 pt-8 border-t border-gray-200">
             <p className="text-gray-700 mb-4">
               If you have any questions about this policy, contact us at{' '}
-              <a className="text-[#0d1d73] underline" href="mailto:customercare@spacedey.com">
-                customercare@spacedey.com
+              <a className="text-[#0d1d73] underline" href="mailto:hello@spacedey.com">
+                hello@spacedey.com
               </a>
               .
             </p>

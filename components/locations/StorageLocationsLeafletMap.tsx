@@ -1,6 +1,6 @@
 'use client';
 
-import SitesMaplibre from '@/components/maps/SitesMaplibre';
+import SitesGoogleMap from '@/components/maps/SitesGoogleMap';
 import { defaultMapCenter } from '@/lib/maps/shared';
 import type { ApiSite } from '@/lib/types/local';
 
@@ -12,7 +12,7 @@ export default function StorageLocationsLeafletMap({
   mapSites,
 }: Readonly<StorageLocationsLeafletMapProps>) {
   return (
-    <SitesMaplibre
+    <SitesGoogleMap
       initialCenter={defaultMapCenter}
       initialZoom={6}
       sites={mapSites}
