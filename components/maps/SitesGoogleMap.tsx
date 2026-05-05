@@ -6,6 +6,7 @@ import {
   Map,
   AdvancedMarker,
   useMap,
+  useMapsLibrary,
 } from '@vis.gl/react-google-maps';
 import { env } from '@/config';
 import { getValidCoordinates } from '@/lib/maps/shared';
@@ -81,9 +82,10 @@ interface MapControllerProps {
 /** Inner component that has access to the map instance via useMap() */
 function MapController({ initialCenter, initialZoom, validSites }: Readonly<MapControllerProps>) {
   const map = useMap();
+  const coreLib = useMapsLibrary('core');
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !coreLib) return;
 
     if (validSites.length === 0) {
       map.panTo(initialCenter);
@@ -97,10 +99,10 @@ function MapController({ initialCenter, initialZoom, validSites }: Readonly<MapC
       return;
     }
 
-    const bounds = new google.maps.LatLngBounds();
+    const bounds = new coreLib.LatLngBounds();
     validSites.forEach((site) => bounds.extend({ lat: site.lat, lng: site.lng }));
     map.fitBounds(bounds, FIT_BOUNDS_PADDING);
-  }, [map, initialCenter, initialZoom, validSites]);
+  }, [map, coreLib, initialCenter, initialZoom, validSites]);
 
   return null;
 }
