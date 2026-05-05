@@ -3,19 +3,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LocationFacilityCard, LocationLinkCard, LocationStatCard } from '@/components/locations/LocationSeoSections';
-import { getStateLandingPageBySlug, listStateLandingPages } from '@/lib/services/locationLandingPages';
+import { getStateLandingPageBySlug } from '@/lib/services/locationLandingPages';
 import { buildPageMetadata, serializeJsonLd, toAbsoluteUrl } from '@/lib/seo';
 import { formatCountLabel, formatPriceFromAmount } from '@/lib/utils/locationSeo';
 
-export const dynamicParams = false;
-
-export async function generateStaticParams() {
-  const states = await listStateLandingPages();
-
-  return states.map((state) => ({
-    slug: state.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }

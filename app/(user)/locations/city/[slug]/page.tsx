@@ -7,15 +7,7 @@ import { getCityLandingPageBySlug, listCityLandingPages, listStateLandingPages }
 import { buildPageMetadata, serializeJsonLd, toAbsoluteUrl } from '@/lib/seo';
 import { formatCountLabel, formatPriceFromAmount } from '@/lib/utils/locationSeo';
 
-export const dynamicParams = false;
-
-export async function generateStaticParams() {
-  const cities = await listCityLandingPages();
-
-  return cities.map((city) => ({
-    slug: city.slug,
-  }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> }
