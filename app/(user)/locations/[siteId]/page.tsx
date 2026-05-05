@@ -135,7 +135,7 @@ export default async function SiteDetailsPage({ params }: { params: Promise<{ si
     name: site.name,
     description:
       site.about ||
-      `Secure self storage facility${city ? ` in ${city}` : ''}${state ? `, ${state}` : ''}.`,
+      `Storage facility${city ? ` in ${city}` : ''}${state ? `, ${state}` : ''}.`,
     url: pageUrl,
     image: site.image ? [site.image] : undefined,
     telephone: site.contactPhone || undefined,

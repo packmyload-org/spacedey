@@ -260,7 +260,7 @@ export default function SiteDetails({ site, sitemap }: Readonly<SiteDetailsProps
                                                 </div>
                                                     <div className="flex flex-wrap gap-1">
                                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                                                {unit.code || 'Storage Unit'}
+                                                                {'Storage Unit'}
                                                             </span>
                                                             {nextAvailableUnit ? (
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white text-gray-700 border border-gray-200">

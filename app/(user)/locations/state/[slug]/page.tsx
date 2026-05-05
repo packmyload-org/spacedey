@@ -52,33 +52,8 @@ export default async function StateLocationPage({
   if (!state) {
     notFound();
   }
-
-  const pageUrl = toAbsoluteUrl(`/locations/state/${state.slug}`);
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Locations',
-        item: toAbsoluteUrl('/locations'),
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: state.name,
-        item: pageUrl,
-      },
-    ],
-  };
-
   return (
     <main className="min-h-screen bg-[#F5F8FF] pb-20 pt-24">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
-      />
 
       <section className="px-6 lg:px-20">
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,1.1fr)_440px]">
