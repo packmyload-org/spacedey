@@ -72,7 +72,7 @@ export default function SpaceyConversationPanel({
             })
           ) : (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-white/70 px-4 py-5 text-sm text-slate-500">
-              Continue the conversation with Spacey.
+              Continue the conversation with Spacedey.
             </div>
           )}
         </div>
