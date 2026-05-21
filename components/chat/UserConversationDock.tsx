@@ -34,7 +34,7 @@ export default function UserConversationDock() {
             <Bot className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-white">Spacey</p>
+            <p className="truncate text-sm font-semibold text-white">Spacedey</p>
             <p className="truncate text-xs text-slate-300">{emptyLabel}</p>
           </div>
           <button
