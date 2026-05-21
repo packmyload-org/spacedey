@@ -129,7 +129,7 @@ export default function SupportModal({ isOpen, onClose }: SupportModalProps) {
       setConversationId(data?.conversation?.conversationId || null);
       setMessages(Array.isArray(data?.conversation?.messages) ? data.conversation.messages : []);
 
-      toast.success("Spacey started your support conversation.", {
+      toast.success("Successfully started your support conversation.", {
         description: "You can keep chatting here with follow-up details.",
       });
     } catch (error) {
