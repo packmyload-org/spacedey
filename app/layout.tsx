@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     default: `Secure Storage Facilities in Lagos, Nigeria `,
     template: `%s | ${SITE_NAME}`,
   },
-  description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
+  description: "Secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
   keywords: DEFAULT_KEYWORDS,
   alternates: {
     canonical: '/',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     type: 'website',
     url: new URL(env.app.url),
     siteName: SITE_NAME,
-    title: `${SITE_NAME} | Secure Storage Facilities in Lagos, Nigeria`,
+    title: `Secure Storage Facilities in Lagos, Nigeria`,
     description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
     locale: 'en_NG',
     images: [
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} | Secure Storage Facilities in Lagos, Nigeria`,
+    title: `Secure Storage Facilities in Lagos, Nigeria`,
     description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
     images: [defaultSeoImage],
   },
@@ -67,14 +67,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const { googleTagManagerId, vercelInsightsEnabled } = env.integrations.analytics;
-  
-
-
   return (
     <html lang="en">
       <body className="antialiased" suppressHydrationWarning>
         <GoogleTagManager containerId={googleTagManagerId} />
-
         <StorageCartProvider>
           <SitesProvider>
             <Suspense fallback={<p>Loading...</p>}>
