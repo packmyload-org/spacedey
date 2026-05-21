@@ -83,7 +83,7 @@ export default function SpaceyConversationPanel({
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               rows={3}
-              placeholder="Reply to Spacey..."
+              placeholder="Reply to Spacedey..."
               className="min-h-[84px] w-full resize-none bg-transparent px-1 py-1 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400"
             />
             <div className="mt-3 flex w-full items-center justify-between gap-3 border-t border-[#DFE8FF] pt-3">
