@@ -149,7 +149,7 @@ export default function Footer() {
           <span className="w-5 h-5 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-xs">
             {isSupportModalOpen ? "×" : "?"}
           </span>
-          {isSupportModalOpen ? "Close Spacey" : "Chat with Spacey"}
+          {isSupportModalOpen ? "Close Chat" : "Chat with Spacedey"}
         </button>
       </footer>
     </>
