@@ -77,7 +77,7 @@ export default function RootLayout({
 
         <StorageCartProvider>
           <SitesProvider>
-            <Suspense fallback={null}>
+            <Suspense fallback={<p>Loading...</p>}>
               <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
             </Suspense>
             {children}
