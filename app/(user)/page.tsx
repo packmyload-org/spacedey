@@ -5,7 +5,7 @@ import { getSiteDirectory } from '@/lib/services/siteDirectory';
 import { buildPageMetadata, getSiteUrl, serializeJsonLd, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Secure Storage Facilities in Lagos, Nigeria | Spacedey',
+  title: 'Secure Storage Facilities in Lagos, Nigeria',
   description:
     'Compare and reserve secure self storage facilities in Lagos and across Nigeria for personal items, business inventory, and moving support.',
   path: '/',
@@ -16,39 +16,9 @@ export const metadata: Metadata = buildPageMetadata({
 });
 
 export default async function Home() {
-  const siteUrl = getSiteUrl();
-  const locationDirectory = await getSiteDirectory();
-  const faqJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: HOME_FAQS.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  };
-  const webPageJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: `${SITE_NAME} home`,
-    url: siteUrl,
-    description: SITE_DESCRIPTION,
-    about: HOME_SERVICE_TYPES,
-  };
-
+const locationDirectory = await getSiteDirectory();
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(faqJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(webPageJsonLd) }}
-      />
       <HomePageContent
         cities={locationDirectory.cities}
         states={locationDirectory.states}
