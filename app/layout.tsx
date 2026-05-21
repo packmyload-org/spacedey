@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(env.app.url),
   applicationName: SITE_NAME,
   title: {
-    default: `Secure Storage Facilities in Lagos, Nigeria | ${SITE_NAME}`,
+    default: `Secure Storage Facilities in Lagos, Nigeria `,
     template: `%s | ${SITE_NAME}`,
   },
   description: "Affordable secure storage facilities in Lagos, Nigeria & West Africa. Largest options available for your needs.",
@@ -67,45 +67,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const { googleTagManagerId, vercelInsightsEnabled } = env.integrations.analytics;
-  const organizationJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: SITE_NAME,
-    url: env.app.url,
-    description: SITE_DESCRIPTION,
-    logo: `${env.app.url}/apple-icon.png`,
-    sameAs: [
-      'https://www.instagram.com/spacedey.ng/',
-      'https://x.com/spacedeyng',
-      'https://www.linkedin.com/company/spacedey/',
-      'https://web.facebook.com/spacedeyng/?_rdc=1&_rdr#',
-    ],
-  };
+  
 
-  const websiteJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: SITE_NAME,
-    url: env.app.url,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${env.app.url}/search?state={state}`,
-      'query-input': 'required name=state',
-    },
-  };
 
   return (
     <html lang="en">
       <body className="antialiased" suppressHydrationWarning>
         <GoogleTagManager containerId={googleTagManagerId} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(organizationJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
-        />
+
         <StorageCartProvider>
           <SitesProvider>
             <Suspense fallback={null}>
