@@ -2,7 +2,6 @@ import type { MetadataRoute } from 'next';
 import { connectTypeORM } from '@/lib/db';
 import Site from '@/lib/db/entities/Site';
 import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
-import { listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
 import { getSiteUrl } from '@/lib/seo';
 import { ChangeFrequency } from '@/lib/enums/changeFrequency';
 import { SitemapPriority } from '@/lib/enums/sitemapPriority';
