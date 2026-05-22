@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
 import { DEFAULT_SUPPORT_EMAIL, DEFAULT_SUPPORT_PHONE } from "@/lib/types/constants";
 
