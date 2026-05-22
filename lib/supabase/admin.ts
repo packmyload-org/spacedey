@@ -11,6 +11,7 @@ export function createAdminClient(): SupabaseClient<Database> {
     );
   }
 
+
   if (!adminClient) {
     adminClient = createClient<Database>(env.supabase.url, env.supabase.serviceRoleKey, {
       auth: {
