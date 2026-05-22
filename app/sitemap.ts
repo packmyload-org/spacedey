@@ -58,6 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: route === '' ? ChangeFrequency.DAILY : ChangeFrequency.WEEKLY,
       priority: route === '' ? SitemapPriority.HOME : SitemapPriority.STATIC,
     })),
+    ...locationRoutes,
     ...blogPosts.map((post) => ({
       url: `${siteUrl}/blog/${post.slug}`,
       lastModified: post.updatedAt,
