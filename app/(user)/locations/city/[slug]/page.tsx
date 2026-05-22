@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LocationFacilityCard, LocationLinkCard, LocationStatCard } from '@/components/locations/LocationSeoSections';
 import { getCityLandingPageBySlug, listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
-import { buildPageMetadata, serializeJsonLd, toAbsoluteUrl } from '@/lib/seo';
+import { buildPageMetadata, serializeJsonLd } from '@/lib/seo';
 import { formatCountLabel, formatPriceFromAmount } from '@/lib/utils/locationSeo';
 
 export const dynamic = 'force-dynamic';
@@ -57,7 +57,6 @@ export default async function CityLocationPage({
     .filter((entry) => entry.state === city.state && entry.slug !== city.slug)
     .slice(0, 4);
   const statePage = statePages.find((entry) => entry.slug === city.stateSlug) ?? null;
-  const pageUrl = toAbsoluteUrl(`/locations/city/${city.slug}`);
   return (
     <main className="min-h-screen bg-[#F5F8FF] pb-20 pt-24">
 
