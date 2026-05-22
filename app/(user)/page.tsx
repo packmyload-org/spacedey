@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import HomePageContent from "@/components/home/HomePageContent";
 import { HOME_FAQS, HOME_SERVICE_TYPES } from '@/lib/homeSeoContent';
 import { getSiteDirectory } from '@/lib/services/siteDirectory';
-import { buildPageMetadata, getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from '@/lib/seo';
+import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Secure Storage Facilities in Lagos, Nigeria',
