@@ -57,7 +57,6 @@ export default async function CityLocationPage({
     .filter((entry) => entry.state === city.state && entry.slug !== city.slug)
     .slice(0, 4);
   const statePage = statePages.find((entry) => entry.slug === city.stateSlug) ?? null;
-  const pageUrl = toAbsoluteUrl(`/locations/city/${city.slug}`);
   return (
     <main className="min-h-screen bg-[#F5F8FF] pb-20 pt-24">
 
