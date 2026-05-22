@@ -5,7 +5,7 @@ import { useAuthStore } from '@/lib/store/useAuthStore';
 import { PaymentProvider } from '@/lib/db/entities/Payment';
 import { UserRole } from '@/lib/types/roles';
 import type { PaymentMethodsResponse, PaymentMethodStatus } from '@/lib/types/local';
-import { Loader, Users, MapPin, Box, FileText, TrendingUp } from 'lucide-react';
+import { Users, MapPin, Box, FileText, TrendingUp } from 'lucide-react';
 import Loading from './loading';
 
 interface DashboardUser {
