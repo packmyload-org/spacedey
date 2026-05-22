@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { LocationFacilityCard, LocationLinkCard, LocationStatCard } from '@/components/locations/LocationSeoSections';
 import { getCityLandingPageBySlug, listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
-import { buildPageMetadata, serializeJsonLd } from '@/lib/seo';
+import { buildPageMetadata, toAbsoluteUrl } from '@/lib/seo';
 import { formatCountLabel, formatPriceFromAmount } from '@/lib/utils/locationSeo';
 
 export const dynamic = 'force-dynamic';
