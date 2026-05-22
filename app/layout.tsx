@@ -9,7 +9,7 @@ import VercelInsights from '@/components/analytics/VercelInsights';
 import { SitesProvider } from "@/contexts/SitesContext";
 import { StorageCartProvider } from "@/contexts/StorageCartContext";
 import StorageCartMount from "@/components/StorageCartMount";
-import { DEFAULT_KEYWORDS, SITE_DESCRIPTION, SITE_NAME, getDefaultSeoImage, serializeJsonLd } from "@/lib/seo";
+import { DEFAULT_KEYWORDS, SITE_NAME, getDefaultSeoImage } from "@/lib/seo";
 import { env } from "@/config/env";
 import CookieConsent from '@/components/ui/CookieConsent';
 
