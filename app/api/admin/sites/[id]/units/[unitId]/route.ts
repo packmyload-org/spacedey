@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import StorageUnit, { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapStorageUnit } from '@/lib/db/mappers';
+import type { Database } from '@/lib/supabase/database.types';
+import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 import { requireAdmin } from '@/lib/auth/admin';
 import { syncUnitTypeAvailability } from '@/lib/db/storageUnits';
 
@@ -20,29 +22,47 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(StorageUnit);
+    const supabase = createAdminClient();
 
-    const unit = await repo.findOne({
-      where: { id: unitId },
-      relations: ['unitType'],
-    });
+    const { data: existing, error: lookupError } = await supabase
+      .from('storage_units')
+      .select('id, unitTypeId')
+      .eq('id', unitId)
+      .maybeSingle();
 
-    if (!unit) {
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!existing) {
       return NextResponse.json({ ok: false, error: 'Storage unit not found' }, { status: 404 });
     }
 
-    if (body.unitNumber !== undefined) unit.unitNumber = body.unitNumber;
-    if (body.label !== undefined) unit.label = body.label || null;
-    if (body.note !== undefined) unit.note = body.note || null;
+    const updates: Database['public']['Tables']['storage_units']['Update'] = {};
+
+    if (body.unitNumber !== undefined) updates.unitNumber = body.unitNumber;
+    if (body.label !== undefined) updates.label = body.label || null;
+    if (body.note !== undefined) updates.note = body.note || null;
     if (body.status !== undefined && Object.values(StorageUnitStatus).includes(body.status)) {
-      unit.status = body.status;
+      updates.status = body.status;
     }
 
-    await repo.save(unit);
-    await syncUnitTypeAvailability(appDataSource, unit.unitType.id);
+    const { data: updatedRow, error: updateError } = await supabase
+      .from('storage_units')
+      .update(updates)
+      .eq('id', unitId)
+      .select('*, unit_types(*)')
+      .single();
 
-    return NextResponse.json({ ok: true, unit });
+    if (updateError) {
+      throw updateError;
+    }
+
+    if (existing.unitTypeId) {
+      await syncUnitTypeAvailability(existing.unitTypeId);
+    }
+
+    return NextResponse.json({ ok: true, unit: mapStorageUnit(updatedRow) });
   } catch (error) {
     console.error('Update storage unit error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';
@@ -65,21 +85,33 @@ export async function DELETE(
   }
 
   try {
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(StorageUnit);
+    const supabase = createAdminClient();
 
-    const unit = await repo.findOne({
-      where: { id: unitId },
-      relations: ['unitType'],
-    });
+    const { data: existing, error: lookupError } = await supabase
+      .from('storage_units')
+      .select('id, unitTypeId')
+      .eq('id', unitId)
+      .maybeSingle();
 
-    if (!unit) {
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!existing) {
       return NextResponse.json({ ok: false, error: 'Storage unit not found' }, { status: 404 });
     }
 
-    const unitTypeId = unit.unitType.id;
-    await repo.remove(unit);
-    await syncUnitTypeAvailability(appDataSource, unitTypeId);
+    const unitTypeId = existing.unitTypeId;
+
+    const { error: deleteError } = await supabase.from('storage_units').delete().eq('id', unitId);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    if (unitTypeId) {
+      await syncUnitTypeAvailability(unitTypeId);
+    }
 
     return NextResponse.json({ ok: true, message: 'Storage unit deleted successfully' });
   } catch (error) {

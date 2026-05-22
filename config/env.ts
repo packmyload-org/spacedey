@@ -3,7 +3,6 @@
  * Centralized environment setup for the application
  */
 
-import type { LoggerOptions } from "typeorm";
 import { resolveSiteUrl } from "@/lib/siteUrl";
 
 const nodeEnv = process.env.NODE_ENV || 'development';
@@ -52,17 +51,32 @@ export const env = {
     secret: process.env.JWT_SECRET || 'your-secret-key-change-this-in-production',
   },
 
-  // Postgres / MySQL Configuration (for TypeORM)
+  // Supabase (Data API + Auth session helpers)
+  supabase: {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    publishableKey:
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+      || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      || '',
+    serviceRoleKey:
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+      || process.env.SUPABASE_SECRET_KEY
+      || '',
+  },
+
+  // Postgres pooler (transaction helper only — use Supabase client for queries)
   postgres: {
     url: selectedDatabaseUrl,
     pooledUrl: pooledDatabaseUrl,
     directUrl: directDatabaseUrl,
     useDirectUrl,
     poolMax: readNumber(process.env.DB_POOL_MAX, isProduction ? 2 : 10),
+    connectionTimeoutMillis: readNumber(
+      process.env.DB_CONNECTION_TIMEOUT_MS,
+      isBuildProcess ? 15_000 : 30_000,
+    ),
     ssl: readBoolean(process.env.DB_SSL, defaultSsl),
     sslRejectUnauthorized: readBoolean(process.env.DB_SSL_REJECT_UNAUTHORIZED, false),
-    synchronize: readBoolean(process.env.DB_SYNCHRONIZE, false),
-    logging: readBoolean(process.env.DB_LOGGING, isDevelopment) as LoggerOptions,
   },
 
   // Map Configuration

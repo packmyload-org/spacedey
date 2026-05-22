@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  serverExternalPackages: ['pg', 'typeorm', 'reflect-metadata'],
+  staticPageGenerationTimeout: 180,
+  serverExternalPackages: ['pg'],
 
   allowedDevOrigins: ['localhost', '127.0.0.1', '::1'],
   /* config options here */

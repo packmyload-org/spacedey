@@ -1,18 +1,29 @@
-import { DataSource } from 'typeorm';
-import UnitType from '@/lib/db/entities/UnitType';
-import StorageUnit, { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 
-export async function syncUnitTypeAvailability(dataSource: DataSource, unitTypeId: string) {
-  const unitRepo = dataSource.getRepository(StorageUnit);
-  const unitTypeRepo = dataSource.getRepository(UnitType);
+export async function syncUnitTypeAvailability(unitTypeId: string) {
+  const supabase = createAdminClient();
 
-  const availableCount = await unitRepo.count({
-    where: {
-      unitType: { id: unitTypeId },
-      status: StorageUnitStatus.AVAILABLE,
-    },
-  });
+  const { count, error: countError } = await supabase
+    .from('storage_units')
+    .select('id', { count: 'exact', head: true })
+    .eq('unitTypeId', unitTypeId)
+    .eq('status', StorageUnitStatus.AVAILABLE);
 
-  await unitTypeRepo.update(unitTypeId, { availableCount });
+  if (countError) {
+    throw countError;
+  }
+
+  const availableCount = count ?? 0;
+
+  const { error: updateError } = await supabase
+    .from('unit_types')
+    .update({ availableCount })
+    .eq('id', unitTypeId);
+
+  if (updateError) {
+    throw updateError;
+  }
+
   return availableCount;
 }

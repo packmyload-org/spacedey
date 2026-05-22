@@ -1,8 +1,6 @@
 import { Chat, type Message, type Thread } from 'chat';
 import { MemoryStateAdapter } from '@chat-adapter/state-memory';
-import { connectTypeORM } from '@/lib/db';
-import LandlordInquiry from '@/lib/db/entities/LandlordInquiry';
-import type { Repository } from 'typeorm';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createConfiguredResendAdapter, createResendThread } from '@/lib/services/emailChatConfig';
 
 const DEFAULT_FROM_NAME = 'Spacedey Partnerships';
@@ -106,32 +104,38 @@ function getLandlordInquiryChat(): Chat {
     state: new MemoryStateAdapter(),
   });
 
-  const syncInboundReply = async (
-    repo: Repository<LandlordInquiry>,
-    threadId: string,
-    replyText: string
-  ) => {
-    const inquiry = await repo.findOne({ where: { chatThreadId: threadId } });
+  const syncInboundReply = async (threadId: string, replyText: string) => {
+    const supabase = createAdminClient();
+    const { data: inquiry } = await supabase
+      .from('landlord_inquiries')
+      .select('*')
+      .eq('chatThreadId', threadId)
+      .maybeSingle();
 
     if (!inquiry) {
       return null;
     }
 
-    inquiry.lastInboundMessage = replyText || null;
-    inquiry.lastInboundAt = new Date();
-    inquiry.status = inquiry.botReplyCount > 1 ? 'triaging' : 'responded';
-    await repo.save(inquiry);
+    const now = new Date().toISOString();
+    const status = inquiry.botReplyCount > 1 ? 'triaging' : 'responded';
 
-    return inquiry;
+    await supabase
+      .from('landlord_inquiries')
+      .update({
+        lastInboundMessage: replyText || null,
+        lastInboundAt: now,
+        status,
+      })
+      .eq('id', inquiry.id);
+
+    return { ...inquiry, status };
   };
 
   const handleIncomingMessage = async (
     thread: Thread,
     message: Message
   ) => {
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(LandlordInquiry);
-    const inquiry = await syncInboundReply(repo, thread.id, String(message.text || '').trim());
+    const inquiry = await syncInboundReply(thread.id, String(message.text || '').trim());
 
     if (!inquiry) {
       return;
@@ -147,10 +151,15 @@ function getLandlordInquiryChat(): Chat {
         'Thanks for the extra details. We have flagged your landlord enquiry for a human follow-up.',
     });
 
-    inquiry.botReplyCount += 1;
-    inquiry.lastOutboundAt = new Date();
-    inquiry.status = 'triaging';
-    await repo.save(inquiry);
+    const supabase = createAdminClient();
+    await supabase
+      .from('landlord_inquiries')
+      .update({
+        botReplyCount: inquiry.botReplyCount + 1,
+        lastOutboundAt: new Date().toISOString(),
+        status: 'triaging',
+      })
+      .eq('id', inquiry.id);
   };
 
   chat.onNewMention(async (thread, message) => {

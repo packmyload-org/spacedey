@@ -1,5 +1,10 @@
-import { In, LessThanOrEqual, Repository } from 'typeorm';
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  mapBooking,
+  mapInvoice,
+  BOOKING_RELATION_SELECT,
+  INVOICE_RELATION_SELECT,
+} from '@/lib/db/mappers';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
 import Invoice, { InvoiceStatus } from '@/lib/db/entities/Invoice';
 import NewsletterSubscriber from '@/lib/db/entities/NewsletterSubscriber';
@@ -12,6 +17,8 @@ import { sendBillingSuccessEmail, sendDirectEmail } from '@/lib/email/resend';
 import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
 import type { PaymentBillingType } from '@/lib/db/entities/Payment';
 import { resolveAppUrl } from '@/lib/utils/appUrl';
+import { asJson } from '@/lib/supabase/json';
+import { parseDate, parseRequiredDate } from '@/lib/db/row';
 
 const ALERT_RECIPIENTS = (process.env.ALERT_NOTIFICATION_EMAILS || '')
   .split(',')
@@ -118,11 +125,6 @@ function renderEmailText(args: {
   ].filter(Boolean).join('\n');
 }
 
-async function getNotificationRepository(): Promise<Repository<EmailNotification>> {
-  const dataSource = await connectTypeORM();
-  return dataSource.getRepository(EmailNotification);
-}
-
 async function queueNotification(args: {
   eventKey: string;
   kind: EmailNotificationKind;
@@ -132,24 +134,68 @@ async function queueNotification(args: {
   payload: Record<string, unknown>;
   scheduledFor?: Date;
 }) {
-  const repo = await getNotificationRepository();
-  const existing = await repo.findOne({ where: { eventKey: args.eventKey } });
+  const supabase = createAdminClient();
+  const { data: existing } = await supabase
+    .from('email_notifications')
+    .select('*')
+    .eq('eventKey', args.eventKey)
+    .maybeSingle();
 
   if (existing) {
-    return existing;
+    return mapEmailNotificationRow(existing);
   }
 
-  const notification = repo.create({
-    eventKey: args.eventKey,
-    kind: args.kind,
-    recipientEmail: args.recipientEmail.toLowerCase(),
-    recipientName: args.recipientName ?? null,
-    subject: args.subject,
-    payload: args.payload,
-    scheduledFor: args.scheduledFor ?? new Date(),
-  });
+  const { data: notification, error } = await supabase
+    .from('email_notifications')
+    .insert({
+      eventKey: args.eventKey,
+      kind: args.kind,
+      status: EmailNotificationStatus.PENDING,
+      recipientEmail: args.recipientEmail.toLowerCase(),
+      recipientName: args.recipientName ?? null,
+      subject: args.subject,
+      payload: asJson(args.payload),
+      scheduledFor: (args.scheduledFor ?? new Date()).toISOString(),
+    })
+    .select('*')
+    .single();
 
-  await repo.save(notification);
+  if (error) {
+    throw error;
+  }
+
+  return mapEmailNotificationRow(notification);
+}
+
+function mapEmailNotificationRow(row: {
+  id: string;
+  eventKey: string;
+  kind: string;
+  status: string;
+  recipientEmail: string;
+  recipientName: string | null;
+  subject: string;
+  payload: import('@/lib/supabase/database.types').Json | null;
+  scheduledFor: string | null;
+  sentAt: string | null;
+  failureReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}): EmailNotification {
+  const notification = new EmailNotification();
+  notification.id = row.id;
+  notification.eventKey = row.eventKey;
+  notification.kind = row.kind as EmailNotificationKind;
+  notification.status = row.status as EmailNotificationStatus;
+  notification.recipientEmail = row.recipientEmail;
+  notification.recipientName = row.recipientName;
+  notification.subject = row.subject;
+  notification.payload = (row.payload ?? {}) as Record<string, unknown>;
+  notification.scheduledFor = parseRequiredDate(row.scheduledFor ?? row.createdAt);
+  notification.sentAt = parseDate(row.sentAt);
+  notification.failureReason = row.failureReason;
+  notification.createdAt = parseRequiredDate(row.createdAt);
+  notification.updatedAt = parseRequiredDate(row.updatedAt);
   return notification;
 }
 
@@ -240,26 +286,27 @@ export async function queueReminderNotification(args: {
 }
 
 export async function queueBookingExpirationNotifications(now = new Date()) {
-  const dataSource = await connectTypeORM();
-  const repo = dataSource.getRepository(Booking);
-  const soonThreshold = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const bookings = await repo.find({
-    where: [
-      {
-        status: BookingStatus.ACTIVE,
-        endDate: LessThanOrEqual(soonThreshold),
-      },
-      {
-        status: BookingStatus.PARTIAL,
-        endDate: LessThanOrEqual(soonThreshold),
-      },
-    ],
-    relations: ['user', 'site'],
-  });
+  const supabase = createAdminClient();
+  const soonThreshold = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: bookingRows, error } = await supabase
+    .from('bookings')
+    .select(BOOKING_RELATION_SELECT)
+    .in('status', [BookingStatus.ACTIVE, BookingStatus.PARTIAL])
+    .lte('endDate', soonThreshold);
+
+  if (error) {
+    throw error;
+  }
+
+  const bookings = (bookingRows ?? []).map((row) => mapBooking(row));
 
   const queuedIds: string[] = [];
 
   for (const booking of bookings) {
+    if (!booking.user?.email || !booking.site?.name) {
+      continue;
+    }
+
     if (!booking.endDate || booking.endDate < now) {
       const notification = await queueNotification({
         eventKey: `booking-expired:${booking.id}`,
@@ -298,25 +345,27 @@ export async function queueBookingExpirationNotifications(now = new Date()) {
 }
 
 export async function queueInvoiceReminderNotifications(now = new Date()) {
-  const dataSource = await connectTypeORM();
-  const repo = dataSource.getRepository(Invoice);
-  const dueSoon = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  const invoices = await repo
-    .createQueryBuilder('invoice')
-    .withDeleted()
-    .leftJoinAndSelect('invoice.user', 'user')
-    .leftJoinAndSelect('invoice.booking', 'booking')
-    .leftJoinAndSelect('booking.site', 'site')
-    .where(
-      '(invoice.status = :sentStatus AND invoice.dueDate <= :dueSoon) OR (invoice.status = :overdueStatus AND invoice.dueDate <= :now)',
-      {
-        sentStatus: InvoiceStatus.SENT,
-        overdueStatus: InvoiceStatus.OVERDUE,
-        dueSoon,
-        now,
-      }
-    )
-    .getMany();
+  const supabase = createAdminClient();
+  const dueSoon = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
+  const nowIso = now.toISOString();
+
+  const [{ data: dueSoonRows }, { data: overdueRows }] = await Promise.all([
+    supabase
+      .from('invoices')
+      .select(INVOICE_RELATION_SELECT)
+      .eq('status', InvoiceStatus.SENT)
+      .lte('dueDate', dueSoon),
+    supabase
+      .from('invoices')
+      .select(INVOICE_RELATION_SELECT)
+      .eq('status', InvoiceStatus.OVERDUE)
+      .lte('dueDate', nowIso),
+  ]);
+
+  const invoices = [
+    ...(dueSoonRows ?? []),
+    ...(overdueRows ?? []),
+  ].map((row) => mapInvoice(row));
 
   const queuedIds: string[] = [];
 
@@ -366,12 +415,18 @@ export async function queueWeeklyNewsletterDigestNotifications(now = new Date(),
     return [];
   }
 
-  const dataSource = await connectTypeORM();
-  const repo = dataSource.getRepository(NewsletterSubscriber);
-  const subscribers = (await repo.find()).filter((subscriber) => Boolean(subscriber.subscribedAt));
+  const supabase = createAdminClient();
+  const { data: subscribers, error } = await supabase
+    .from('newsletter_subscribers')
+    .select('*')
+    .not('subscribedAt', 'is', null);
+
+  if (error) {
+    throw error;
+  }
 
   const weekKey = getDigestWeekKey(now);
-  const queued = await Promise.all(subscribers.map((subscriber) => queueNotification({
+  const queued = await Promise.all((subscribers ?? []).map((subscriber) => queueNotification({
     eventKey: `newsletter-digest:${subscriber.email}:${weekKey}`,
     kind: EmailNotificationKind.NEWSLETTER_DIGEST,
     recipientEmail: subscriber.email,
@@ -596,45 +651,58 @@ export async function processEmailNotificationsByIds(ids: string[]) {
     return [];
   }
 
-  const repo = await getNotificationRepository();
-  const notifications = await repo.find({
-    where: {
-      id: In(ids),
-    },
-  });
+  const supabase = createAdminClient();
+  const { data: notifications, error } = await supabase
+    .from('email_notifications')
+    .select('*')
+    .in('id', ids);
+
+  if (error) {
+    throw error;
+  }
+
   const results: Array<{ id: string; status: EmailNotificationStatus }> = [];
 
-  for (const notification of notifications) {
+  for (const notification of notifications ?? []) {
+    let status = notification.status as EmailNotificationStatus;
+    let sentAt: string | null = notification.sentAt;
+    let failureReason: string | null = notification.failureReason;
+
     try {
-      await deliverNotification(notification);
-      notification.status = EmailNotificationStatus.SENT;
-      notification.sentAt = new Date();
-      notification.failureReason = null;
+      await deliverNotification(mapEmailNotificationRow(notification));
+      status = EmailNotificationStatus.SENT;
+      sentAt = new Date().toISOString();
+      failureReason = null;
     } catch (error) {
-      notification.status = EmailNotificationStatus.FAILED;
-      notification.failureReason = error instanceof Error ? error.message : String(error);
+      status = EmailNotificationStatus.FAILED;
+      failureReason = error instanceof Error ? error.message : String(error);
     }
 
-    await repo.save(notification);
-    results.push({ id: notification.id, status: notification.status });
+    await supabase
+      .from('email_notifications')
+      .update({ status, sentAt, failureReason })
+      .eq('id', notification.id);
+
+    results.push({ id: notification.id, status });
   }
 
   return results;
 }
 
 export async function processPendingEmailNotifications(limit = 50) {
-  const repo = await getNotificationRepository();
-  const notifications = await repo.find({
-    where: {
-      status: EmailNotificationStatus.PENDING,
-      scheduledFor: LessThanOrEqual(new Date()),
-    },
-    order: {
-      scheduledFor: 'ASC',
-      createdAt: 'ASC',
-    },
-    take: limit,
-  });
+  const supabase = createAdminClient();
+  const { data: notifications, error } = await supabase
+    .from('email_notifications')
+    .select('id')
+    .eq('status', EmailNotificationStatus.PENDING)
+    .lte('scheduledFor', new Date().toISOString())
+    .order('scheduledFor', { ascending: true })
+    .order('createdAt', { ascending: true })
+    .limit(limit);
 
-  return processEmailNotificationsByIds(notifications.map((notification) => notification.id));
+  if (error) {
+    throw error;
+  }
+
+  return processEmailNotificationsByIds((notifications ?? []).map((notification) => notification.id));
 }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import Site from '@/lib/db/entities/Site';
-import UnitType from '@/lib/db/entities/UnitType';
-import StorageUnit, { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapStorageUnit } from '@/lib/db/mappers';
+import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 import { requireAdmin } from '@/lib/auth/admin';
 import { syncUnitTypeAvailability } from '@/lib/db/storageUnits';
 
@@ -31,58 +30,77 @@ export async function POST(
       );
     }
 
-    const appDataSource = await connectTypeORM();
-    const siteRepo = appDataSource.getRepository(Site);
-    const unitTypeRepo = appDataSource.getRepository(UnitType);
-    const storageUnitRepo = appDataSource.getRepository(StorageUnit);
+    const supabase = createAdminClient();
 
-    const [site, unitType] = await Promise.all([
-      siteRepo.findOne({ where: { id } }),
-      unitTypeRepo.findOne({ where: { id: unitTypeId }, relations: ['site'] }),
-    ]);
+    const [{ data: site, error: siteError }, { data: unitType, error: unitTypeError }] =
+      await Promise.all([
+        supabase.from('sites').select('id').eq('id', id).maybeSingle(),
+        supabase.from('unit_types').select('id, siteId').eq('id', unitTypeId).maybeSingle(),
+      ]);
+
+    if (siteError) {
+      throw siteError;
+    }
+    if (unitTypeError) {
+      throw unitTypeError;
+    }
 
     if (!site) {
       return NextResponse.json({ ok: false, error: 'Site not found' }, { status: 404 });
     }
 
-    if (!unitType || unitType.site.id !== site.id) {
-      return NextResponse.json({ ok: false, error: 'Unit type not found for this site' }, { status: 404 });
+    if (!unitType || unitType.siteId !== site.id) {
+      return NextResponse.json(
+        { ok: false, error: 'Unit type not found for this site' },
+        { status: 404 }
+      );
     }
 
-    const existing = await storageUnitRepo.findOne({
-      where: {
-        unitNumber,
-        site: { id: site.id },
-      },
-      relations: ['site'],
-    });
+    const { data: existing, error: existingError } = await supabase
+      .from('storage_units')
+      .select('id')
+      .eq('unitNumber', unitNumber)
+      .eq('siteId', site.id)
+      .maybeSingle();
+
+    if (existingError) {
+      throw existingError;
+    }
 
     if (existing) {
-      return NextResponse.json({ ok: false, error: 'Unit number already exists for this site.' }, { status: 409 });
+      return NextResponse.json(
+        { ok: false, error: 'Unit number already exists for this site.' },
+        { status: 409 }
+      );
     }
 
     const validStatus = Object.values(StorageUnitStatus).includes(status)
       ? status
       : StorageUnitStatus.AVAILABLE;
 
-    const storageUnit = storageUnitRepo.create({
-      unitNumber,
-      status: validStatus,
-      label: label || null,
-      note: note || null,
-      site,
-      unitType,
-    });
+    const { data: createdRow, error: insertError } = await supabase
+      .from('storage_units')
+      .insert({
+        unitNumber,
+        status: validStatus,
+        label: label || null,
+        note: note || null,
+        siteId: site.id,
+        unitTypeId,
+      })
+      .select('*, unit_types(*)')
+      .single();
 
-    await storageUnitRepo.save(storageUnit);
-    await syncUnitTypeAvailability(appDataSource, unitType.id);
+    if (insertError) {
+      throw insertError;
+    }
 
-    const createdUnit = await storageUnitRepo.findOne({
-      where: { id: storageUnit.id },
-      relations: ['unitType'],
-    });
+    await syncUnitTypeAvailability(unitTypeId);
 
-    return NextResponse.json({ ok: true, unit: createdUnit }, { status: 201 });
+    return NextResponse.json(
+      { ok: true, unit: mapStorageUnit(createdRow) },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Create storage unit error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';

@@ -1,7 +1,5 @@
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
-import SupportConversation from '@/lib/db/entities/SupportConversation';
-import SupportMessage from '@/lib/db/entities/SupportMessage';
 import {
   type ConversationMessage,
   toConversationMessage,
@@ -45,7 +43,7 @@ function buildSupportIntroMessages(context: SupportConversationContext) {
 }
 
 function buildSupportReply(
-  conversation: SupportConversation,
+  botReplyCount: number,
   message: string
 ) {
   const normalizedMessage = message.toLowerCase();
@@ -66,7 +64,7 @@ function buildSupportReply(
     return 'Thanks. I’ve marked this as an access-related issue. If there is a specific site, unit number, or time you noticed the problem, add it here and I’ll attach it to the ticket.';
   }
 
-  if (conversation.botReplyCount <= 1) {
+  if (botReplyCount <= 1) {
     return 'Thanks, I’ve added that to your support ticket. If you have screenshots, booking email, storage location, or invoice details, drop them here and I’ll keep them with the conversation.';
   }
 
@@ -76,41 +74,51 @@ function buildSupportReply(
 export async function startSupportConversation(
   context: SupportConversationContext
 ): Promise<SupportConversationSnapshot> {
-  const dataSource = await connectTypeORM();
-  await ensureInAppConversationSchema(dataSource);
-  const repo = dataSource.getRepository(SupportConversation);
-  const messageRepo = dataSource.getRepository(SupportMessage);
-  const now = new Date();
+  await ensureInAppConversationSchema();
+  const supabase = createAdminClient();
+  const now = new Date().toISOString();
   const messages = buildSupportIntroMessages(context);
   const fullName = [context.firstName, context.lastName].filter(Boolean).join(' ').trim();
 
-  const conversation = repo.create({
-    threadId: crypto.randomUUID(),
-    email: context.email,
-    fullName: fullName || null,
-    topic: context.topic || null,
-    status: 'acknowledged',
-    firstMessage: context.message,
-    lastInboundMessage: context.message,
-    lastInboundAt: now,
-    lastOutboundAt: now,
-    botReplyCount: 2,
-  });
+  const { data: conversation, error: conversationError } = await supabase
+    .from('support_conversations')
+    .insert({
+      threadId: crypto.randomUUID(),
+      email: context.email,
+      fullName: fullName || null,
+      topic: context.topic || null,
+      status: 'acknowledged',
+      firstMessage: context.message,
+      lastInboundMessage: context.message,
+      lastInboundAt: now,
+      lastOutboundAt: now,
+      botReplyCount: 2,
+    })
+    .select('*')
+    .single();
 
-  await repo.save(conversation);
-  const savedMessages = await messageRepo.save(
-    messages.map((message) =>
-      messageRepo.create({
+  if (conversationError) {
+    throw conversationError;
+  }
+
+  const { data: savedMessages, error: messageError } = await supabase
+    .from('support_messages')
+    .insert(
+      messages.map((message) => ({
         conversationId: conversation.id,
         role: message.role,
         content: message.content,
-      })
+      }))
     )
-  );
+    .select('*');
+
+  if (messageError) {
+    throw messageError;
+  }
 
   return {
     conversationId: conversation.threadId,
-    messages: savedMessages.map((message) => toConversationMessage(message)),
+    messages: (savedMessages ?? []).map((message) => toConversationMessage(message)),
     status: conversation.status,
   };
 }
@@ -119,44 +127,64 @@ export async function appendSupportConversationMessage(args: {
   conversationId: string;
   message: string;
 }): Promise<SupportConversationSnapshot> {
-  const dataSource = await connectTypeORM();
-  await ensureInAppConversationSchema(dataSource);
-  const repo = dataSource.getRepository(SupportConversation);
-  const messageRepo = dataSource.getRepository(SupportMessage);
-  const conversation = await repo.findOne({ where: { threadId: args.conversationId } });
+  await ensureInAppConversationSchema();
+  const supabase = createAdminClient();
+
+  const { data: conversation, error: conversationError } = await supabase
+    .from('support_conversations')
+    .select('*')
+    .eq('threadId', args.conversationId)
+    .maybeSingle();
+
+  if (conversationError) {
+    throw conversationError;
+  }
 
   if (!conversation) {
     throw new Error('Support conversation not found.');
   }
 
-  const now = new Date();
-  await messageRepo.save([
-    messageRepo.create({
+  const now = new Date().toISOString();
+  const botReplyCount = conversation.botReplyCount + 1;
+  const status = botReplyCount > 2 ? 'triaging' : 'acknowledged';
+
+  await supabase.from('support_messages').insert([
+    {
       conversationId: conversation.id,
       role: 'user',
       content: args.message,
-    }),
-    messageRepo.create({
+    },
+    {
       conversationId: conversation.id,
       role: 'assistant',
-      content: buildSupportReply(conversation, args.message),
-    }),
+      content: buildSupportReply(conversation.botReplyCount, args.message),
+    },
   ]);
-  conversation.lastInboundMessage = args.message;
-  conversation.lastInboundAt = now;
-  conversation.lastOutboundAt = now;
-  conversation.botReplyCount += 1;
-  conversation.status = conversation.botReplyCount > 2 ? 'triaging' : 'acknowledged';
 
-  await repo.save(conversation);
-  const allMessages = await messageRepo.find({
-    where: { conversationId: conversation.id },
-    order: { createdAt: 'ASC' },
-  });
+  await supabase
+    .from('support_conversations')
+    .update({
+      lastInboundMessage: args.message,
+      lastInboundAt: now,
+      lastOutboundAt: now,
+      botReplyCount,
+      status,
+    })
+    .eq('id', conversation.id);
+
+  const { data: allMessages, error: messagesError } = await supabase
+    .from('support_messages')
+    .select('*')
+    .eq('conversationId', conversation.id)
+    .order('createdAt', { ascending: true });
+
+  if (messagesError) {
+    throw messagesError;
+  }
 
   return {
     conversationId: conversation.threadId,
-    messages: allMessages.map((message) => toConversationMessage(message)),
-    status: conversation.status,
+    messages: (allMessages ?? []).map((message) => toConversationMessage(message)),
+    status,
   };
 }

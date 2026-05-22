@@ -1,7 +1,6 @@
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
 import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
-import ReferralMessage from '@/lib/db/entities/ReferralMessage';
 import { type ConversationMessage, toConversationMessage } from '@/lib/conversations/messages';
 
 export type ReferralConversationSnapshot = {
@@ -28,8 +27,8 @@ function buildReferralIntroMessages(submission: ReferralSubmission) {
   ];
 }
 
-function buildReferralReply(submission: ReferralSubmission) {
-  if (submission.botReplyCount <= 1) {
+function buildReferralReply(botReplyCount: number) {
+  if (botReplyCount <= 1) {
     return 'Thanks. I’ve attached that note to the referral and flagged it for the team.';
   }
 
@@ -39,37 +38,56 @@ function buildReferralReply(submission: ReferralSubmission) {
 export async function initializeReferralConversation(
   submissionId: string
 ): Promise<ReferralConversationSnapshot> {
-  const dataSource = await connectTypeORM();
-  await ensureInAppConversationSchema(dataSource);
-  const repo = dataSource.getRepository(ReferralSubmission);
-  const messageRepo = dataSource.getRepository(ReferralMessage);
-  const submission = await repo.findOne({ where: { id: submissionId } });
+  await ensureInAppConversationSchema();
+  const supabase = createAdminClient();
+
+  const { data: submission, error: submissionError } = await supabase
+    .from('referral_submissions')
+    .select('*')
+    .eq('id', submissionId)
+    .maybeSingle();
+
+  if (submissionError) {
+    throw submissionError;
+  }
 
   if (!submission) {
     throw new Error('Referral submission not found.');
   }
 
-  const now = new Date();
-  const messages = buildReferralIntroMessages(submission);
-  submission.chatThreadId = submission.chatThreadId || crypto.randomUUID();
-  submission.followUpStatus = 'contacted';
-  submission.botReplyCount = 2;
-  submission.lastOutboundAt = now;
-  await repo.save(submission);
-  const savedMessages = await messageRepo.save(
-    messages.map((message) =>
-      messageRepo.create({
+  const now = new Date().toISOString();
+  const messages = buildReferralIntroMessages(submission as unknown as ReferralSubmission);
+  const chatThreadId = submission.chatThreadId || crypto.randomUUID();
+
+  await supabase
+    .from('referral_submissions')
+    .update({
+      chatThreadId,
+      followUpStatus: 'contacted',
+      botReplyCount: 2,
+      lastOutboundAt: now,
+    })
+    .eq('id', submission.id);
+
+  const { data: savedMessages, error: messageError } = await supabase
+    .from('referral_messages')
+    .insert(
+      messages.map((message) => ({
         submissionId: submission.id,
         role: message.role,
         content: message.content,
-      })
+      }))
     )
-  );
+    .select('*');
+
+  if (messageError) {
+    throw messageError;
+  }
 
   return {
-    conversationId: submission.chatThreadId,
-    messages: savedMessages.map((message) => toConversationMessage(message)),
-    status: submission.followUpStatus,
+    conversationId: chatThreadId,
+    messages: (savedMessages ?? []).map((message) => toConversationMessage(message)),
+    status: 'contacted',
   };
 }
 
@@ -77,43 +95,64 @@ export async function appendReferralConversationMessage(args: {
   conversationId: string;
   message: string;
 }): Promise<ReferralConversationSnapshot> {
-  const dataSource = await connectTypeORM();
-  await ensureInAppConversationSchema(dataSource);
-  const repo = dataSource.getRepository(ReferralSubmission);
-  const messageRepo = dataSource.getRepository(ReferralMessage);
-  const submission = await repo.findOne({ where: { chatThreadId: args.conversationId } });
+  await ensureInAppConversationSchema();
+  const supabase = createAdminClient();
+
+  const { data: submission, error: submissionError } = await supabase
+    .from('referral_submissions')
+    .select('*')
+    .eq('chatThreadId', args.conversationId)
+    .maybeSingle();
+
+  if (submissionError) {
+    throw submissionError;
+  }
 
   if (!submission) {
     throw new Error('Referral conversation not found.');
   }
 
-  const now = new Date();
-  await messageRepo.save([
-    messageRepo.create({
+  const now = new Date().toISOString();
+  const botReplyCount = submission.botReplyCount + 1;
+  const followUpStatus = botReplyCount > 2 ? 'triaging' : 'responded';
+
+  await supabase.from('referral_messages').insert([
+    {
       submissionId: submission.id,
       role: 'user',
       content: args.message,
-    }),
-    messageRepo.create({
+    },
+    {
       submissionId: submission.id,
       role: 'assistant',
-      content: buildReferralReply(submission),
-    }),
+      content: buildReferralReply(submission.botReplyCount),
+    },
   ]);
-  submission.lastInboundMessage = args.message;
-  submission.lastInboundAt = now;
-  submission.lastOutboundAt = now;
-  submission.botReplyCount += 1;
-  submission.followUpStatus = submission.botReplyCount > 2 ? 'triaging' : 'responded';
-  await repo.save(submission);
-  const allMessages = await messageRepo.find({
-    where: { submissionId: submission.id },
-    order: { createdAt: 'ASC' },
-  });
+
+  await supabase
+    .from('referral_submissions')
+    .update({
+      lastInboundMessage: args.message,
+      lastInboundAt: now,
+      lastOutboundAt: now,
+      botReplyCount,
+      followUpStatus,
+    })
+    .eq('id', submission.id);
+
+  const { data: allMessages, error: messagesError } = await supabase
+    .from('referral_messages')
+    .select('*')
+    .eq('submissionId', submission.id)
+    .order('createdAt', { ascending: true });
+
+  if (messagesError) {
+    throw messagesError;
+  }
 
   return {
     conversationId: submission.chatThreadId || args.conversationId,
-    messages: allMessages.map((message) => toConversationMessage(message)),
-    status: submission.followUpStatus,
+    messages: (allMessages ?? []).map((message) => toConversationMessage(message)),
+    status: followUpStatus,
   };
 }

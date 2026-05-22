@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import LandlordInquiry from '@/lib/db/entities/LandlordInquiry';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { initializeLandlordConversation } from '@/lib/services/landlordConversationService';
 import { EMAIL_PATTERN } from '@/lib/types/constants';
 import { normalizeEmail } from '@/lib/utils/email';
@@ -43,22 +42,26 @@ export async function POST(request: Request) {
       );
     }
 
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(LandlordInquiry);
+    const supabase = createAdminClient();
+    const { data: inquiry, error } = await supabase
+      .from('landlord_inquiries')
+      .insert({
+        firstName,
+        lastName,
+        email,
+        phone: phone || null,
+        streetAddress,
+        region: region || null,
+        squareFootage: squareFootage || null,
+        details: details || null,
+        status: 'new',
+      })
+      .select('*')
+      .single();
 
-    const inquiry = repo.create({
-      firstName,
-      lastName,
-      email,
-      phone: phone || null,
-      streetAddress,
-      region: region || null,
-      squareFootage: squareFootage || null,
-      details: details || null,
-      status: 'new',
-    });
-
-    await repo.save(inquiry);
+    if (error) {
+      throw error;
+    }
 
     const conversation = await initializeLandlordConversation(inquiry.id);
 
@@ -68,7 +71,7 @@ export async function POST(request: Request) {
         id: inquiry.id,
         email: inquiry.email,
         status: conversation.status,
-        createdAt: inquiry.createdAt.toISOString(),
+        createdAt: inquiry.createdAt,
       },
       conversation,
     });

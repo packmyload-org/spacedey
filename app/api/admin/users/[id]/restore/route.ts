@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapUser } from '@/lib/db/mappers';
 import { requireAdmin } from '@/lib/auth/admin';
 
 export async function POST(
@@ -25,45 +25,59 @@ export async function POST(
       );
     }
 
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
-    const user = await repo.findOne({ where: { id }, withDeleted: true });
+    const supabase = createAdminClient();
+    const { data: userRow, error: lookupError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-    if (!user) {
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!userRow) {
       return NextResponse.json(
         { ok: false, error: 'User not found' },
         { status: 404 }
       );
     }
 
-    if (!user.deletedAt) {
+    if (!userRow.deletedAt) {
       return NextResponse.json(
         { ok: false, error: 'User is already active.' },
         { status: 400 }
       );
     }
 
-    await repo.restore(user.id);
+    const { data: restoredRow, error: restoreError } = await supabase
+      .from('users')
+      .update({ deletedAt: null })
+      .eq('id', id)
+      .select('*')
+      .single();
 
-    const restoredUser = await repo.findOne({ where: { id } });
+    if (restoreError) {
+      throw restoreError;
+    }
+
+    const restoredUser = mapUser(restoredRow);
 
     return NextResponse.json({
       ok: true,
       message: 'User restored successfully',
-      user: restoredUser
-        ? {
-            id: restoredUser.id,
-            email: restoredUser.email,
-            firstName: restoredUser.firstName,
-            lastName: restoredUser.lastName,
-            phone: restoredUser.phone,
-            role: restoredUser.role,
-            emailVerifiedAt: restoredUser.emailVerifiedAt ? restoredUser.emailVerifiedAt.toISOString() : null,
-            createdAt: restoredUser.createdAt,
-            updatedAt: restoredUser.updatedAt,
-            deletedAt: restoredUser.deletedAt ? restoredUser.deletedAt.toISOString() : null,
-          }
-        : null,
+      user: {
+        id: restoredUser.id,
+        email: restoredUser.email,
+        firstName: restoredUser.firstName,
+        lastName: restoredUser.lastName,
+        phone: restoredUser.phone,
+        role: restoredUser.role,
+        emailVerifiedAt: restoredUser.emailVerifiedAt ? restoredUser.emailVerifiedAt.toISOString() : null,
+        createdAt: restoredUser.createdAt,
+        updatedAt: restoredUser.updatedAt,
+        deletedAt: restoredUser.deletedAt ? restoredUser.deletedAt.toISOString() : null,
+      },
     });
   } catch (error) {
     console.error('Restore user error:', error);

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapUser } from '@/lib/db/mappers';
 import { generateToken } from '@/lib/auth/jwt';
 import { env } from '@/config/env';
 import { normalizeEmail } from '@/lib/utils/email';
@@ -23,14 +23,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
+    const supabase = createAdminClient();
+    const { data: row, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .is('deletedAt', null)
+      .maybeSingle();
 
-    const user = await repo
-      .createQueryBuilder('user')
-      .addSelect('user.password')
-      .where('user.email = :email', { email })
-      .getOne();
+    if (error) {
+      throw error;
+    }
+
+    const user = row ? mapUser(row) : null;
 
     if (!user) {
       return NextResponse.json(

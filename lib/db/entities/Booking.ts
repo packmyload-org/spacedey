@@ -1,113 +1,71 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
-import type { Relation } from "typeorm";
-import UserEntity from "./User";
-import type { User as UserModel } from "./User";
-import SiteEntity from "./Site";
-import type { Site as SiteModel } from "./Site";
-import UnitTypeEntity from "./UnitType";
-import type { UnitType as UnitTypeModel } from "./UnitType";
-import StorageUnitEntity from "./StorageUnit";
-import type { StorageUnit as StorageUnitModel } from "./StorageUnit";
+import type { User } from './User';
+import type { Site } from './Site';
+import type { UnitType } from './UnitType';
+import type { StorageUnit } from './StorageUnit';
 
-export type BookingBillingType = "one_time" | "recurring";
+export type BookingBillingType = 'one_time' | 'recurring';
 
 export enum BookingStatus {
-    PENDING = "pending",
-    PARTIAL = "partial", // Paid something but not the selected billing amount
-    ACTIVE = "active",  // Met the selected billing amount
-    EXPIRED = "expired",
-    CANCELLED = "cancelled"
+  PENDING = 'pending',
+  PARTIAL = 'partial',
+  ACTIVE = 'active',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled',
 }
 
 export interface BookingBillingMetadata {
-    billingType?: BookingBillingType;
-    billingInterval?: "monthly";
-    recurringDurationMonths?: number;
-    recurringEndDate?: string | null;
-    pendingPaymentReference?: string;
-    pendingPaymentInitializedAt?: string | null;
-    paystack?: {
-        allocationAmount?: number;
-        authorizationCode?: string;
-        authorizationSignature?: string;
-        authorizationReusable?: boolean;
-        customerCode?: string;
-        customerEmail?: string;
-        lastSuccessfulReference?: string;
-        planCode?: string;
-        planName?: string;
-        subscriptionCode?: string;
-        invoiceLimit?: number;
-    };
-    flutterwave?: {
-        allocationAmount?: number;
-        customerEmail?: string;
-        lastSuccessfulReference?: string;
-        paymentPlanId?: number | string;
-        paymentPlanName?: string;
-        subscriptionId?: number | string;
-    };
-    [key: string]: unknown;
+  billingType?: BookingBillingType;
+  billingInterval?: 'monthly';
+  recurringDurationMonths?: number;
+  recurringEndDate?: string | null;
+  pendingPaymentReference?: string;
+  pendingPaymentInitializedAt?: string | null;
+  paystack?: {
+    allocationAmount?: number;
+    authorizationCode?: string;
+    authorizationSignature?: string;
+    authorizationReusable?: boolean;
+    customerCode?: string;
+    customerEmail?: string;
+    lastSuccessfulReference?: string;
+    planCode?: string;
+    planName?: string;
+    subscriptionCode?: string;
+    invoiceLimit?: number;
+  };
+  flutterwave?: {
+    allocationAmount?: number;
+    customerEmail?: string;
+    lastSuccessfulReference?: string;
+    paymentPlanId?: number | string;
+    paymentPlanName?: string;
+    subscriptionId?: number | string;
+  };
+  [key: string]: unknown;
 }
 
-@Entity("bookings")
 export class Booking {
-    @PrimaryGeneratedColumn("uuid")
-    id!: string;
-
-    @ManyToOne(() => UserEntity, (user) => user.id)
-    user!: Relation<UserModel>;
-
-    @ManyToOne(() => SiteEntity, (site) => site.id)
-    site!: Relation<SiteModel>;
-
-    @ManyToOne(() => UnitTypeEntity, (unitType) => unitType.id)
-    unitType!: Relation<UnitTypeModel>;
-
-    @ManyToOne(() => StorageUnitEntity, { nullable: true })
-    storageUnit!: Relation<StorageUnitModel> | null;
-
-    // No longer using fixed SubscriptionPlan
-
-    @Column({
-        type: "enum",
-        enum: BookingStatus,
-        default: BookingStatus.PENDING
-    })
-    status!: BookingStatus;
-
-    @Column({ type: "timestamp" })
-    startDate!: Date;
-
-    @Column({ type: "timestamp", nullable: true })
-    endDate!: Date | null;
-
-    @Column({ type: "decimal", precision: 12, scale: 2 })
-    monthlyRate!: number; // Cached price of unit at time of booking
-
-    @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    registrationFee!: number; // Retained for compatibility; new recurring bookings store 0
-
-    @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    annualDues!: number; // Retained for compatibility; new recurring bookings store 0
-
-    @Column({ type: "decimal", precision: 12, scale: 2, default: 0 })
-    amountPaid!: number; // Total installments received
-
-    @Column({ type: "decimal", precision: 12, scale: 2 })
-    totalAmount!: number; // Amount due for the selected billing option
-
-    @Column({ type: "varchar", default: "NGN" })
-    currency!: string;
-
-    @Column({ type: "jsonb", nullable: true })
-    billingMetadata!: BookingBillingMetadata | null;
-
-    @CreateDateColumn()
-    createdAt!: Date;
-
-    @UpdateDateColumn()
-    updatedAt!: Date;
+  id!: string;
+  user?: User;
+  userId?: string | null;
+  site?: Site;
+  siteId?: string | null;
+  unitType?: UnitType;
+  unitTypeId?: string | null;
+  storageUnit?: StorageUnit | null;
+  storageUnitId?: string | null;
+  status!: BookingStatus;
+  startDate!: Date;
+  endDate!: Date | null;
+  monthlyRate!: number;
+  registrationFee!: number;
+  annualDues!: number;
+  amountPaid!: number;
+  totalAmount!: number;
+  currency!: string;
+  billingMetadata!: BookingBillingMetadata | null;
+  createdAt!: Date;
+  updatedAt!: Date;
 }
 
 export default Booking;

@@ -1,13 +1,14 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapUser } from '@/lib/db/mappers';
 import { requireAdmin } from '@/lib/auth/admin';
 import { UserRole } from '@/lib/types/roles';
+import { hashPassword } from '@/lib/auth/password';
 import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
 import { normalizeEmail } from '@/lib/utils/email';
 import { sendSignupVerificationEmail } from '@/lib/email/resend';
 
-function getEmailUnavailableMessage(user: User) {
+function getEmailUnavailableMessage(user: { deletedAt: Date | null }) {
   return user.deletedAt
     ? 'This email belongs to a deactivated account. Restore the account to use this email again.'
     : 'User with this email already exists.';
@@ -28,39 +29,45 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1', 10) || 1);
     const pageSize = Math.min(50, Math.max(1, Number.parseInt(searchParams.get('pageSize') || '10', 10) || 10));
     const search = String(searchParams.get('search') || '').trim().toLowerCase();
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
-    const query = repo
-      .createQueryBuilder('user')
-      .withDeleted()
-      .orderBy('user.deletedAt', 'ASC', 'NULLS FIRST')
-      .addOrderBy('user.createdAt', 'DESC')
-      .addOrderBy('user.email', 'ASC');
+    const supabase = createAdminClient();
+
+    let query = supabase
+      .from('users')
+      .select('*', { count: 'exact' })
+      .order('deletedAt', { ascending: true, nullsFirst: true })
+      .order('createdAt', { ascending: false })
+      .order('email', { ascending: true });
 
     if (search) {
-      query.andWhere(
-        '(LOWER(user.email) LIKE :search OR LOWER(user.firstName) LIKE :search OR LOWER(user.lastName) LIKE :search OR LOWER(CONCAT(user.firstName, \' \', user.lastName)) LIKE :search)',
-        { search: `%${search}%` }
+      query = query.or(
+        `email.ilike.%${search}%,firstName.ilike.%${search}%,lastName.ilike.%${search}%`
       );
     }
 
-    const [users, total] = await query
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    const { data: rows, error, count } = await query.range(from, to);
 
-    const formattedUsers = users.map((user) => ({
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      phone: user.phone,
-      role: user.role,
-      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
-      deletedAt: user.deletedAt ? user.deletedAt.toISOString() : null,
-    }));
+    if (error) {
+      throw error;
+    }
+
+    const total = count ?? 0;
+    const formattedUsers = (rows ?? []).map((row) => {
+      const user = mapUser(row);
+      return {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        role: user.role,
+        emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        deletedAt: user.deletedAt ? user.deletedAt.toISOString() : null,
+      };
+    });
 
     return NextResponse.json({
       ok: true,
@@ -102,7 +109,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const passwordValidation = validatePasswordStrength(String(password));
+    const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.isValid) {
       return NextResponse.json(
         { ok: false, error: passwordValidation.message || 'Password is too weak.' },
@@ -117,27 +124,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
+    const supabase = createAdminClient();
+    const { data: existingRow } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
 
-    const existingUser = await repo.findOne({ where: { email }, withDeleted: true });
-
-    if (existingUser) {
+    if (existingRow) {
       return NextResponse.json(
-        { ok: false, error: getEmailUnavailableMessage(existingUser) },
+        { ok: false, error: getEmailUnavailableMessage(mapUser(existingRow)) },
         { status: 409 }
       );
     }
-    const newUser = repo.create({
-      firstName,
-      lastName,
-      email,
-      password,
-      role: role || UserRole.USER,
-    } as Partial<User>);
 
-    await repo.save(newUser);
+    const { data: newUserRow, error } = await supabase
+      .from('users')
+      .insert({
+        firstName,
+        lastName,
+        email,
+        password: await hashPassword(password),
+        role: (role || UserRole.USER) as 'admin' | 'user',
+      })
+      .select('*')
+      .single();
 
+    if (error) {
+      throw error;
+    }
+
+    const newUser = mapUser(newUserRow);
     let verificationEmailSent = false;
 
     try {
@@ -151,22 +168,20 @@ export async function POST(request: NextRequest) {
       console.error('Admin create user verification email error:', mailError);
     }
 
-    const userResponse = {
-      id: newUser.id,
-      email: newUser.email,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      phone: newUser.phone,
-      role: newUser.role,
-      emailVerifiedAt: newUser.emailVerifiedAt ? newUser.emailVerifiedAt.toISOString() : null,
-      createdAt: newUser.createdAt,
-      updatedAt: newUser.updatedAt,
-    };
-
     return NextResponse.json(
       {
         ok: true,
-        user: userResponse,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          phone: newUser.phone,
+          role: newUser.role,
+          emailVerifiedAt: newUser.emailVerifiedAt ? newUser.emailVerifiedAt.toISOString() : null,
+          createdAt: newUser.createdAt,
+          updatedAt: newUser.updatedAt,
+        },
         verificationEmailSent,
         requiresEmailVerification: true,
       },

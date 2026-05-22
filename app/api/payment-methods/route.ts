@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
 import {
   getDefaultPaymentProvider,
   getPaymentMethodStatuses,
@@ -7,8 +6,7 @@ import {
 
 export async function GET() {
   try {
-    const dataSource = await connectTypeORM();
-    const methods = await getPaymentMethodStatuses(dataSource);
+    const methods = await getPaymentMethodStatuses();
 
     return NextResponse.json({
       ok: true,

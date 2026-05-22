@@ -1,14 +1,15 @@
 import crypto from 'crypto';
 import { NextResponse } from 'next/server';
-import { In } from 'typeorm';
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
-import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
-import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
+import { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
+import { applySuccessfulPayment, fetchPaymentByReference } from '@/lib/services/paymentProcessing';
 import {
   processEmailNotificationsByIds,
   queueOrderConfirmationNotifications,
 } from '@/lib/services/emailNotifications';
+import { BOOKING_RELATION_SELECT, mapBooking, mapPayment } from '@/lib/db/mappers';
+import { asJson } from '@/lib/supabase/json';
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
@@ -87,9 +88,7 @@ export async function POST(req: Request) {
     const event = JSON.parse(rawBody) as PaystackWebhookEvent;
     const eventName = event.event;
     const data = event.data ?? {};
-    const dataSource = await connectTypeORM();
-    const bookingRepo = dataSource.getRepository(Booking);
-    const paymentRepo = dataSource.getRepository(Payment);
+    const supabase = createAdminClient();
 
     if (eventName === 'subscription.create') {
       const customer = (data.customer as Record<string, unknown> | undefined) ?? undefined;
@@ -104,30 +103,37 @@ export async function POST(req: Request) {
         return NextResponse.json({ ok: true, message: 'Ignored subscription event without subscription code' });
       }
 
-      const candidateBookings = await bookingRepo.find({
-        where: { status: In([BookingStatus.PENDING, BookingStatus.PARTIAL, BookingStatus.ACTIVE]) },
-      });
+      const { data: candidateRows } = await supabase
+        .from('bookings')
+        .select('*')
+        .in('status', [BookingStatus.PENDING, BookingStatus.PARTIAL, BookingStatus.ACTIVE]);
 
-      const matchingBookings = candidateBookings.filter((booking) => matchesRecurringGroup({
-        booking,
-        planCode,
-        customerCode,
-        customerEmail,
-        subscriptionCode,
-      }));
+      const matchingBookings = (candidateRows ?? [])
+        .map((row) => mapBooking(row))
+        .filter((booking) => matchesRecurringGroup({
+          booking,
+          planCode,
+          customerCode,
+          customerEmail,
+          subscriptionCode,
+        }));
 
       for (const booking of matchingBookings) {
-        booking.billingMetadata = {
-          ...(booking.billingMetadata ?? {}),
-          paystack: {
-            ...(booking.billingMetadata?.paystack ?? {}),
-            customerCode: customerCode ?? booking.billingMetadata?.paystack?.customerCode,
-            customerEmail: customerEmail ?? booking.billingMetadata?.paystack?.customerEmail,
-            planCode: planCode ?? booking.billingMetadata?.paystack?.planCode,
-            subscriptionCode,
-          },
-        };
-        await bookingRepo.save(booking);
+        await supabase
+          .from('bookings')
+          .update({
+            billingMetadata: {
+              ...(booking.billingMetadata ?? {}),
+              paystack: {
+                ...(booking.billingMetadata?.paystack ?? {}),
+                customerCode: customerCode ?? booking.billingMetadata?.paystack?.customerCode,
+                customerEmail: customerEmail ?? booking.billingMetadata?.paystack?.customerEmail,
+                planCode: planCode ?? booking.billingMetadata?.paystack?.planCode,
+                subscriptionCode,
+              },
+            },
+          })
+          .eq('id', booking.id);
       }
 
       return NextResponse.json({ ok: true, updatedBookings: matchingBookings.length });
@@ -142,10 +148,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, message: 'Ignored charge without reference' });
     }
 
-    const existingPayment = await paymentRepo.findOne({
-      where: { providerReference: reference },
-      relations: ['booking', 'user'],
-    });
+    const existingPayment = await fetchPaymentByReference(reference);
 
     if (existingPayment?.status === PaymentStatus.SUCCESS) {
       return NextResponse.json({ ok: true, message: 'Payment already processed' });
@@ -157,7 +160,6 @@ export async function POST(req: Request) {
 
     if (existingPayment) {
       const updatedBookings = await applySuccessfulPayment({
-        dataSource,
         payment: existingPayment,
         providerData: event,
       });
@@ -166,9 +168,9 @@ export async function POST(req: Request) {
         source: 'payments/paystack-webhook-existing',
         appUrl,
         emails: updatedBookings.map(({ booking, invoice }) => ({
-          to: booking.user.email,
-          firstName: booking.user.firstName,
-          siteName: booking.site.name,
+          to: booking.user!.email,
+          firstName: booking.user!.firstName,
+          siteName: booking.site!.name,
           invoiceNumber: invoice.invoiceNumber,
           amountPaid: Number(invoice.total),
           currency: invoice.currency,
@@ -186,20 +188,22 @@ export async function POST(req: Request) {
     const customerCode = getNestedString(customer, 'customer_code') || getString(data.customer_code);
     const customerEmail = getNestedString(customer, 'email') || getString(data.email);
     const planCode = getNestedString(plan, 'plan_code') || getString(data.plan_code);
-    const subscriptionCode = getNestedString(subscription, 'subscription_code') || getString(data.subscription_code);
+    const subscriptionCodeFromEvent = getNestedString(subscription, 'subscription_code') || getString(data.subscription_code);
 
-    const candidateBookings = await bookingRepo.find({
-      where: { status: In([BookingStatus.PENDING, BookingStatus.PARTIAL, BookingStatus.ACTIVE]) },
-      relations: ['site', 'unitType', 'user'],
-    });
+    const { data: candidateRows } = await supabase
+      .from('bookings')
+      .select(BOOKING_RELATION_SELECT)
+      .in('status', [BookingStatus.PENDING, BookingStatus.PARTIAL, BookingStatus.ACTIVE]);
 
-    const matchingBookings = candidateBookings.filter((booking) => matchesRecurringGroup({
-      booking,
-      planCode,
-      customerCode,
-      customerEmail,
-      subscriptionCode,
-    }));
+    const matchingBookings = (candidateRows ?? [])
+      .map((row) => mapBooking(row))
+      .filter((booking) => matchesRecurringGroup({
+        booking,
+        planCode,
+        customerCode,
+        customerEmail,
+        subscriptionCode: subscriptionCodeFromEvent,
+      }));
 
     if (matchingBookings.length === 0) {
       return NextResponse.json({ ok: true, message: 'No matching recurring bookings found' });
@@ -210,32 +214,40 @@ export async function POST(req: Request) {
       amount: Number(booking.billingMetadata?.paystack?.allocationAmount ?? booking.monthlyRate),
     }));
 
-    const recurringPayment = paymentRepo.create({
-      booking: matchingBookings[0],
-      user: matchingBookings[0].user,
-      provider: PaymentProvider.PAYSTACK,
-      providerReference: reference,
-      amount: bookingAllocations.reduce((sum, allocation) => sum + allocation.amount, 0),
-      status: PaymentStatus.PENDING,
-      metadata: {
-        data,
-        verification: event,
-        bookingIds: matchingBookings.map((booking) => booking.id),
-        bookingAllocations,
-        checkoutSource: 'recurring',
-        paymentMode: 'monthly',
-        billingType: PaymentBillingType.RECURRING,
-        billingInterval: 'monthly',
-        monthsCovered: 1,
-        recurringDurationMonths: matchingBookings[0].billingMetadata?.recurringDurationMonths,
-        paystackPlanCode: planCode ?? matchingBookings[0].billingMetadata?.paystack?.planCode,
-        paystackPlanName: getNestedString(plan, 'name') ?? matchingBookings[0].billingMetadata?.paystack?.planName,
-      },
-    });
+    const primaryBooking = matchingBookings[0];
+    const { data: recurringPaymentRow, error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        bookingId: primaryBooking.id,
+        userId: primaryBooking.userId ?? primaryBooking.user?.id,
+        provider: PaymentProvider.PAYSTACK,
+        providerReference: reference,
+        amount: bookingAllocations.reduce((sum, allocation) => sum + allocation.amount, 0),
+        status: PaymentStatus.PENDING,
+        metadata: asJson({
+          data,
+          verification: event,
+          bookingIds: matchingBookings.map((booking) => booking.id),
+          bookingAllocations,
+          checkoutSource: 'recurring',
+          paymentMode: 'monthly',
+          billingType: PaymentBillingType.RECURRING,
+          billingInterval: 'monthly',
+          monthsCovered: 1,
+          recurringDurationMonths: primaryBooking.billingMetadata?.recurringDurationMonths,
+          paystackPlanCode: planCode ?? primaryBooking.billingMetadata?.paystack?.planCode,
+          paystackPlanName: getNestedString(plan, 'name') ?? primaryBooking.billingMetadata?.paystack?.planName,
+        }),
+      })
+      .select('*, booking:bookings(*), user:users(*)')
+      .single();
 
-    await paymentRepo.save(recurringPayment);
+    if (paymentError) {
+      throw paymentError;
+    }
+
+    const recurringPayment = mapPayment(recurringPaymentRow);
     const updatedBookings = await applySuccessfulPayment({
-      dataSource,
       payment: recurringPayment,
       providerData: event,
     });
@@ -244,9 +256,9 @@ export async function POST(req: Request) {
       source: 'payments/paystack-webhook-recurring',
       appUrl,
       emails: updatedBookings.map(({ booking, invoice }) => ({
-        to: booking.user.email,
-        firstName: booking.user.firstName,
-        siteName: booking.site.name,
+        to: booking.user!.email,
+        firstName: booking.user!.firstName,
+        siteName: booking.site!.name,
         invoiceNumber: invoice.invoiceNumber,
         amountPaid: Number(invoice.total),
         currency: invoice.currency,

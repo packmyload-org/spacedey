@@ -15,6 +15,8 @@ export const metadata: Metadata = buildPageMetadata({
   noIndex: false,
 });
 
+export const revalidate = 3600;
+
 export default async function Home() {
 const locationDirectory = await getSiteDirectory();
   return (

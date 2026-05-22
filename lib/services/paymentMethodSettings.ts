@@ -1,8 +1,9 @@
-import type { DataSource } from 'typeorm';
 import PaymentMethodSetting from '@/lib/db/entities/PaymentMethodSetting';
 import { PaymentProvider } from '@/lib/db/entities/Payment';
 import { paystack } from '@/lib/services/paystack';
 import { flutterwave } from '@/lib/services/flutterwave';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { parseRequiredDate } from '@/lib/db/row';
 
 export interface PaymentMethodStatus {
   provider: PaymentProvider;
@@ -35,10 +36,38 @@ function isProviderConfigured(provider: PaymentProvider) {
   return false;
 }
 
-export async function getPaymentMethodStatuses(dataSource: DataSource): Promise<PaymentMethodStatus[]> {
-  const repo = dataSource.getRepository(PaymentMethodSetting);
-  const records = await repo.find();
-  const recordMap = new Map(records.map((record) => [record.provider, record]));
+function mapPaymentMethodSetting(row: {
+  provider: PaymentProvider;
+  isEnabled: boolean;
+  updatedAt: string;
+}): PaymentMethodSetting {
+  const record = new PaymentMethodSetting();
+  record.provider = row.provider;
+  record.enabled = row.isEnabled;
+  record.updatedAt = parseRequiredDate(row.updatedAt);
+  return record;
+}
+
+export async function getPaymentMethodStatuses(): Promise<PaymentMethodStatus[]> {
+  const supabase = createAdminClient();
+  const { data: records, error } = await supabase
+    .from('payment_method_settings')
+    .select('*');
+
+  if (error) {
+    throw error;
+  }
+
+  const recordMap = new Map(
+    (records ?? []).map((record) => [
+      record.provider as PaymentProvider,
+      mapPaymentMethodSetting({
+        provider: record.provider as PaymentProvider,
+        isEnabled: record.isEnabled,
+        updatedAt: record.updatedAt,
+      }),
+    ])
+  );
 
   return PAYMENT_METHOD_ORDER.map((provider) => {
     const record = recordMap.get(provider);
@@ -57,10 +86,9 @@ export async function getPaymentMethodStatuses(dataSource: DataSource): Promise<
 }
 
 export async function updatePaymentMethodStatuses(
-  dataSource: DataSource,
   updates: Partial<Record<PaymentProvider, boolean>>
 ) {
-  const repo = dataSource.getRepository(PaymentMethodSetting);
+  const supabase = createAdminClient();
 
   for (const provider of PAYMENT_METHOD_ORDER) {
     const nextEnabled = updates[provider];
@@ -68,13 +96,37 @@ export async function updatePaymentMethodStatuses(
       continue;
     }
 
-    const existing = await repo.findOne({ where: { provider } });
-    const record = existing ?? repo.create({ provider });
-    record.enabled = nextEnabled;
-    await repo.save(record);
+    const { data: existing, error: lookupError } = await supabase
+      .from('payment_method_settings')
+      .select('id')
+      .eq('provider', provider)
+      .maybeSingle();
+
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (existing) {
+      const { error: updateError } = await supabase
+        .from('payment_method_settings')
+        .update({ isEnabled: nextEnabled })
+        .eq('id', existing.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('payment_method_settings')
+        .insert({ provider, isEnabled: nextEnabled });
+
+      if (insertError) {
+        throw insertError;
+      }
+    }
   }
 
-  return getPaymentMethodStatuses(dataSource);
+  return getPaymentMethodStatuses();
 }
 
 export function getDefaultPaymentProvider(methods: PaymentMethodStatus[]) {

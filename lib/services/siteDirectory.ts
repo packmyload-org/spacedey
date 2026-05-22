@@ -1,12 +1,11 @@
-import { cache } from "react";
-import { connectTypeORM } from "@/lib/db";
-import Site from "@/lib/db/entities/Site";
+import { cache } from 'react';
+import { createAdminClient } from '@/lib/supabase/admin';
 import {
   extractCityFromAddress,
   extractStateFromAddress,
   sortAlphabetically,
-} from "@/lib/utils/siteLocations";
-import { LOCATION_DETAILS } from "@/lib/utils/sampleLocations";
+} from '@/lib/utils/siteLocations';
+import { LOCATION_DETAILS } from '@/lib/utils/sampleLocations';
 
 export interface SiteDirectory {
   cities: string[];
@@ -36,17 +35,16 @@ const fallbackDirectory: SiteDirectory = {
 
 export const getSiteDirectory = cache(async (): Promise<SiteDirectory> => {
   try {
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(Site);
-    const sites = await repo.find({
-      select: {
-        city: true,
-        state: true,
-        address: true,
-      },
-    });
+    const supabase = createAdminClient();
+    const { data: sites, error } = await supabase
+      .from('sites')
+      .select('city, state, address');
 
-    if (sites.length === 0) {
+    if (error) {
+      throw error;
+    }
+
+    if (!sites || sites.length === 0) {
       return fallbackDirectory;
     }
 
@@ -75,7 +73,7 @@ export const getSiteDirectory = cache(async (): Promise<SiteDirectory> => {
       states: states.length > 0 ? states : fallbackDirectory.states,
     };
   } catch (error) {
-    console.error("Failed to build site directory", error);
+    console.error('Failed to build site directory', error);
     return fallbackDirectory;
   }
 });

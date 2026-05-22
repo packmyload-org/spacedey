@@ -22,13 +22,13 @@ export function createConversationMessage(
 
 export function toConversationMessage(args: {
   id: string;
-  role: ConversationMessageRole;
+  role: ConversationMessageRole | string;
   content: string;
   createdAt: Date | string;
 }): ConversationMessage {
   return {
     id: args.id,
-    role: args.role,
+    role: args.role as ConversationMessageRole,
     content: args.content,
     createdAt:
       args.createdAt instanceof Date

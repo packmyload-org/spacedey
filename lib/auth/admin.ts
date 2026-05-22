@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapUser } from '@/lib/db/mappers';
 import { verifyToken } from '@/lib/auth/jwt';
 import { UserRole } from '@/lib/types/roles';
 
@@ -26,9 +26,19 @@ export async function requireAdmin(request: NextRequest) {
       };
     }
 
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
-    const user = await repo.findOne({ where: { id: decoded.userId } });
+    const supabase = createAdminClient();
+    const { data: row, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', decoded.userId)
+      .is('deletedAt', null)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    const user = row ? mapUser(row) : null;
 
     if (!user) {
       return {

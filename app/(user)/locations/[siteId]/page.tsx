@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import { connectTypeORM } from '@/lib/db';
-import Site from '@/lib/db/entities/Site';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapSite } from '@/lib/db/mappers';
 import SiteDetails from "@/components/locations/SiteDetails";
 import { notFound } from 'next/navigation';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
@@ -10,11 +10,19 @@ import { getSiteCity, getSiteState } from '@/lib/utils/siteLocations';
 
 async function getSiteByIdFromDB(siteId: string) {
   try {
-    const appDataSource = await connectTypeORM();
-    await expireStalePendingBookings(appDataSource);
-    const repo = appDataSource.getRepository(Site);
-    const site = await repo.findOne({ where: { id: siteId }, relations: ['unitTypes', 'units', 'units.unitType'] });
-    return site;
+    await expireStalePendingBookings();
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from('sites')
+      .select('*, unit_types(*), storage_units(*, unit_type:unit_types(*))')
+      .eq('id', siteId)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return data ? mapSite(data) : null;
   } catch (error) {
     console.error(`Failed to fetch site ${siteId}`, error);
     return null;

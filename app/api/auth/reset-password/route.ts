@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyActionToken } from '@/lib/auth/actionTokens';
+import { hashPassword } from '@/lib/auth/password';
 import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
 import { normalizeEmail } from '@/lib/utils/email';
 
@@ -43,24 +43,34 @@ export async function POST(request: Request) {
       );
     }
 
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
-    const user = await repo.findOne({
-      where: {
-        id: payload.userId,
-        email: payload.email,
-      },
-    });
+    const supabase = createAdminClient();
+    const { data: userRow, error: lookupError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('id', payload.userId)
+      .eq('email', payload.email)
+      .is('deletedAt', null)
+      .maybeSingle();
 
-    if (!user) {
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!userRow) {
       return NextResponse.json(
         { ok: false, error: 'Account not found for this reset link.' },
         { status: 404 }
       );
     }
 
-    user.password = password;
-    await repo.save(user);
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password: await hashPassword(password) })
+      .eq('id', userRow.id);
+
+    if (updateError) {
+      throw updateError;
+    }
 
     return NextResponse.json(
       {

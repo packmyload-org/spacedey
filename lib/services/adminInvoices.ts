@@ -1,7 +1,7 @@
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import Invoice from '@/lib/db/entities/Invoice';
-import Payment from '@/lib/db/entities/Payment';
 import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
+import { INVOICE_RELATION_SELECT, mapInvoice, mapPayment } from '@/lib/db/mappers';
 
 export interface AdminInvoiceSummary {
   id: string;
@@ -134,67 +134,60 @@ function serializeInvoice(invoice: Invoice): AdminInvoiceSummary {
 }
 
 export async function listAdminInvoices(): Promise<AdminInvoiceSummary[]> {
-  const dataSource = await connectTypeORM();
-  const invoiceRepo = dataSource.getRepository(Invoice);
-  const invoices = await invoiceRepo
-    .createQueryBuilder('invoice')
-    .withDeleted()
-    .leftJoinAndSelect('invoice.user', 'user')
-    .leftJoinAndSelect('invoice.booking', 'booking')
-    .leftJoinAndSelect('booking.site', 'site')
-    .leftJoinAndSelect('booking.unitType', 'unitType')
-    .leftJoinAndSelect('invoice.payment', 'payment')
-    .orderBy('invoice.createdAt', 'DESC')
-    .getMany();
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('invoices')
+    .select(INVOICE_RELATION_SELECT)
+    .order('createdAt', { ascending: false });
 
-  return invoices.map((invoice) => serializeInvoice(invoice));
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => serializeInvoice(mapInvoice(row)));
 }
 
 export async function getAdminInvoiceDetail(invoiceId: string): Promise<AdminInvoiceDetail | null> {
-  const dataSource = await connectTypeORM();
-  const invoiceRepo = dataSource.getRepository(Invoice);
-  const paymentRepo = dataSource.getRepository(Payment);
+  const supabase = createAdminClient();
 
-  const invoice = await invoiceRepo
-    .createQueryBuilder('invoice')
-    .withDeleted()
-    .leftJoinAndSelect('invoice.user', 'user')
-    .leftJoinAndSelect('invoice.booking', 'booking')
-    .leftJoinAndSelect('booking.site', 'site')
-    .leftJoinAndSelect('booking.unitType', 'unitType')
-    .leftJoinAndSelect('invoice.payment', 'payment')
-    .where('invoice.id = :invoiceId', { invoiceId })
-    .getOne();
+  const { data: invoiceRow, error: invoiceError } = await supabase
+    .from('invoices')
+    .select(INVOICE_RELATION_SELECT)
+    .eq('id', invoiceId)
+    .maybeSingle();
 
-  if (!invoice) {
+  if (invoiceError) {
+    throw invoiceError;
+  }
+
+  if (!invoiceRow) {
     return null;
   }
 
+  const invoice = mapInvoice(invoiceRow);
   const bookingId = invoice.booking?.id;
-  const [paymentHistory, relatedInvoices] = await Promise.all([
+
+  const [{ data: paymentHistoryRows }, { data: relatedInvoiceRows }] = await Promise.all([
     bookingId
-      ? paymentRepo.find({
-          where: {
-            booking: { id: bookingId },
-          },
-          order: {
-            createdAt: 'DESC',
-          },
-        })
-      : [],
+      ? supabase
+          .from('payments')
+          .select('*')
+          .eq('bookingId', bookingId)
+          .order('createdAt', { ascending: false })
+      : Promise.resolve({ data: [] }),
     bookingId
-      ? invoiceRepo
-          .createQueryBuilder('invoice')
-          .withDeleted()
-          .leftJoin('invoice.booking', 'booking')
-          .where('booking.id = :bookingId', { bookingId })
-          .orderBy('invoice.createdAt', 'DESC')
-          .getMany()
-      : [invoice],
+      ? supabase
+          .from('invoices')
+          .select('*')
+          .eq('bookingId', bookingId)
+          .order('createdAt', { ascending: false })
+      : Promise.resolve({ data: [invoiceRow] }),
   ]);
+
+  const paymentHistory = (paymentHistoryRows ?? []).map((row) => mapPayment(row));
   const timelinePayments = [...paymentHistory];
 
-  if (invoice.payment && !timelinePayments.some((payment) => payment.id === invoice.payment.id)) {
+  if (invoice.payment && !timelinePayments.some((payment) => payment.id === invoice.payment?.id)) {
     timelinePayments.unshift(invoice.payment);
   }
 
@@ -223,15 +216,15 @@ export async function getAdminInvoiceDetail(invoiceId: string): Promise<AdminInv
           : null,
       createdAt: payment.createdAt.toISOString(),
     })),
-    relatedInvoices: relatedInvoices.map((relatedInvoice) => ({
+    relatedInvoices: (relatedInvoiceRows ?? []).map((relatedInvoice) => ({
       id: relatedInvoice.id,
       invoiceNumber: relatedInvoice.invoiceNumber,
       total: Number(relatedInvoice.total),
       currency: relatedInvoice.currency,
       status: relatedInvoice.status,
-      dueDate: relatedInvoice.dueDate.toISOString(),
-      paidAt: relatedInvoice.paidAt ? relatedInvoice.paidAt.toISOString() : null,
-      createdAt: relatedInvoice.createdAt.toISOString(),
+      dueDate: relatedInvoice.dueDate,
+      paidAt: relatedInvoice.paidAt,
+      createdAt: relatedInvoice.createdAt,
     })),
   };
 }

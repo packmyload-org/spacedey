@@ -1,66 +1,100 @@
-import type { DataSource, EntityManager } from 'typeorm';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import Invoice, { InvoiceStatus } from '../db/entities/Invoice';
 import Payment from '../db/entities/Payment';
-import Booking from '../db/entities/Booking';
+import { createAdminClient } from '@/lib/supabase/admin';
+import type { Database } from '@/lib/supabase/database.types';
+import { BOOKING_RELATION_SELECT, mapBooking, mapInvoice } from '@/lib/db/mappers';
 
 interface InvoiceGenerationOptions {
-    bookingId?: string;
-    amount?: number;
+  bookingId?: string;
+  amount?: number;
 }
 
 export async function generateInvoice(
-    repositorySource: DataSource | EntityManager,
-    payment: Payment,
-    options: InvoiceGenerationOptions = {}
+  supabase: SupabaseClient<Database> = createAdminClient(),
+  payment: Payment,
+  options: InvoiceGenerationOptions = {}
 ): Promise<Invoice> {
-    const invoiceRepo = repositorySource.getRepository(Invoice);
-    const bookingRepo = repositorySource.getRepository(Booking);
-    const targetBookingId = options.bookingId || payment.booking.id;
-    const paymentAmount = Number(options.amount ?? payment.amount);
+  const targetBookingId = options.bookingId || payment.booking?.id;
+  const paymentAmount = Number(options.amount ?? payment.amount);
 
-    // 1. Fetch full booking details for line items
-    const booking = await bookingRepo.findOne({
-        where: { id: targetBookingId },
-        relations: ['site', 'unitType', 'user']
-    });
+  if (!targetBookingId) {
+    throw new Error('Booking not found for invoice generation');
+  }
 
-    if (!booking) throw new Error("Booking not found for invoice generation");
+  const { data: bookingRow, error: bookingError } = await supabase
+    .from('bookings')
+    .select(BOOKING_RELATION_SELECT)
+    .eq('id', targetBookingId)
+    .maybeSingle();
 
-    // Use a timestamp + random suffix so concurrent successful payments do not collide.
-    const issuedAt = new Date();
-    const invoiceNumber = [
-        'INV',
-        issuedAt.getFullYear(),
-        issuedAt.getTime(),
-        Math.random().toString(36).slice(2, 6).toUpperCase(),
-    ].join('-');
+  if (bookingError) {
+    throw bookingError;
+  }
 
-    // 3. Prepare Line Items for Incremental Payment
-    // Since it's an installment, the invoice describes the 'Payment Installment'
-    const items = [
-        {
-            description: `Payment Installment for Storage Unit: ${booking.unitType.name} at ${booking.site.name}`,
-            qty: 1,
-            unitPrice: paymentAmount,
-            total: paymentAmount
-        }
-    ];
+  if (!bookingRow) {
+    throw new Error('Booking not found for invoice generation');
+  }
 
-    // 4. Create Invoice
-    const invoice = invoiceRepo.create({
-        invoiceNumber,
-        booking,
-        user: booking.user,
-        payment,
-        items,
-        subtotal: paymentAmount,
-        tax: 0,
-        total: paymentAmount,
-        currency: payment.currency,
-        status: InvoiceStatus.PAID,
-        dueDate: issuedAt,
-        paidAt: issuedAt
-    });
+  const booking = mapBooking(bookingRow);
+  const issuedAt = new Date();
+  const invoiceNumber = [
+    'INV',
+    issuedAt.getFullYear(),
+    issuedAt.getTime(),
+    Math.random().toString(36).slice(2, 6).toUpperCase(),
+  ].join('-');
 
-    return await invoiceRepo.save(invoice);
+  const items = [
+    {
+      description: `Payment Installment for Storage Unit: ${booking.unitType?.name} at ${booking.site?.name}`,
+      qty: 1,
+      unitPrice: paymentAmount,
+      total: paymentAmount,
+    },
+  ];
+
+  const { data: invoiceRow, error: invoiceError } = await supabase
+    .from('invoices')
+    .insert({
+      invoiceNumber,
+      bookingId: booking.id,
+      userId: booking.user?.id ?? booking.userId,
+      paymentId: payment.id,
+      items,
+      subtotal: paymentAmount,
+      tax: 0,
+      total: paymentAmount,
+      currency: payment.currency,
+      status: InvoiceStatus.PAID,
+      dueDate: issuedAt.toISOString(),
+      paidAt: issuedAt.toISOString(),
+    })
+    .select('*')
+    .single();
+
+  if (invoiceError) {
+    throw invoiceError;
+  }
+
+  const bookingRelation = bookingRow as Parameters<typeof mapBooking>[0];
+
+  return mapInvoice({
+    ...invoiceRow,
+    booking: bookingRelation,
+    user: bookingRelation.user ?? bookingRelation.users,
+    payment: {
+      id: payment.id,
+      provider: payment.provider,
+      providerReference: payment.providerReference,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      metadata: payment.metadata as Database['public']['Tables']['payments']['Row']['metadata'],
+      bookingId: payment.bookingId ?? payment.booking?.id ?? null,
+      userId: payment.userId ?? payment.user?.id ?? null,
+      createdAt: payment.createdAt.toISOString(),
+      updatedAt: payment.updatedAt.toISOString(),
+    },
+  });
 }

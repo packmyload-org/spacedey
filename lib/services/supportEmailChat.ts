@@ -1,8 +1,7 @@
 import { Chat, type Message, type Thread } from 'chat';
 import { MemoryStateAdapter } from '@chat-adapter/state-memory';
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { ensureInAppConversationSchema } from '@/lib/db/ensureInAppConversationSchema';
-import SupportConversation from '@/lib/db/entities/SupportConversation';
 import { createConfiguredResendAdapter, createResendThread } from '@/lib/services/emailChatConfig';
 import {
   DEFAULT_SUPPORT_EMAIL,
@@ -137,30 +136,56 @@ function getSupportEmailChat() {
   });
 
   const handleInboundMessage = async (thread: Thread, message: Message) => {
-    const dataSource = await connectTypeORM();
-    await ensureInAppConversationSchema(dataSource);
-    const repo = dataSource.getRepository(SupportConversation);
+    await ensureInAppConversationSchema();
+    const supabase = createAdminClient();
 
-    let conversation = await repo.findOne({ where: { threadId: thread.id } });
+    const { data: existing } = await supabase
+      .from('support_conversations')
+      .select('*')
+      .eq('threadId', thread.id)
+      .maybeSingle();
+
+    const inboundMessage = String(message.text || '').trim() || null;
+    const now = new Date().toISOString();
+
+    let conversation = existing;
 
     if (!conversation) {
-      conversation = repo.create({
-        threadId: thread.id,
-        email: message.author.userId,
-        fullName: message.author.fullName || null,
-        status: 'new',
-        firstMessage: String(message.text || '').trim() || null,
-      });
-    }
+      const { data: created, error } = await supabase
+        .from('support_conversations')
+        .insert({
+          threadId: thread.id,
+          email: message.author.userId,
+          fullName: message.author.fullName || null,
+          status: 'new',
+          firstMessage: inboundMessage,
+          lastInboundMessage: inboundMessage,
+          lastInboundAt: now,
+        })
+        .select('*')
+        .single();
 
-    conversation.lastInboundMessage = String(message.text || '').trim() || null;
-    conversation.lastInboundAt = new Date();
-    await repo.save(conversation);
+      if (error) {
+        throw error;
+      }
+
+      conversation = created;
+    } else {
+      await supabase
+        .from('support_conversations')
+        .update({
+          lastInboundMessage: inboundMessage,
+          lastInboundAt: now,
+        })
+        .eq('id', conversation.id);
+    }
 
     const includeDetailsPrompt = conversation.botReplyCount === 0;
     if (!includeDetailsPrompt && conversation.botReplyCount > 1) {
-      conversation.status = 'triaging';
-      await repo.save(conversation);
+      await supabase
+        .from('support_conversations')
+        .update({ status: 'triaging' })
+        .eq('id', conversation.id);
       return;
     }
 
@@ -176,10 +201,14 @@ function getSupportEmailChat() {
           : 'Thanks. We have added your latest support reply to the ticket.',
     });
 
-    conversation.botReplyCount += 1;
-    conversation.status = includeDetailsPrompt ? 'acknowledged' : 'triaging';
-    conversation.lastOutboundAt = new Date();
-    await repo.save(conversation);
+    await supabase
+      .from('support_conversations')
+      .update({
+        botReplyCount: conversation.botReplyCount + 1,
+        status: includeDetailsPrompt ? 'acknowledged' : 'triaging',
+        lastOutboundAt: now,
+      })
+      .eq('id', conversation.id);
   };
 
   chat.onNewMention(async (thread, message) => {
@@ -224,34 +253,41 @@ export async function startSupportConversation(context: SupportConversationConte
       `Hi ${context.firstName}, Spacey has opened your Spacedey support thread. Reply with any extra detail, booking email, location, or invoice number so the team can help faster.`,
   });
 
-  const dataSource = await connectTypeORM();
-  await ensureInAppConversationSchema(dataSource);
-  const repo = dataSource.getRepository(SupportConversation);
+  await ensureInAppConversationSchema();
+  const supabase = createAdminClient();
   const fullName = [context.firstName, context.lastName].filter(Boolean).join(' ').trim();
-  const existingConversation = await repo.findOne({ where: { threadId: thread.id } });
+  const now = new Date().toISOString();
+  const { data: existingConversation } = await supabase
+    .from('support_conversations')
+    .select('*')
+    .eq('threadId', thread.id)
+    .maybeSingle();
 
   if (existingConversation) {
-    existingConversation.email = context.email;
-    existingConversation.fullName = fullName || existingConversation.fullName;
-    existingConversation.firstMessage = context.message;
-    existingConversation.status = 'acknowledged';
-    existingConversation.botReplyCount = Math.max(existingConversation.botReplyCount, 1);
-    existingConversation.lastOutboundAt = new Date();
-    await repo.save(existingConversation);
+    await supabase
+      .from('support_conversations')
+      .update({
+        email: context.email,
+        fullName: fullName || existingConversation.fullName,
+        firstMessage: context.message,
+        status: 'acknowledged',
+        botReplyCount: Math.max(existingConversation.botReplyCount, 1),
+        lastOutboundAt: now,
+      })
+      .eq('id', existingConversation.id);
     return thread.id;
   }
 
-  const conversation = repo.create({
+  await supabase.from('support_conversations').insert({
     threadId: thread.id,
     email: context.email,
     fullName: fullName || null,
     status: 'acknowledged',
     firstMessage: context.message,
     botReplyCount: 1,
-    lastOutboundAt: new Date(),
+    lastOutboundAt: now,
   });
 
-  await repo.save(conversation);
   return thread.id;
 }
 
