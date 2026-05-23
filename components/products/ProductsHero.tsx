@@ -75,17 +75,6 @@ export default function MemberBenefits({
 
   </div>
 
-  {/* Image below the blue section - background ends above this image */}
-  <div className="-mt-8 relative z-20">
-        <Image
-          src="/images/LandlordHero2.jpg"
-          alt="Customers using storage and moving support from Spacedey"
-          width={1200}
-          height={400}
-          className="w-full h-auto rounded-md"
-          priority
-        />
-      </div>
     </div>
   );
 }
