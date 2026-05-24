@@ -70,7 +70,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased" suppressHydrationWarning>
-        <GoogleTagManager containerId={googleTagManagerId} />
         <StorageCartProvider>
           <SitesProvider>
             <Suspense fallback={<p>Loading...</p>}>
@@ -90,8 +89,9 @@ export default function RootLayout({
             />
           </SitesProvider>
         </StorageCartProvider>
-        {vercelInsightsEnabled ? <VercelInsights /> : null}
       </body>
+      {vercelInsightsEnabled ? <VercelInsights /> : null}
+      <GoogleTagManager containerId={googleTagManagerId} />
     </html>
   );
 }
