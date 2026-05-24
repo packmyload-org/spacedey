@@ -72,9 +72,6 @@ export default function RootLayout({
       <body className="antialiased" suppressHydrationWarning>
         <StorageCartProvider>
           <SitesProvider>
-            <Suspense fallback={<p>Loading...</p>}>
-              <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
-            </Suspense>
             {children}
             <StorageCartMount />
             <CookieConsent />
@@ -90,6 +87,9 @@ export default function RootLayout({
           </SitesProvider>
         </StorageCartProvider>
       </body>
+      <Suspense fallback={<p>Loading...</p>}>
+        <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
+      </Suspense>
       {vercelInsightsEnabled ? <VercelInsights /> : null}
       <GoogleTagManager containerId={googleTagManagerId} />
     </html>
