@@ -148,7 +148,7 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     address: 'Rayfield Commercial District, Jos, Plateau',
     hours: '6am - 10pm',
     about: 'Use this Jos location for personal storage, business supplies, and short-term overflow when you need more space close to home.',
-    image: '/images/LocationHero.jpg',
+    image: 'https://res.cloudinary.com/packmyload/image/upload/v1779621346/LocationHero_tdjlnn.png',
     pricing: SAMPLE_PRICING,
     legacyCodes: ['Jos'],
     coordinates: { lat: 9.8965, lng: 8.8583 },
@@ -161,7 +161,7 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     address: 'Independence Layout, Enugu, Enugu',
     hours: '6am - 10pm',
     about: 'Secure, accessible storage in Enugu for moving seasons, renovation overflow, and the day-to-day needs of growing households and teams.',
-    image: '/images/LocationHero.jpg',
+    image: 'https://res.cloudinary.com/packmyload/image/upload/v1779621346/LocationHero_tdjlnn.png',
     pricing: SAMPLE_PRICING,
     legacyCodes: ['Enugu'],
     coordinates: { lat: 6.4599, lng: 7.5489 },
@@ -174,7 +174,7 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     address: 'Barnawa Business District, Kaduna, Kaduna',
     hours: '6am - 10pm',
     about: 'A dependable Kaduna storage site for equipment, documents, stock, and personal belongings that need a clean, protected home.',
-    image: '/images/LocationHero.jpg',
+    image: 'https://res.cloudinary.com/packmyload/image/upload/v1779621346/LocationHero_tdjlnn.png',
     pricing: SAMPLE_PRICING,
     legacyCodes: ['Kaduna'],
     coordinates: { lat: 10.5105, lng: 7.4165 },
@@ -187,7 +187,7 @@ export const LOCATION_DETAILS: Record<string, LocationDetail> = {
     address: 'Oke-Ilewo Commercial Area, Abeokuta, Ogun',
     hours: '6am - 10pm',
     about: 'Extra room for Abeokuta homes and businesses, with storage options that make it easier to stay organized without losing access.',
-    image: '/images/LocationHero.jpg',
+    image: 'https://res.cloudinary.com/packmyload/image/upload/v1779621346/LocationHero_tdjlnn.png',
     pricing: SAMPLE_PRICING,
     legacyCodes: ['Abeokuta'],
     coordinates: { lat: 7.1475, lng: 3.3619 },
@@ -207,7 +207,7 @@ export function getLocationDetails(cityName: string): LocationDetail {
       address: '123 Main St, City',
       hours: '6am - 10pm',
       about: 'A secure Spacedey location designed to give you flexible extra room for personal belongings, business inventory, and move-in overflow.',
-      image: '/images/LocationHero.jpg',
+      image: 'https://res.cloudinary.com/packmyload/image/upload/v1779621346/LocationHero_tdjlnn.png',
       pricing: SAMPLE_PRICING,
     };
   }
@@ -236,7 +236,7 @@ export function getLocationDetails(cityName: string): LocationDetail {
     address: '123 Main St, City',
     hours: '6am - 10pm',
     about: `A secure storage location in ${extractedCity} designed for household overflow, business inventory, and flexible extra space whenever you need it.`,
-    image: '/images/LocationHero.jpg',
+    image: 'https://res.cloudinary.com/packmyload/image/upload/v1779621346/LocationHero_tdjlnn.png',
     pricing: SAMPLE_PRICING,
   };
 }
