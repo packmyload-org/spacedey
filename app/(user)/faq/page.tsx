@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
-
 import Footer from "@/components/layout/Footer"
 import Header from "@/components/layout/Header"
 import { faqData } from "@/lib/homeSeoContent"
@@ -64,15 +63,14 @@ function FAQPage() {
   return (
     <>
       <Header />
-
       <main className="bg-gray-50 min-h-screen">
         <section className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24">
           <div className="text-center mb-14">
-            <span className="inline-block px-4 py-2 rounded-full bg-black text-white text-sm font-medium mb-4">
+            <span className="inline-block px-4 py-2 rounded-full bg-[#e65c3a] text-white text-sm font-medium mb-4">
               Frequently Asked Questions
             </span>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-[#1642F0] leading-tight">
               Everything You Need
               <br />
               To Know About Storage
@@ -89,11 +87,11 @@ function FAQPage() {
             {faqData.map((section, sectionIndex) => (
               <div key={sectionIndex}>
                 <div className="mb-6">
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  <h2 className="text-2xl md:text-3xl font-bold text-[#1642F0]">
                     {section.category}
                   </h2>
 
-                  <div className="w-20 h-1 bg-black rounded-full mt-3" />
+                  <div className="w-20 h-1 bg-[#e65c3a] rounded-full mt-3" />
                 </div>
 
                 <div className="space-y-4">
@@ -115,12 +113,12 @@ function FAQPage() {
             ))}
           </div>
 
-          <div className="mt-20 bg-black text-white rounded-3xl p-8 md:p-12 text-center">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4">
+          <div className="mt-20 bg-[#1642F0] text-white rounded-3xl p-8 md:p-12 text-center">
+            <h3 className="text-3xl md:text-4xl font-bold mb-4 text-white">
               Still Have Questions?
             </h3>
 
-            <p className="text-gray-300 max-w-2xl mx-auto leading-8">
+            <p className="max-w-2xl mx-auto leading-8 text-xl text-white">
               Our team is here to help with storage solutions across
               Lagos including Ikeja, Lekki, Victoria Island, Surulere,
               Yaba, and Maryland.
@@ -129,14 +127,14 @@ function FAQPage() {
             <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4">
               <a
                 href="mailto:hello@spacedey.com"
-                className="px-6 py-4 rounded-2xl bg-white text-black font-semibold hover:scale-105 transition-transform duration-300"
+                className="px-6 py-4 rounded-2xl bg-[#e65c3a] text-white font-semibold hover:scale-105 transition-transform duration-300 border-0"
               >
-                hello@spacedey.com
+                Send Us An Email
               </a>
 
               <a
                 href="tel:+2347007225776"
-                className="px-6 py-4 rounded-2xl border border-white/30 hover:bg-white hover:text-black transition-all duration-300"
+                className="px-6 py-4 rounded-2xl border border-white/30 hover:bg-[#e65c3a] transition-all duration-300"
               >
                 +234 700 722 5776
               </a>

@@ -91,19 +91,24 @@ export default function Footer() {
               Company
             </h3>
             <ul className="space-y-3">
+            <li>
+                <a href="/locations" className={footerLinkClass}>
+                  Locations
+                </a>
+              </li>
               <li>
                 <a href="/about" className={footerLinkClass}>
                   About Us
                 </a>
               </li>
               <li>
-                <a href="/services" className={footerLinkClass}>
-                  Services
+                <a href="/faq" className={footerLinkClass}>
+                  FAQ
                 </a>
               </li>
               <li>
-                <a href="/locations" className={footerLinkClass}>
-                  Locations
+                <a href="/services" className={footerLinkClass}>
+                  Services
                 </a>
               </li>
             </ul>
