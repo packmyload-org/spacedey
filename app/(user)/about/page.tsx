@@ -176,13 +176,6 @@ function AboutPage() {
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {/* Founder */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
-            <Image
-                src="https://res.cloudinary.com/packmyload/image/upload/v1779760890/1694322347408_tplu49.jpg"
-                alt="Olumide Aniyikaiye"
-                className="w-full h-72 object-cover"
-                width={600}
-                height={700}
-            />
 
             <div className="p-6">
                 <h3 className="text-xl font-semibold text-[#003087]">
@@ -214,11 +207,6 @@ function AboutPage() {
 
         {/* Placeholder 1 */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
-            <img
-                src="https://placehold.co/600x700/e5e7eb/6b7280?text=Team+Member"
-                alt="Team Member"
-                className="w-full h-72 object-cover"
-            />
 
             <div className="p-6">
                 <h3 className="text-xl font-semibold text-[#003087]">
@@ -238,12 +226,6 @@ function AboutPage() {
 
         {/* Placeholder 2 */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
-            <img
-                src="https://placehold.co/600x700/e5e7eb/6b7280?text=Team+Member"
-                alt="Team Member"
-                className="w-full h-72 object-cover"
-            />
-
             <div className="p-6">
                 <h3 className="text-xl font-semibold text-[#003087]">
                     Team Member
@@ -262,11 +244,6 @@ function AboutPage() {
 
         {/* Placeholder 3 */}
         <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
-            <img
-                src="https://placehold.co/600x700/e5e7eb/6b7280?text=Team+Member"
-                alt="Team Member"
-                className="w-full h-72 object-cover"
-            />
 
             <div className="p-6">
                 <h3 className="text-xl font-semibold text-[#003087]">
