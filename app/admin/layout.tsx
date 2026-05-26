@@ -147,8 +147,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Image
                 src="/images/logo.png"
                 alt="Spacedey Logo"
-                width={20}
-                height={20}
+                width={60}
+                height={30}
+                loading='eager'
                 priority
                 className="h-auto w-auto"
               />

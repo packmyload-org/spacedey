@@ -109,6 +109,7 @@ export default function Header() {
                 style={{ height: 'auto' , width: 'auto' }}
                 className="rounded-xl"
                 priority
+                loading='eager'
               />
             </Link>
           </div>
@@ -263,6 +264,7 @@ export default function Header() {
                 height={28}
                 style={{ height: 'auto', width: 'auto' }}
                 priority
+                loading='eager'
               />
             </div>
             <button

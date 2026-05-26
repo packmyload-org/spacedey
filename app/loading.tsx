@@ -41,6 +41,7 @@ export default function Loading() {
                   width={107}
                   height={28}
                   priority
+                  loading='eager'
                   style={{ height: "auto", width: "auto" }}
                   className="rounded-xl"
                 />
@@ -144,6 +145,7 @@ export default function Loading() {
                 alt="Spacedey Logo"
                 width={107}
                 height={28}
+                loading='eager'
                 style={{ height: "auto", width: "auto" }}
                 className="rounded-xl"
               />
