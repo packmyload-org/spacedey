@@ -8,7 +8,7 @@ const LandlordStoragePartnership = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Image Column */}
           <div className="w-full">
-            <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden ">
+            <div className="relative w-full aspect-4/3 rounded-lg overflow-hidden ">
               <Image
                 src="/images/BEFORE%26AFTER.jpg"
                 alt="Stuf Partnership before and after"

@@ -11,9 +11,9 @@ import { buildPageMetadata } from '@/lib/seo';
 import React from "react";
 
 export const metadata: Metadata = buildPageMetadata({
-   title: 'Partner Your Property With Spacedey',
+   title: 'Landlord | Partner Your Property With Spacedey',
    description:
-      'Partner with Spacedey to turn underused property into storage inventory. Explore landlord partnerships, expansion opportunities, and storage demand across Nigeria.',
+      'Affordable landlord partnerships, expansion opportunities, and storage demand across Nigeria.',
    path: '/landlord',
    keywords: [
       'self storage landlord partnership',
