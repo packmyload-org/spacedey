@@ -157,9 +157,7 @@ export default function PrivacyPolicy() {
             </span>
 
             <h1 className="text-4xl md:text-6xl font-bold text-[#1642F0] leading-tight">
-              Privacy
-              <br />
-              Policy
+              Privacy Policy
             </h1>
 
             <p className="max-w-3xl mx-auto mt-6 text-gray-600 text-base md:text-lg leading-8">

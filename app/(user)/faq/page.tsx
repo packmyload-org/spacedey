@@ -17,24 +17,24 @@ function FAQPage() {
     <>
       <Header />
       <main className="bg-gray-50 min-h-screen">
-        <section className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24">
-          <div className="text-center mb-14">
-            <span className="inline-block px-4 py-2 rounded-full bg-[#e65c3a] text-white text-sm font-medium mb-4">
+          <section className="text-center mt-6 py-4 bg-[#1642F0]">
+            <span className="inline-block px-4 py-2 rounded-full bg-[#e65c3a] text-white text-sm font-medium mt-18">
               Frequently Asked Questions
             </span>
 
-            <h1 className="text-4xl md:text-6xl font-bold text-[#1642F0] leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
               Everything You Need
               <br />
               To Know About Storage
             </h1>
 
-            <p className="max-w-3xl mx-auto mt-6 text-gray-600 text-base md:text-lg leading-8">
+            <p className="max-w-3xl mx-auto mt-6 text-white text-base md:text-lg leading-8">
               Find answers to common questions about access, pricing,
               security, move-ins, storage conditions, and more at
               Spacedey Storage.
             </p>
-          </div>
+          </section>
+          <section className="max-w-6xl mx-auto px-4 md:px-6 py-16 md:py-24">
 
           <FAQBody/>
 
