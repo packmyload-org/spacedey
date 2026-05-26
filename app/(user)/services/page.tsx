@@ -7,27 +7,26 @@ import { buildPageMetadata } from '@/lib/seo';
 import React from 'react'
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Products | Self Storage Facilities in Lagos, Nigeria',
+  title: 'Services | Self Storage Facilities in Lagos, Nigeria',
   description:
-    'Shop Spacedey moving and packing supplies, including boxes, tape, and storage add-ons designed to make moving and self storage easier in Nigeria.',
-  path: '/products',
+    'Explore Spacedey services, including packing, moving, and storage solutions for homes and businesses in Nigeria. Learn about our storage unit sizes, pricing, and more.',
+  path: '/services',
   keywords: [
-    'products',
-    'self storage products',
-    'storage products lagos',
-    'storage products nigeria',
-    'storage products in nigeria',
+    'services',
+    'self storage services',
+    'storage services lagos',
+    'storage services nigeria',
+    'storage services in nigeria',
   ],
 });
 
-export default function ProductsPage() {
+export default function ServicesPage() {
   return (
     <main>
       <Header />
       <ProductsHero />
       <ProductsSpacedeyAddOns />
       <Footer />
-
     </main>
   );
 }
