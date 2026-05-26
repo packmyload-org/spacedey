@@ -6,9 +6,9 @@ import { Metadata } from "next";
 import { buildPageMetadata } from "@/lib/seo";
 
     export const metadata: Metadata = buildPageMetadata({
-        title: "About | Self Storage facilities for in Lagos and across Nigeria",
+        title: "About | Self Storage facilities in Lagos and across Nigeria",
     description:
-        "Learn about Spacedey — Nigeria’s trusted platform for secure self-storage, warehousing, and logistics support. Discover our mission, vision, values, and the team building smarter storage solutions alongside Packmyload.",
+        "Learn about Spacedey — Nigeria’s trusted platform for secure self-storage, warehousing, and logistics support.",
 
     keywords: [
         "About",
