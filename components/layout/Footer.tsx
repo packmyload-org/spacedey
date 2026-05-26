@@ -135,12 +135,12 @@ export default function Footer() {
 
         <div className="w-12 h-[2px] bg-[#e65c3a] mb-6 mx-auto"></div>
         <div className="text-center text-sm py-6">
-          Copyright © {new Date().getFullYear()} Packmyload Inc. All rights
+          Copyright © {new Date().getFullYear()} Spacedey Storage. All rights
           reserved.
         </div>
         <button
           onClick={handleSupportClick}
-          className={`fixed bottom-6 left-4 z-[70] flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-700 sm:left-6 ${
+          className={`fixed bottom-6 left-4 z-70 flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-700 sm:left-6 ${
             isSupportModalOpen ? 'pointer-events-none translate-y-3 opacity-0' : 'opacity-100'
           }`}
         >
