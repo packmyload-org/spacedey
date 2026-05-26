@@ -8,7 +8,7 @@ import Script from 'next/script';
 export const metadata: Metadata = buildPageMetadata({
   title: 'Home | Self Storage Facilities in Lagos, Nigeria',
   description:
-    'Affordable and secure self storage facilities in Lagos and across Nigeria for personal items, business inventory, and moving support.',
+    'Affordable, Secure self storage facilities in Lagos and across Nigeria for personal items, business inventory, and moving support. 24/7 availablity and support',
   path: '/',
   keywords: [
     'Best', 'Storage', 'Top', 'facilities', 'Lagos', 'Nigeria', 'affordable', 'self storage', 'secure', 'self storage',

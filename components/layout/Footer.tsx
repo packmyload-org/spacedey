@@ -140,8 +140,8 @@ export default function Footer() {
 
         <div className="w-12 h-[2px] bg-[#e65c3a] mb-6 mx-auto"></div>
         <div className="text-center text-sm py-6">
-          Copyright © {new Date().getFullYear()} Spacedey Storage. All rights
-          reserved.
+          <h6>Copyright © {new Date().getFullYear()} Spacedey Storage Ltd • Oregun, Ikeja, Lagos, Nigeria. All rights
+          reserved.</h6>
         </div>
         <button
           onClick={handleSupportClick}
