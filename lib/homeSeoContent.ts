@@ -204,7 +204,7 @@ We advise customers to maintain a detailed inventory with photographs and replac
   },
 ]
 
-export const HOME_FAQS = faqData.flatMap(item => item.items)
+export const HOME_FAQS = faqData.flatMap(item => item.items).slice(0, 15)
 
 export const HOME_SERVICE_TYPES = [
   'Secure self storage units',
