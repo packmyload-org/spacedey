@@ -8,54 +8,46 @@ interface StorageUnit {
   size: string;
   width: number;
   depth: number;
-  bestFor: string;
+  price: number;
 }
-
+const basePrice = "15000"
 const ComparisonSizes = () => {
   const storageUnits: StorageUnit[] = [
-    // {
-    //   size: 'Small',
-    //   dimensions: '3 x 5',
-    //   squareFeet: '15 SF',
-    //   bestFor: 'Small closet',
-    //   dimensionsShort: "3' x 5'",
-    //   squareFeetShort: '15 SF',
-    // },
     {
       size: 'Small',
       width: 5,
       depth: 5,
-      bestFor: 'Large closet',
+      price: Number(basePrice) * 5,
     },
     {
       size: 'Small',
       width: 5,
       depth: 10,
-      bestFor: 'Large bedroom',
+      price: Number(basePrice) * 5,
     },
     {
       size: 'Medium',
       width: 6,
       depth: 10,
-      bestFor: '2 bedrooms',
+      price: Number(basePrice) * 6,
     },
     {
       size: 'Medium',
       width: 10,
       depth: 10,
-      bestFor: '2 bedrooms',
+      price: Number(basePrice) * 10,
     },
     {
       size: 'Large',
       width: 10,
       depth: 15,
-      bestFor: '3-4 bedrooms',
+      price: Number(basePrice) * 10,
     },
     {
       size: 'Large',
       width: 10,
       depth: 20,
-      bestFor: '4-5 bedrooms',
+      price: Number(basePrice) * 10,
     },
   ];
 
@@ -79,10 +71,10 @@ const ComparisonSizes = () => {
       <div className="relative z-10">
         {/* Title */}
         <div className="mx-auto mb-6 max-w-3xl text-center lg:mb-12">
-          <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
+          <h2 className="text-center text-white text-3xl lg:text-4xl font-bold mb-6">
             Most popular self-storage sizes in Nigeria
           </h2>
-          <p className="text-base leading-7 text-[#475569] md:text-lg">
+          <p className="text-base leading-7 text-white md:text-lg">
             5 x 10 and 10 x 10 units are common starting points because they suit moving, personal storage, and small
             business overflow. Use this table to compare the sizes people ask about most before renting.
           </p>
@@ -106,9 +98,9 @@ const ComparisonSizes = () => {
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
                     Unit Details
                   </th>
-                  {/* <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Best for
-                  </th> */}
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Price
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -118,7 +110,7 @@ const ComparisonSizes = () => {
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
                       {formatStorageUnitLabel({ width: unit.width, depth: unit.depth, unit: 'ft' })}
                     </td>
-                    {/* <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td> */}
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.price}</td>
                   </tr>
                 ))}
               </tbody>
@@ -140,9 +132,9 @@ const ComparisonSizes = () => {
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
                     Unit Details
                   </th>
-                  {/* <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Best for
-                  </th> */}
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Price
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +144,7 @@ const ComparisonSizes = () => {
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
                       {formatStorageUnitLabel({ width: unit.width, depth: unit.depth, unit: 'ft' })}
                     </td>
-                    {/* <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td> */}
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.price}</td>
                   </tr>
                 ))}
               </tbody>

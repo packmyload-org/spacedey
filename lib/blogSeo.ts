@@ -36,8 +36,8 @@ export function getBlogActionLinks(title: string, excerpt: string) {
   return [
     {
       href: '/sizing',
-      label: 'Use the sizing guide',
-      description: 'Compare common unit sizes before you reserve.',
+      label: 'Use the pricing and size guide',
+      description: 'Compare common unit sizes and price before you reserve.',
     },
     {
       href: locationHref,
