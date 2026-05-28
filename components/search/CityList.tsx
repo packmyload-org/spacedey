@@ -214,7 +214,7 @@ export default function CityList({
             <span className="text-sm text-gray-500 mr-2">
               {formatSiteCount(city.sites.length)}
             </span>
-            <ChevronRight className="w-6 h-6 flex-shrink-0" />
+            <ChevronRight className="w-6 h-6 shrink-0" />
           </button>
         ))
       ) : (
@@ -249,7 +249,7 @@ export default function CityList({
   );
 
   return (
-    <div className="z-10 flex h-full min-h-0 flex-col bg-white px-6 pb-6 pt-4">
+    <div className="flex h-screen min-h-0 flex-col bg-red-600 px-6 pb-6 pt-4">
       <h1 className="mb-5 text-2xl font-semibold capitalize">
         Explore self storage sites
       </h1>
