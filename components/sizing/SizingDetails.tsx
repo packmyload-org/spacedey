@@ -250,8 +250,7 @@ const SizingDetails = () => {
                     inline-block px-8 lg:px-10 py-3 lg:py-4
                     border-1 border-[#1642F0] text-[#1642F0] font-semibold
                     rounded-full
-                    transition-all duration-200 ease-out
-                    hover:bg-brand-primary hover:text-white
+                    transition-all duration-200
                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary
                     active:scale-95
                     text-base lg:text-lg
