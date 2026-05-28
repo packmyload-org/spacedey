@@ -197,7 +197,6 @@ const SizingDetails = () => {
                         flex-1 py-4 px-2 lg:px-4 font-semibold text-center
                         transition-all duration-200 ease-out
                         border-b-2 -mb-[2px]
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary
                         ${
                           isActive
                             ? 'text-brand-primary border-b-brand-primary'
