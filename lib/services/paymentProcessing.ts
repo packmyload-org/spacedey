@@ -1,9 +1,12 @@
-import { In, type DataSource } from 'typeorm';
 import Booking, { BookingBillingMetadata, BookingStatus } from '@/lib/db/entities/Booking';
 import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus } from '@/lib/db/entities/Payment';
 import Invoice from '@/lib/db/entities/Invoice';
 import { isRecurringBilling } from '@/lib/billing/config';
 import { generateInvoice } from '@/lib/services/invoicing';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { withPgTransaction } from '@/lib/db/transaction';
+import { BOOKING_RELATION_SELECT, mapBooking, mapPayment } from '@/lib/db/mappers';
+import type { PoolClient } from 'pg';
 
 interface ProviderPayloadShape {
   data?: {
@@ -52,9 +55,14 @@ export function getPaymentAllocations(payment: Payment) {
       }));
   }
 
+  const bookingId = payment.booking?.id ?? payment.bookingId;
+  if (!bookingId) {
+    return [];
+  }
+
   return [
     {
-      bookingId: payment.booking.id,
+      bookingId,
       amount: Number(payment.amount),
     },
   ];
@@ -123,25 +131,15 @@ function mergeRecurringBillingMetadata({
     } satisfies BookingBillingMetadata;
   }
 
-  if (payment.provider !== PaymentProvider.PAYSTACK) {
-    return {
-      ...currentMetadata,
-      billingType: PaymentBillingType.RECURRING as BookingBillingMetadata['billingType'],
-      billingInterval: 'monthly' as const,
-      recurringDurationMonths: payment.metadata?.recurringDurationMonths ?? currentMetadata.recurringDurationMonths,
-      recurringEndDate: currentMetadata.recurringEndDate ?? null,
-      pendingPaymentReference: undefined,
-      pendingPaymentInitializedAt: undefined,
-    } satisfies BookingBillingMetadata;
-  }
-
   const existingPaystack = currentMetadata.paystack ?? {};
   const payloadData = providerData?.data ?? {};
-  const authorization = payloadData.authorization ?? {};
   const customer = payloadData.customer ?? {};
-  const subscriptionCode = payloadData.subscription?.subscription_code
-    || payloadData.subscription_code
-    || existingPaystack.subscriptionCode;
+  const authorization = payloadData.authorization ?? {};
+  const subscriptionCode = normalizeIdentifier(
+    payloadData.subscription_code
+    ?? payloadData.subscription?.subscription_code
+    ?? existingPaystack.subscriptionCode
+  );
 
   return {
     ...currentMetadata,
@@ -155,42 +153,68 @@ function mergeRecurringBillingMetadata({
       ...existingPaystack,
       allocationAmount,
       authorizationCode: authorization.authorization_code ?? existingPaystack.authorizationCode,
-      authorizationReusable: authorization.reusable ?? existingPaystack.authorizationReusable,
       authorizationSignature: authorization.signature ?? existingPaystack.authorizationSignature,
+      authorizationReusable: authorization.reusable ?? existingPaystack.authorizationReusable,
       customerCode: customer.customer_code ?? existingPaystack.customerCode,
       customerEmail: customer.email ?? existingPaystack.customerEmail,
       lastSuccessfulReference: payment.providerReference,
       planCode: payment.metadata?.paystackPlanCode ?? existingPaystack.planCode,
       planName: payment.metadata?.paystackPlanName ?? existingPaystack.planName,
-      subscriptionCode,
+      subscriptionCode: subscriptionCode ?? undefined,
       invoiceLimit: payment.metadata?.recurringDurationMonths ?? existingPaystack.invoiceLimit,
     },
   } satisfies BookingBillingMetadata;
 }
 
+async function loadBookingsByIds(client: PoolClient, bookingIds: string[]) {
+  if (bookingIds.length === 0) {
+    return [];
+  }
+
+  const { rows } = await client.query(
+    `SELECT row_to_json(booking) AS booking
+     FROM (
+       SELECT b.*,
+         (SELECT row_to_json(u) FROM users u WHERE u.id = b."userId") AS "user",
+         (SELECT row_to_json(s) FROM sites s WHERE s.id = b."siteId") AS site,
+         (SELECT row_to_json(ut) FROM unit_types ut WHERE ut.id = b."unitTypeId") AS unit_type,
+         (SELECT row_to_json(su) FROM storage_units su WHERE su.id = b."storageUnitId") AS storage_unit
+       FROM bookings b
+       WHERE b.id = ANY($1::uuid[])
+     ) booking`,
+    [bookingIds]
+  );
+
+  return rows.map((row: { booking: Record<string, unknown> }) => mapBooking(row.booking as Parameters<typeof mapBooking>[0]));
+}
+
 export async function applySuccessfulPayment({
-  dataSource,
   payment,
   providerData,
 }: {
-  dataSource: DataSource;
   payment: Payment;
   providerData?: ProviderPayloadShape;
 }) {
   const bookingAllocations = getPaymentAllocations(payment);
   const bookingIds = bookingAllocations.map((allocation) => allocation.bookingId);
-  return dataSource.transaction(async (manager) => {
-    const bookingRepo = manager.getRepository(Booking);
-    const paymentRepo = manager.getRepository(Payment);
-    const bookings = await bookingRepo.find({
-      where: { id: In(bookingIds) },
-      relations: ['site', 'unitType', 'user'],
-    });
+  const supabase = createAdminClient();
+
+  return withPgTransaction(async (client) => {
+    const bookings = await loadBookingsByIds(client, bookingIds);
     const bookingsById = new Map(bookings.map((booking) => [booking.id, booking]));
     const updatedBookings: Array<{ booking: Booking; invoice: Invoice }> = [];
 
-    payment.status = PaymentStatus.SUCCESS;
-    payment.metadata = { ...payment.metadata, verification: providerData ?? payment.metadata?.verification };
+    const paymentMetadata = {
+      ...payment.metadata,
+      verification: providerData ?? payment.metadata?.verification,
+    };
+
+    await client.query(
+      `UPDATE payments
+       SET status = $1, metadata = $2::jsonb, "updatedAt" = now()
+       WHERE id = $3`,
+      [PaymentStatus.SUCCESS, JSON.stringify(paymentMetadata), payment.id]
+    );
 
     for (const allocation of bookingAllocations) {
       const booking = bookingsById.get(allocation.bookingId);
@@ -214,16 +238,58 @@ export async function applySuccessfulPayment({
         allocationAmount: Number(allocation.amount),
       });
 
-      await bookingRepo.save(booking);
-      const invoice = await generateInvoice(manager, payment, {
+      await client.query(
+        `UPDATE bookings
+         SET status = $1,
+             "amountPaid" = $2,
+             "billingMetadata" = $3::jsonb,
+             "updatedAt" = now()
+         WHERE id = $4`,
+        [
+          booking.status,
+          booking.amountPaid,
+          JSON.stringify(booking.billingMetadata),
+          booking.id,
+        ]
+      );
+
+      const invoice = await generateInvoice(supabase, payment, {
         bookingId: booking.id,
         amount: allocation.amount,
       });
       updatedBookings.push({ booking, invoice });
     }
 
-    await paymentRepo.save(payment);
-
     return updatedBookings;
   });
+}
+
+export async function fetchPaymentWithRelations(paymentId: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*, booking:bookings(*), user:users(*)')
+    .eq('id', paymentId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data ? mapPayment(data) : null;
+}
+
+export async function fetchPaymentByReference(providerReference: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*, booking:bookings(*), user:users(*)')
+    .eq('providerReference', providerReference)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data ? mapPayment(data) : null;
 }

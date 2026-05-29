@@ -18,7 +18,7 @@ export function toAbsoluteUrl(pathname: string) {
 }
 
 export function getDefaultSeoImage() {
-  return toAbsoluteUrl(DEFAULT_OG_IMAGE_PATH);
+  return 'https://res.cloudinary.com/packmyload/image/upload/c_scale,h_253,q_100,w_287/v1779765696/spacedey/2026-05-11.webp';
 }
 
 export function serializeJsonLd(value: unknown) {

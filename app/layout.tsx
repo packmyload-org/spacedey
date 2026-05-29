@@ -12,6 +12,7 @@ import StorageCartMount from "@/components/StorageCartMount";
 import { DEFAULT_KEYWORDS, SITE_NAME, getDefaultSeoImage } from "@/lib/seo";
 import { env } from "@/config/env";
 import CookieConsent from '@/components/ui/CookieConsent';
+import Script from "next/script";
 
 const defaultSeoImage = getDefaultSeoImage();
 
@@ -70,12 +71,31 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased" suppressHydrationWarning>
-        <GoogleTagManager containerId={googleTagManagerId} />
+        <Script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Spacedey",
+              url: "https://spacedey.com",
+              logo: "https://spacedey.com/logo.png",
+              description:
+                "Spacedey provides secure storage, warehousing, and logistics support solutions for individuals and businesses in Nigeria.",
+              sameAs: [
+                "https://packmyload.com",
+              ],
+              contactPoint: {
+                "@type": "ContactPoint",
+                contactType: "customer service",
+                areaServed: "NG",
+                availableLanguage: ["English"],
+              },
+            }),
+          }}
+        />
         <StorageCartProvider>
           <SitesProvider>
-            <Suspense fallback={<p>Loading...</p>}>
-              <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
-            </Suspense>
             {children}
             <StorageCartMount />
             <CookieConsent />
@@ -90,7 +110,11 @@ export default function RootLayout({
             />
           </SitesProvider>
         </StorageCartProvider>
+        <Suspense fallback={<p>Loading...</p>}>
+          <RouteChangeTracker enabled={Boolean(googleTagManagerId)} />
+        </Suspense>
         {vercelInsightsEnabled ? <VercelInsights /> : null}
+        <GoogleTagManager containerId={googleTagManagerId} />
       </body>
     </html>
   );

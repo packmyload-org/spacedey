@@ -13,7 +13,7 @@ const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
     height="24"
     fill="currentColor"
     viewBox="0 0 256 256"
-    className={`flex-shrink-0 transition-transform duration-200 ${
+    className={`shrink-0 transition-transform duration-200 ${
       isOpen ? 'rotate-180' : ''
     }`}
   >
@@ -31,7 +31,7 @@ const FaqAccordionItem = ({ item, index }: { item: FaqItem; index: number }) => 
   // Preserve original wrapper styling for each item
   return (
     <div
-      className="border-b-[1px] last:border-b-0 border-gray-200 lg:pb-6 pb-5 last:pb-0 lg:mb-6 mb-5 last:mb-0"
+      className="border-b last:border-b-0 border-gray-200 lg:pb-6 pb-5 last:pb-0 lg:mb-6 mb-5 last:mb-0"
       aria-expanded={isOpen}
     >
       <button
@@ -41,7 +41,7 @@ const FaqAccordionItem = ({ item, index }: { item: FaqItem; index: number }) => 
         id={`faq-header-${index}`}
       >
         {/* Question text styling preserved */}
-        <span className="lg:text-2xl text-lg font-medium text-brand-secondary-blue flex-grow">
+        <span className="lg:text-2xl text-lg font-medium text-brand-secondary-blue grow">
           {item.question}
         </span>
         <ChevronIcon isOpen={isOpen} />
@@ -71,11 +71,6 @@ const FaqAccordionItem = ({ item, index }: { item: FaqItem; index: number }) => 
 
 // Main Next.js/React component
 const SizingFaq = () => {
-  // The background color from the original HTML: bg-[#1642F00D]
-  // Note: This is a hex color with 2-digit opacity (0D), which is complex.
-  // Tailwind uses 10-point scale opacity. 0D in hex is about 5.1% opacity.
-  // We'll use the exact hex with opacity for maximum fidelity, as it's a valid Tailwind class name if configured,
-  // but it's used here as an inline style to ensure it works without custom config.
   const sectionBgColor = 'bg-[#1642F00D]';
 
   return (
@@ -101,7 +96,7 @@ const SizingFaq = () => {
         <div className="text-center">
           <button
             className="
-              w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200
+              w-full sm:w-auto px-8 py-3 border border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200
             "
             type="button"
           >

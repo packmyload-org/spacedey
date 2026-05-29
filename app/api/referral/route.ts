@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { connectTypeORM } from '@/lib/db';
-import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { verifyToken } from '@/lib/auth/jwt';
 import { initializeReferralConversation } from '@/lib/services/referralConversationService';
 import { EMAIL_PATTERN } from '@/lib/types/constants';
@@ -38,17 +37,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const normalizedEmail = email;
-    const normalizedRefereeEmail = refereeEmail;
-
-    if (!EMAIL_PATTERN.test(normalizedEmail) || !EMAIL_PATTERN.test(normalizedRefereeEmail)) {
+    if (!EMAIL_PATTERN.test(email) || !EMAIL_PATTERN.test(refereeEmail)) {
       return NextResponse.json(
         { ok: false, error: 'A valid email address is required for both people.' },
         { status: 400 }
       );
     }
 
-    if (normalizedEmail === normalizedRefereeEmail) {
+    if (email === refereeEmail) {
       return NextResponse.json(
         { ok: false, error: 'You cannot refer your own email address.' },
         { status: 400 }
@@ -58,16 +54,14 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
     const decoded = token ? verifyToken(token) : null;
+    const supabase = createAdminClient();
 
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(ReferralSubmission);
-
-    const existingSubmission = await repo.findOne({
-      where: {
-        email: normalizedEmail,
-        refereeEmail: normalizedRefereeEmail,
-      },
-    });
+    const { data: existingSubmission } = await supabase
+      .from('referral_submissions')
+      .select('id')
+      .eq('email', email)
+      .eq('refereeEmail', refereeEmail)
+      .maybeSingle();
 
     if (existingSubmission) {
       return NextResponse.json(
@@ -76,19 +70,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const submission = repo.create({
-      referrerUserId: decoded?.userId ?? null,
-      firstName,
-      lastName,
-      email: normalizedEmail,
-      refereeFirstName,
-      refereeLastName: refereeLastName || null,
-      refereeEmail: normalizedRefereeEmail,
-      refereePhone: refereePhone || null,
-      refereeLocation,
-    });
+    const { data: submission, error } = await supabase
+      .from('referral_submissions')
+      .insert({
+        referrerUserId: decoded?.userId ?? null,
+        firstName,
+        lastName,
+        email,
+        refereeFirstName,
+        refereeLastName: refereeLastName || null,
+        refereeEmail,
+        refereePhone: refereePhone || null,
+        refereeLocation,
+      })
+      .select('*')
+      .single();
 
-    await repo.save(submission);
+    if (error) {
+      throw error;
+    }
 
     const conversation = await initializeReferralConversation(submission.id);
 
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
         id: submission.id,
         email: submission.email,
         refereeEmail: submission.refereeEmail,
-        createdAt: submission.createdAt.toISOString(),
+        createdAt: submission.createdAt,
       },
       conversation,
     });

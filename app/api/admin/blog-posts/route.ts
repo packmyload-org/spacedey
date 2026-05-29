@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import BlogPost from '@/lib/db/entities/BlogPost';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth/admin';
 import { ensureUniqueBlogSlug, serializeBlogPost, slugifyBlogTitle } from '@/lib/services/blogPosts';
+import { mapBlogPost } from '@/lib/db/mappers';
 
 function normalizeBlogPostPayload(body: Record<string, unknown>) {
   const title = String(body.title || '').trim();
@@ -35,18 +35,20 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(BlogPost);
-    const posts = await repo.find({
-      order: {
-        updatedAt: 'DESC',
-        createdAt: 'DESC',
-      },
-    });
+    const supabase = createAdminClient();
+    const { data: posts, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .order('updatedAt', { ascending: false })
+      .order('createdAt', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json({
       ok: true,
-      posts: posts.map(serializeBlogPost),
+      posts: (posts ?? []).map((row) => serializeBlogPost(mapBlogPost(row))),
       total: posts.length,
     });
   } catch (error) {
@@ -82,25 +84,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(BlogPost);
-    const slug = await ensureUniqueBlogSlug(repo, slugifyBlogTitle(rawSlug));
+    const slug = await ensureUniqueBlogSlug(slugifyBlogTitle(rawSlug));
+    const supabase = createAdminClient();
+    const { data: post, error } = await supabase
+      .from('blog_posts')
+      .insert({
+        title,
+        slug,
+        excerpt,
+        content,
+        image,
+        author,
+        published,
+        publishedAt: published ? new Date().toISOString() : null,
+      })
+      .select('*')
+      .single();
 
-    const post = repo.create({
-      title,
-      slug,
-      excerpt,
-      content,
-      image,
-      author,
-      published,
-      publishedAt: published ? new Date() : null,
-    });
-
-    await repo.save(post);
+    if (error) {
+      throw error;
+    }
 
     return NextResponse.json(
-      { ok: true, post: serializeBlogPost(post) },
+      { ok: true, post: serializeBlogPost(mapBlogPost(post)) },
       { status: 201 }
     );
   } catch (error) {

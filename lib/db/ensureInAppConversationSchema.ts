@@ -1,14 +1,14 @@
-import type { DataSource } from 'typeorm';
+import { runPgQuery } from '@/lib/db/transaction';
 
 let schemaEnsurePromise: Promise<void> | null = null;
 
-async function ensureConversationColumnsAndTables(dataSource: DataSource) {
-  await dataSource.query(`
+async function ensureConversationColumnsAndTables() {
+  await runPgQuery(`
     ALTER TABLE "support_conversations"
     ADD COLUMN IF NOT EXISTS "topic" character varying
   `);
 
-  await dataSource.query(`
+  await runPgQuery(`
     CREATE TABLE IF NOT EXISTS "support_messages" (
       "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
       "conversationId" uuid NOT NULL,
@@ -20,7 +20,7 @@ async function ensureConversationColumnsAndTables(dataSource: DataSource) {
     )
   `);
 
-  await dataSource.query(`
+  await runPgQuery(`
     CREATE TABLE IF NOT EXISTS "referral_messages" (
       "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
       "submissionId" uuid NOT NULL,
@@ -32,7 +32,7 @@ async function ensureConversationColumnsAndTables(dataSource: DataSource) {
     )
   `);
 
-  await dataSource.query(`
+  await runPgQuery(`
     CREATE TABLE IF NOT EXISTS "landlord_messages" (
       "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
       "inquiryId" uuid NOT NULL,
@@ -45,12 +45,12 @@ async function ensureConversationColumnsAndTables(dataSource: DataSource) {
   `);
 }
 
-export async function ensureInAppConversationSchema(dataSource: DataSource) {
+export async function ensureInAppConversationSchema() {
   if (schemaEnsurePromise) {
     return schemaEnsurePromise;
   }
 
-  schemaEnsurePromise = ensureConversationColumnsAndTables(dataSource).catch((error: unknown) => {
+  schemaEnsurePromise = ensureConversationColumnsAndTables().catch((error: unknown) => {
     schemaEnsurePromise = null;
     throw error;
   });

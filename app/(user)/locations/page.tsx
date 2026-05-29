@@ -3,7 +3,7 @@ import Hero from "@/components/locations/Hero";
 import LocationDiscoveryLinks from '@/components/locations/LocationDiscoveryLinks';
 import LocationsSection from "@/components/locations/LocationsSection";
 import StorageLocationsMap from "@/components/locations/StorageLocationsMap";
-import { listCityLandingPages, listStateLandingPages } from '@/lib/services/locationLandingPages';
+import { getLocationLandingPages } from '@/lib/services/locationLandingPages';
 import { buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
@@ -20,11 +20,10 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
+export const revalidate = 3600;
+
 export default async function LocationsPage() {
-  const [cityPages, statePages] = await Promise.all([
-    listCityLandingPages(),
-    listStateLandingPages(),
-  ]);
+  const { cityPages, statePages } = await getLocationLandingPages();
 
   return (
     <main className="flex flex-col min-h-screen pt-20">

@@ -8,54 +8,46 @@ interface StorageUnit {
   size: string;
   width: number;
   depth: number;
-  bestFor: string;
+  price: number;
 }
-
+const basePrice = "15000"
 const ComparisonSizes = () => {
   const storageUnits: StorageUnit[] = [
-    // {
-    //   size: 'Small',
-    //   dimensions: '3 x 5',
-    //   squareFeet: '15 SF',
-    //   bestFor: 'Small closet',
-    //   dimensionsShort: "3' x 5'",
-    //   squareFeetShort: '15 SF',
-    // },
     {
       size: 'Small',
       width: 5,
       depth: 5,
-      bestFor: 'Large closet',
+      price: Number(basePrice) * 5,
     },
     {
       size: 'Small',
       width: 5,
       depth: 10,
-      bestFor: 'Large bedroom',
+      price: Number(basePrice) * 5,
     },
     {
       size: 'Medium',
       width: 6,
       depth: 10,
-      bestFor: '2 bedrooms',
+      price: Number(basePrice) * 6,
     },
     {
       size: 'Medium',
       width: 10,
       depth: 10,
-      bestFor: '2 bedrooms',
+      price: Number(basePrice) * 10,
     },
     {
       size: 'Large',
       width: 10,
       depth: 15,
-      bestFor: '3-4 bedrooms',
+      price: Number(basePrice) * 10,
     },
     {
       size: 'Large',
       width: 10,
       depth: 20,
-      bestFor: '4-5 bedrooms',
+      price: Number(basePrice) * 10,
     },
   ];
 
@@ -79,10 +71,10 @@ const ComparisonSizes = () => {
       <div className="relative z-10">
         {/* Title */}
         <div className="mx-auto mb-6 max-w-3xl text-center lg:mb-12">
-          <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
+          <h2 className="text-center text-white text-3xl lg:text-4xl font-bold mb-6">
             Most popular self-storage sizes in Nigeria
           </h2>
-          <p className="text-base leading-7 text-[#475569] md:text-lg">
+          <p className="text-base leading-7 text-white md:text-lg">
             5 x 10 and 10 x 10 units are common starting points because they suit moving, personal storage, and small
             business overflow. Use this table to compare the sizes people ask about most before renting.
           </p>
@@ -106,9 +98,9 @@ const ComparisonSizes = () => {
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
                     Unit Details
                   </th>
-                  {/* <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Best for
-                  </th> */}
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Price
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -118,7 +110,7 @@ const ComparisonSizes = () => {
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
                       {formatStorageUnitLabel({ width: unit.width, depth: unit.depth, unit: 'ft' })}
                     </td>
-                    {/* <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td> */}
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.price}</td>
                   </tr>
                 ))}
               </tbody>
@@ -140,9 +132,9 @@ const ComparisonSizes = () => {
                   <th className="text-left py-4 px-4 font-bold text-gray-800">
                     Unit Details
                   </th>
-                  {/* <th className="text-left py-4 px-4 font-bold text-gray-800">
-                    Best for
-                  </th> */}
+                  <th className="text-left py-4 px-4 font-bold text-gray-800">
+                    Price
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +144,7 @@ const ComparisonSizes = () => {
                     <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">
                       {formatStorageUnitLabel({ width: unit.width, depth: unit.depth, unit: 'ft' })}
                     </td>
-                    {/* <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.bestFor}</td> */}
+                    <td className="py-4 px-4 text-gray-700 lg:text-lg text-base font-normal">{unit.price}</td>
                   </tr>
                 ))}
               </tbody>
@@ -167,7 +159,7 @@ const ComparisonSizes = () => {
         <Link href="/locations">
           <button
             type="button"
-            className="w-full sm:w-auto px-8 py-3 border-1 border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200"
+            className="w-full sm:w-auto px-8 py-3 border border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition-colors duration-200"
           >
             Explore all locations
           </button>
@@ -178,153 +170,3 @@ const ComparisonSizes = () => {
 };
 
 export default ComparisonSizes;
-
-
-
-
-
-
-// 'use client';
-
-// import React from 'react';
-// import Link from 'next/link';
-
-// interface StorageUnit {
-//   dimensions: string;
-//   squareFeet: number; // number, not string
-//   bestFor: string;
-//   dimensionsShort?: string;
-// }
-
-// const getUnitSize = (sqft: number) => {
-//   if (sqft <= 50) return 'Small';
-//   if (sqft <= 100) return 'Medium';
-//   return 'Large';
-// };
-
-// const ComparisonSizes = () => {
-//   const storageUnits: StorageUnit[] = [
-//     {
-//       dimensions: '3 x 5',
-//       squareFeet: 15,
-//       bestFor: 'Small closet',
-//       dimensionsShort: "3' x 5'",
-//     },
-//     {
-//       dimensions: '5 x 5',
-//       squareFeet: 25,
-//       bestFor: 'Large closet',
-//       // dimensionsShort: "5' x 5'",
-//     },
-//     {
-//       dimensions: '5 x 10',
-//       squareFeet: 50,
-//       bestFor: 'Large bedroom',
-//       // dimensionsShort: "5' x 10'",
-//     },
-//     {
-//       dimensions: '6 x 10',
-//       squareFeet: 60,
-//       bestFor: '2 bedrooms',
-//       // dimensionsShort: "6' x 10'",
-//     },
-//     {
-//       dimensions: '10 x 10',
-//       squareFeet: 100,
-//       bestFor: '2 bedrooms',
-//       // dimensionsShort: "10' x 10'",
-//     },
-//     {
-//       dimensions: '10 x 15',
-//       squareFeet: 150,
-//       bestFor: '3–4 bedrooms',
-//       // dimensionsShort: "10' x 15'",
-//     },
-//     {
-//       dimensions: '10 x 20',
-//       squareFeet: 200,
-//       bestFor: '4–5 bedrooms',
-//       dimensionsShort: "10' x 20'",
-//     },
-//   ];
-
-//   return (
-//     <section className="relative lg:pt-40 lg:pb-28 py-12 lg:px-20 px-6 overflow-hidden">
-//       <div className="relative z-10">
-//         <h2 className="text-center text-blue-900 text-3xl lg:text-4xl font-bold mb-6">
-//           Compare sizes before you rent
-//         </h2>
-
-//         <div className="flex justify-center mb-6 lg:mb-12">
-//           <hr className="h-1 w-12 bg-orange-500 border-0" />
-//         </div>
-
-//         {/* Desktop Table */}
-//         <div className="mb-6 lg:mb-12">
-//           <div className="w-full max-w-5xl mx-auto bg-white rounded-xl px-6 lg:px-8 py-8">
-//             <table className="w-full border-collapse">
-//               <thead>
-//                 <tr className="border-b-2 border-gray-300">
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Unit size</th>
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Dimensions</th>
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Square feet</th>
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Best for</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {storageUnits.map((unit, index) => (
-//                   <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
-//                     <td className="py-4 px-4 text-gray-700">
-//                       {getUnitSize(unit.squareFeet)}
-//                     </td>
-//                     <td className="py-4 px-4 text-gray-700">{unit.dimensions}</td>
-//                     <td className="py-4 px-4 text-gray-700">{unit.squareFeet} SF</td>
-//                     <td className="py-4 px-4 text-gray-700">{unit.bestFor}</td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-
-//         {/* Mobile Table */}
-//         <div className="mb-6 lg:mb-12 sm:hidden">
-//           <div className="w-full max-w-6xl mx-auto bg-white rounded-xl px-6 py-8">
-//             <table className="w-full border-collapse">
-//               <thead>
-//                 <tr className="border-b-2 border-gray-300">
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Size</th>
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Dims • SF</th>
-//                   <th className="text-left py-4 px-4 font-bold text-gray-800">Best for</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {storageUnits.map((unit, index) => (
-//                   <tr key={index} className="border-b border-gray-200">
-//                     <td className="py-4 px-4 text-gray-700">
-//                       {getUnitSize(unit.squareFeet)}
-//                     </td>
-//                     <td className="py-4 px-4 text-gray-700">
-//                       {unit.dimensionsShort} • {unit.squareFeet} SF
-//                     </td>
-//                     <td className="py-4 px-4 text-gray-700">{unit.bestFor}</td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="text-center">
-//         <Link href="/locations">
-//           <button className="w-full sm:w-auto px-8 py-3 border border-blue-600 text-blue-600 font-semibold rounded-full hover:bg-blue-50 transition">
-//             Explore all locations
-//           </button>
-//         </Link>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default ComparisonSizes;

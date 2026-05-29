@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapUser } from '@/lib/db/mappers';
 import { verifyActionToken } from '@/lib/auth/actionTokens';
 
 export async function POST(request: Request) {
@@ -24,27 +24,38 @@ export async function POST(request: Request) {
       );
     }
 
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(User);
-    const user = await repo.findOne({
-      where: {
-        id: payload.userId,
-        email: payload.email,
-      },
-    });
+    const supabase = createAdminClient();
+    const { data: row, error: lookupError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', payload.userId)
+      .eq('email', payload.email)
+      .is('deletedAt', null)
+      .maybeSingle();
 
-    if (!user) {
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!row) {
       return NextResponse.json(
         { ok: false, error: 'Account not found for this verification link.' },
         { status: 404 }
       );
     }
 
+    const user = mapUser(row);
     const alreadyVerified = Boolean(user.emailVerifiedAt);
 
     if (!alreadyVerified) {
-      user.emailVerifiedAt = new Date();
-      await repo.save(user);
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ emailVerifiedAt: new Date().toISOString() })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
     }
 
     return NextResponse.json({

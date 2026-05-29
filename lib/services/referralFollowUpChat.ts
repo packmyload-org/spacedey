@@ -1,7 +1,6 @@
 import { Chat, type Message, type Thread } from 'chat';
 import { MemoryStateAdapter } from '@chat-adapter/state-memory';
-import { connectTypeORM } from '@/lib/db';
-import ReferralSubmission from '@/lib/db/entities/ReferralSubmission';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createConfiguredResendAdapter, createResendThread } from '@/lib/services/emailChatConfig';
 
 const DEFAULT_FROM_NAME = 'Spacedey Referrals';
@@ -57,18 +56,28 @@ function getReferralFollowUpChat() {
   });
 
   const handleInboundMessage = async (thread: Thread, message: Message) => {
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(ReferralSubmission);
-    const submission = await repo.findOne({ where: { chatThreadId: thread.id } });
+    const supabase = createAdminClient();
+    const { data: submission } = await supabase
+      .from('referral_submissions')
+      .select('*')
+      .eq('chatThreadId', thread.id)
+      .maybeSingle();
 
     if (!submission) {
       return;
     }
 
-    submission.lastInboundMessage = String(message.text || '').trim() || null;
-    submission.lastInboundAt = new Date();
-    submission.followUpStatus = submission.botReplyCount > 1 ? 'triaging' : 'responded';
-    await repo.save(submission);
+    const now = new Date().toISOString();
+    const followUpStatus = submission.botReplyCount > 1 ? 'triaging' : 'responded';
+
+    await supabase
+      .from('referral_submissions')
+      .update({
+        lastInboundMessage: String(message.text || '').trim() || null,
+        lastInboundAt: now,
+        followUpStatus,
+      })
+      .eq('id', submission.id);
 
     if (submission.botReplyCount > 1) {
       return;
@@ -79,10 +88,14 @@ function getReferralFollowUpChat() {
       fallbackText: 'Thanks. We have attached your referral follow-up note for the team.',
     });
 
-    submission.botReplyCount += 1;
-    submission.lastOutboundAt = new Date();
-    submission.followUpStatus = 'triaging';
-    await repo.save(submission);
+    await supabase
+      .from('referral_submissions')
+      .update({
+        botReplyCount: submission.botReplyCount + 1,
+        lastOutboundAt: now,
+        followUpStatus: 'triaging',
+      })
+      .eq('id', submission.id);
   };
 
   chat.onNewMention(async (thread, message) => {
@@ -138,17 +151,16 @@ export async function sendReferralFollowUpEmail(args: {
       `Hi ${args.firstName}, thanks for your Spacedey referral. Reply with timing or context that will help us reach ${args.refereeFirstName}.`,
   });
 
-  const dataSource = await connectTypeORM();
-  const repo = dataSource.getRepository(ReferralSubmission);
-  const submission = await repo.findOne({ where: { id: args.submissionId } });
-
-  if (submission) {
-    submission.chatThreadId = thread.id;
-    submission.followUpStatus = 'contacted';
-    submission.botReplyCount = 1;
-    submission.lastOutboundAt = new Date();
-    await repo.save(submission);
-  }
+  const supabase = createAdminClient();
+  await supabase
+    .from('referral_submissions')
+    .update({
+      chatThreadId: thread.id,
+      followUpStatus: 'contacted',
+      botReplyCount: 1,
+      lastOutboundAt: new Date().toISOString(),
+    })
+    .eq('id', args.submissionId);
 
   return thread.id;
 }

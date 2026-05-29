@@ -5,6 +5,14 @@ export const SIZING_FAQS = [
       'The 10 x 10 storage unit is usually the most popular because it balances floor space, stacking room, and flexible access for furniture, boxes, and small business stock.',
   },
   {
+    question: 'What is the base price for a unit?',
+    answer: 'The 3 x 5 unit is our often our smallest unit and goes for as low as 7,200 - 15,000.'
+  },
+  {
+    question: 'How do i know what my quote for a unit would be?',
+    answer: 'Prices for our units are affordable and can be calculated by multiplying the base price (7,200 - 15,000) by the width of the unit of choice.'
+  },
+  {
     question: 'What is the smallest storage unit size?',
     answer:
       'A 3 x 5 unit is often the smallest practical storage size. It works well for boxes, files, luggage, small furniture, and other compact items that do not need much floor area.',

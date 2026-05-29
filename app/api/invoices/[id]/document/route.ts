@@ -2,8 +2,8 @@ import * as jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { env } from '@/config/env';
-import { connectTypeORM } from '@/lib/db';
-import User from '@/lib/db/entities/User';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapUser } from '@/lib/db/mappers';
 import {
   generateInvoicePdf,
   getInvoiceDocumentFilename,
@@ -52,11 +52,19 @@ export async function GET(
       );
     }
 
-    const dataSource = await connectTypeORM();
-    const userRepo = dataSource.getRepository(User);
-    const currentUser = await userRepo.findOne({
-      where: { id: decoded.userId },
-    });
+    const supabase = createAdminClient();
+    const { data: userRow, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', decoded.userId)
+      .is('deletedAt', null)
+      .maybeSingle();
+
+    if (userError) {
+      throw userError;
+    }
+
+    const currentUser = userRow ? mapUser(userRow) : null;
 
     if (!currentUser) {
       return NextResponse.json(

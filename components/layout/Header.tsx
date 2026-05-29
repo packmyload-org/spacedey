@@ -21,7 +21,8 @@ import {
   Instagram,
   Twitter,
   Linkedin,
-  X
+  X,
+  MessageCircleQuestionIcon
 } from "lucide-react";
 
 const ExploreLocationsModal = dynamic(
@@ -109,6 +110,7 @@ export default function Header() {
                 style={{ height: 'auto' , width: 'auto' }}
                 className="rounded-xl"
                 priority
+                loading='eager'
               />
             </Link>
           </div>
@@ -144,6 +146,9 @@ export default function Header() {
             </Link>
             <Link href="/blog" className={navLinkClass}>
               Blog
+            </Link>
+            <Link href="/faq" className={navLinkClass}>
+              FAQ
             </Link>
             <Link href="/referral" className={navLinkClass}>
               Refer a Friend
@@ -263,6 +268,7 @@ export default function Header() {
                 height={28}
                 style={{ height: 'auto', width: 'auto' }}
                 priority
+                loading='eager'
               />
             </div>
             <button
@@ -282,6 +288,7 @@ export default function Header() {
               { href: "/sizing", label: "Sizing", icon: Maximize },
               { href: "/products", label: "Products", icon: ShoppingBag },
               { href: "/blog", label: "Blog", icon: Newspaper },
+              { href: "/faq", label: "FAQ", icon: MessageCircleQuestionIcon },
               { href: "/referral", label: "Refer a Friend", icon: UserPlus },
             ].map((item, idx) => (
               item.href ? (
@@ -315,7 +322,7 @@ export default function Header() {
           {isAuthenticated && user && (
             <div className="mb-6 rounded-2xl bg-[#F0F4FF] border border-[#DCE4FF] p-4">
               <div className="flex items-center gap-3">
-                <div className="relative flex-shrink-0">
+                <div className="relative shrink-0">
                   <div className="w-12 h-12 rounded-full bg-[#1642F0] flex items-center justify-center text-white font-bold text-base">
                     {userInitials}
                   </div>

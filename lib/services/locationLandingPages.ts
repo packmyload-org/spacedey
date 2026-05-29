@@ -1,5 +1,6 @@
-import { connectTypeORM } from '@/lib/db';
-import Site from '@/lib/db/entities/Site';
+import { cache } from 'react';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapSite } from '@/lib/db/mappers';
 import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 import { calculateMonthlyStorageRate, formatStorageUnitLabel } from '@/lib/pricing/storagePricing';
 import { getLocationDetails } from '@/lib/utils/sampleLocations';
@@ -85,18 +86,28 @@ function summarizeDescription({
   return description;
 }
 
-export const listLocationSites = (async (): Promise<LocationSiteSummary[]> => {
-  const appDataSource = await connectTypeORM();
-  const repo = appDataSource.getRepository(Site);
-  const sites = await repo.find({
-    relations: ['unitTypes', 'units', 'units.unitType'],
-    order: {
-      updatedAt: 'DESC',
-      name: 'ASC',
-    },
-  });
+function getUnitTypeId(unit: { unitType?: { id: string } | null; unitTypeId?: string | null }) {
+  if (unit.unitType?.id) {
+    return unit.unitType.id;
+  }
 
-  return sites.map((site) => {
+  return unit.unitTypeId ?? null;
+}
+
+export const listLocationSites = cache(async (): Promise<LocationSiteSummary[]> => {
+  const supabase = createAdminClient();
+  const { data: siteRows, error } = await supabase
+    .from('sites')
+    .select('*, unit_types(*), storage_units(*)')
+    .order('updatedAt', { ascending: false })
+    .order('name', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (siteRows ?? []).map((row) => {
+    const site = mapSite(row);
     const city = getSiteCity({ city: site.city ?? undefined, address: site.address });
     const state = getSiteState({ state: site.state ?? undefined, address: site.address });
     const detailFallback = getLocationDetails(city || site.name);
@@ -115,7 +126,7 @@ export const listLocationSites = (async (): Promise<LocationSiteSummary[]> => {
       })
     ));
     const availableUnits = unitTypes.reduce((count, unitType) => {
-      const unitsForType = units.filter((unit) => unit.unitType?.id === unitType.id);
+      const unitsForType = units.filter((unit) => getUnitTypeId(unit) === unitType.id);
 
       if (unitsForType.length > 0) {
         return count + unitsForType.filter((unit) => unit.status === StorageUnitStatus.AVAILABLE).length;
@@ -147,8 +158,7 @@ export const listLocationSites = (async (): Promise<LocationSiteSummary[]> => {
   });
 });
 
-export const listCityLandingPages = (async (): Promise<CityLandingData[]> => {
-  const sites = await listLocationSites();
+function buildCityLandingPages(sites: LocationSiteSummary[]): CityLandingData[] {
   const grouped = new Map<string, LocationSiteSummary[]>();
 
   for (const site of sites) {
@@ -191,10 +201,9 @@ export const listCityLandingPages = (async (): Promise<CityLandingData[]> => {
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
-});
+}
 
-export const listStateLandingPages = (async (): Promise<StateLandingData[]> => {
-  const cityPages = await listCityLandingPages();
+function buildStateLandingPages(cityPages: CityLandingData[]): StateLandingData[] {
   const grouped = new Map<string, CityLandingData[]>();
 
   for (const cityPage of cityPages) {
@@ -236,6 +245,24 @@ export const listStateLandingPages = (async (): Promise<StateLandingData[]> => {
       };
     })
     .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+export const listCityLandingPages = cache(async (): Promise<CityLandingData[]> => {
+  const sites = await listLocationSites();
+  return buildCityLandingPages(sites);
+});
+
+export const listStateLandingPages = cache(async (): Promise<StateLandingData[]> => {
+  const cityPages = await listCityLandingPages();
+  return buildStateLandingPages(cityPages);
+});
+
+export const getLocationLandingPages = cache(async () => {
+  const cityPages = await listCityLandingPages();
+  return {
+    cityPages,
+    statePages: buildStateLandingPages(cityPages),
+  };
 });
 
 export async function getCityLandingPageBySlug(slug: string) {

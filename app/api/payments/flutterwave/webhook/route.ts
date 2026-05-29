@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
-import { In } from 'typeorm';
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import Booking, { BookingStatus } from '@/lib/db/entities/Booking';
-import Payment, { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
+import { PaymentBillingType, PaymentProvider, PaymentStatus, type PaymentBookingAllocation } from '@/lib/db/entities/Payment';
 import { flutterwave } from '@/lib/services/flutterwave';
-import { applySuccessfulPayment } from '@/lib/services/paymentProcessing';
+import { applySuccessfulPayment, fetchPaymentByReference } from '@/lib/services/paymentProcessing';
 import {
   processEmailNotificationsByIds,
   queueOrderConfirmationNotifications,
 } from '@/lib/services/emailNotifications';
+import { BOOKING_RELATION_SELECT, mapBooking, mapPayment } from '@/lib/db/mappers';
+import { asJson } from '@/lib/supabase/json';
 
 const FLUTTERWAVE_SECRET_HASH = process.env.FLUTTERWAVE_SECRET_HASH;
 
@@ -22,19 +23,13 @@ type FlutterwaveWebhookPayload = {
     payment_plan_id?: number | string;
     flw_plan?: number | string;
     subscription_id?: number | string;
-    customer?: {
-      email?: string;
-    };
+    customer?: { email?: string };
     [key: string]: unknown;
   };
 };
 
 function hasValidHash(signature: string | null) {
-  return Boolean(
-    FLUTTERWAVE_SECRET_HASH
-    && signature
-    && signature === FLUTTERWAVE_SECRET_HASH
-  );
+  return Boolean(FLUTTERWAVE_SECRET_HASH && signature && signature === FLUTTERWAVE_SECRET_HASH);
 }
 
 function getPaymentPlanId(data: FlutterwaveWebhookPayload['data']) {
@@ -45,7 +40,6 @@ function normalizeId(value: number | string | null | undefined) {
   if (value === null || typeof value === 'undefined') {
     return null;
   }
-
   return String(value);
 }
 
@@ -56,7 +50,6 @@ function matchesRecurringGroup(args: {
   subscriptionId: number | string | null;
 }) {
   const { booking } = args;
-
   if (booking.billingMetadata?.billingType !== PaymentBillingType.RECURRING) {
     return false;
   }
@@ -105,20 +98,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, message: 'Event ignored' });
     }
 
-    const dataSource = await connectTypeORM();
-    const paymentRepo = dataSource.getRepository(Payment);
-    const bookingRepo = dataSource.getRepository(Booking);
-
+    const supabase = createAdminClient();
     const verifiedPayment = await flutterwave.verifyPayment(transactionId);
     const verifiedData = verifiedPayment?.data ?? {};
+
     if (verifiedData.status !== 'successful') {
       return NextResponse.json({ ok: true, message: 'Verification ignored' });
     }
 
-    const existingPayment = await paymentRepo.findOne({
-      where: { providerReference: reference },
-      relations: ['booking', 'user'],
-    });
+    const existingPayment = await fetchPaymentByReference(reference);
 
     if (existingPayment?.status === PaymentStatus.SUCCESS) {
       return NextResponse.json({ ok: true, message: 'Payment already processed' });
@@ -130,7 +118,6 @@ export async function POST(req: Request) {
 
     if (existingPayment) {
       const updatedBookings = await applySuccessfulPayment({
-        dataSource,
         payment: existingPayment,
         providerData: verifiedPayment,
       });
@@ -139,9 +126,9 @@ export async function POST(req: Request) {
         source: 'payments/flutterwave-webhook-existing',
         appUrl,
         emails: updatedBookings.map(({ booking, invoice }) => ({
-          to: booking.user.email,
-          firstName: booking.user.firstName,
-          siteName: booking.site.name,
+          to: booking.user!.email,
+          firstName: booking.user!.firstName,
+          siteName: booking.site!.name,
           invoiceNumber: invoice.invoiceNumber,
           amountPaid: Number(invoice.total),
           currency: invoice.currency,
@@ -157,17 +144,19 @@ export async function POST(req: Request) {
     const customerEmail = typeof verifiedData.customer?.email === 'string' ? verifiedData.customer.email : null;
     const subscriptionId = verifiedData.subscription_id ?? null;
 
-    const candidateBookings = await bookingRepo.find({
-      where: { status: In([BookingStatus.PENDING, BookingStatus.PARTIAL, BookingStatus.ACTIVE]) },
-      relations: ['site', 'unitType', 'user'],
-    });
+    const { data: candidateRows } = await supabase
+      .from('bookings')
+      .select(BOOKING_RELATION_SELECT)
+      .in('status', [BookingStatus.PENDING, BookingStatus.PARTIAL, BookingStatus.ACTIVE]);
 
-    const matchingBookings = candidateBookings.filter((booking) => matchesRecurringGroup({
-      booking,
-      paymentPlanId,
-      customerEmail,
-      subscriptionId,
-    }));
+    const matchingBookings = (candidateRows ?? [])
+      .map((row) => mapBooking(row))
+      .filter((booking) => matchesRecurringGroup({
+        booking,
+        paymentPlanId,
+        customerEmail,
+        subscriptionId,
+      }));
 
     if (matchingBookings.length === 0) {
       return NextResponse.json({ ok: true, message: 'No matching recurring bookings found' });
@@ -178,34 +167,41 @@ export async function POST(req: Request) {
       amount: Number(booking.billingMetadata?.flutterwave?.allocationAmount ?? booking.monthlyRate),
     }));
 
-    const recurringPayment = paymentRepo.create({
-      booking: matchingBookings[0],
-      user: matchingBookings[0].user,
-      provider: PaymentProvider.FLUTTERWAVE,
-      providerReference: reference,
-      amount: bookingAllocations.reduce((sum, allocation) => sum + allocation.amount, 0),
-      status: PaymentStatus.PENDING,
-      metadata: {
-        data: verifiedData,
-        verification: verifiedPayment,
-        bookingIds: matchingBookings.map((booking) => booking.id),
-        bookingAllocations,
-        checkoutSource: 'recurring',
-        paymentMode: 'monthly',
-        billingType: PaymentBillingType.RECURRING,
-        billingInterval: 'monthly',
-        monthsCovered: 1,
-        recurringDurationMonths: matchingBookings[0].billingMetadata?.recurringDurationMonths,
-        recurringEndsAt: matchingBookings[0].billingMetadata?.recurringEndDate ?? null,
-        flutterwavePaymentPlanId: paymentPlanId ?? matchingBookings[0].billingMetadata?.flutterwave?.paymentPlanId,
-        flutterwavePaymentPlanName: matchingBookings[0].billingMetadata?.flutterwave?.paymentPlanName,
-      },
-    });
+    const primaryBooking = matchingBookings[0];
+    const { data: recurringPaymentRow, error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        bookingId: primaryBooking.id,
+        userId: primaryBooking.userId ?? primaryBooking.user?.id,
+        provider: PaymentProvider.FLUTTERWAVE,
+        providerReference: reference,
+        amount: bookingAllocations.reduce((sum, allocation) => sum + allocation.amount, 0),
+        status: PaymentStatus.PENDING,
+        metadata: asJson({
+          data: verifiedData,
+          verification: verifiedPayment,
+          bookingIds: matchingBookings.map((booking) => booking.id),
+          bookingAllocations,
+          checkoutSource: 'recurring',
+          paymentMode: 'monthly',
+          billingType: PaymentBillingType.RECURRING,
+          billingInterval: 'monthly',
+          monthsCovered: 1,
+          recurringDurationMonths: primaryBooking.billingMetadata?.recurringDurationMonths,
+          recurringEndsAt: primaryBooking.billingMetadata?.recurringEndDate ?? null,
+          flutterwavePaymentPlanId: paymentPlanId ?? primaryBooking.billingMetadata?.flutterwave?.paymentPlanId,
+          flutterwavePaymentPlanName: primaryBooking.billingMetadata?.flutterwave?.paymentPlanName,
+        }),
+      })
+      .select('*, booking:bookings(*), user:users(*)')
+      .single();
 
-    await paymentRepo.save(recurringPayment);
+    if (paymentError) {
+      throw paymentError;
+    }
 
+    const recurringPayment = mapPayment(recurringPaymentRow);
     const updatedBookings = await applySuccessfulPayment({
-      dataSource,
       payment: recurringPayment,
       providerData: verifiedPayment,
     });
@@ -214,9 +210,9 @@ export async function POST(req: Request) {
       source: 'payments/flutterwave-webhook-recurring',
       appUrl,
       emails: updatedBookings.map(({ booking, invoice }) => ({
-        to: booking.user.email,
-        firstName: booking.user.firstName,
-        siteName: booking.site.name,
+        to: booking.user!.email,
+        firstName: booking.user!.firstName,
+        siteName: booking.site!.name,
         invoiceNumber: invoice.invoiceNumber,
         amountPaid: Number(invoice.total),
         currency: invoice.currency,

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import User from '@/lib/db/entities/User';
+import { mapUser } from '@/lib/db/mappers';
+import { hashPassword } from '@/lib/auth/password';
 import { sendSignupVerificationEmail } from '@/lib/email/resend';
 import { validatePasswordStrength } from '@/lib/auth/passwordPolicy';
 import { normalizeEmail } from '@/lib/utils/email';
@@ -34,28 +36,42 @@ export async function POST(request: Request) {
       );
     }
 
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(User);
+    const supabase = createAdminClient();
+    const { data: existingRow, error: lookupError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
 
-    // Check if user already exists
-    const existingUser = await repo.findOne({ where: { email }, withDeleted: true });
+    if (lookupError) {
+      throw lookupError;
+    }
 
-    if (existingUser) {
+    if (existingRow) {
       return NextResponse.json(
-        { ok: false, error: getEmailUnavailableMessage(existingUser) },
+        { ok: false, error: getEmailUnavailableMessage(mapUser(existingRow)) },
         { status: 409 }
       );
     }
-    // Create new user
-    const newUser = repo.create({
-      firstName,
-      lastName,
-      email,
-      password,
-      role: 'user',
-    } as Partial<User>);
 
-    await repo.save(newUser);
+    const hashedPassword = await hashPassword(password);
+    const { data: newUserRow, error: insertError } = await supabase
+      .from('users')
+      .insert({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        role: 'user',
+      })
+      .select('*')
+      .single();
+
+    if (insertError) {
+      throw insertError;
+    }
+
+    const newUser = mapUser(newUserRow);
 
     const userResponse = {
       id: newUser.id,

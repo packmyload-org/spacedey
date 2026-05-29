@@ -1,5 +1,6 @@
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import Invoice from '@/lib/db/entities/Invoice';
+import { INVOICE_RELATION_SELECT, mapInvoice } from '@/lib/db/mappers';
 import type { InvoiceLineItem } from '@/lib/db/entities/Invoice';
 import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
 
@@ -291,23 +292,23 @@ async function getInvoiceDocumentRecord(where: {
     id: string;
   };
 }) {
-  const dataSource = await connectTypeORM();
-  const invoiceRepo = dataSource.getRepository(Invoice);
-  const query = invoiceRepo
-    .createQueryBuilder('invoice')
-    .withDeleted()
-    .leftJoinAndSelect('invoice.user', 'user')
-    .leftJoinAndSelect('invoice.booking', 'booking')
-    .leftJoinAndSelect('booking.site', 'site')
-    .leftJoinAndSelect('booking.unitType', 'unitType')
-    .leftJoinAndSelect('invoice.payment', 'payment')
-    .where('invoice.id = :invoiceId', { invoiceId: where.id });
+  const supabase = createAdminClient();
+  let query = supabase
+    .from('invoices')
+    .select(INVOICE_RELATION_SELECT)
+    .eq('id', where.id);
 
   if (where.user?.id) {
-    query.andWhere('user.id = :userId', { userId: where.user.id });
+    query = query.eq('userId', where.user.id);
   }
 
-  return query.getOne();
+  const { data, error } = await query.maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data ? mapInvoice(data) : null;
 }
 
 export async function getInvoiceDocumentForUser(userId: string, invoiceId: string) {

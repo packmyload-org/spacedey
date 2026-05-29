@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import NewsletterSubscriber from '@/lib/db/entities/NewsletterSubscriber';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { sendNewsletterWelcomeEmail } from '@/lib/email/resend';
 import { EMAIL_PATTERN } from '@/lib/types/constants';
 import { normalizeEmail } from '@/lib/utils/email';
@@ -18,17 +17,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(NewsletterSubscriber);
+    const supabase = createAdminClient();
+    const { data: existingSubscriber, error: lookupError } = await supabase
+      .from('newsletter_subscribers')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
 
-    const existingSubscriber = await repo.findOne({ where: { email } });
+    if (lookupError) {
+      throw lookupError;
+    }
 
     if (existingSubscriber) {
       let shouldSendWelcomeEmail = false;
 
       if (!existingSubscriber.subscribedAt) {
-        existingSubscriber.subscribedAt = new Date();
-        await repo.save(existingSubscriber);
+        const { error: updateError } = await supabase
+          .from('newsletter_subscribers')
+          .update({ subscribedAt: new Date().toISOString() })
+          .eq('id', existingSubscriber.id);
+
+        if (updateError) {
+          throw updateError;
+        }
+
         shouldSendWelcomeEmail = true;
       }
 
@@ -46,17 +58,23 @@ export async function POST(request: Request) {
         subscriber: {
           id: existingSubscriber.id,
           email: existingSubscriber.email,
-          subscribedAt: existingSubscriber.subscribedAt?.toISOString() ?? null,
+          subscribedAt: existingSubscriber.subscribedAt ?? null,
         },
       });
     }
 
-    const subscriber = repo.create({
-      email,
-      subscribedAt: new Date(),
-    });
+    const { data: subscriber, error: insertError } = await supabase
+      .from('newsletter_subscribers')
+      .insert({
+        email,
+        subscribedAt: new Date().toISOString(),
+      })
+      .select('*')
+      .single();
 
-    await repo.save(subscriber);
+    if (insertError) {
+      throw insertError;
+    }
 
     try {
       await sendNewsletterWelcomeEmail({ email, appUrl });
@@ -71,7 +89,7 @@ export async function POST(request: Request) {
         subscriber: {
           id: subscriber.id,
           email: subscriber.email,
-          subscribedAt: subscriber.subscribedAt?.toISOString() ?? null,
+          subscribedAt: subscriber.subscribedAt,
         },
       },
       { status: 201 }

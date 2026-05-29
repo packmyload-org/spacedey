@@ -75,9 +75,9 @@ export default function StorageUnitSizes() {
                 src={selectedSize.image}
                 alt={formatStorageUnitLabel({ width: selectedSize.width, depth: selectedSize.depth, unit: "ft" })}
                 // Use fill layout to make the image occupy the full left container
-                layout="fill"
-                objectFit="cover"
-                className="lg:rounded-l-xl" // Round the left corners only for desktop
+                width={100}
+                height={100}
+                className="lg:rounded-l-xl w-full h-full"
               />
             </div>
           </div>
@@ -112,9 +112,9 @@ export default function StorageUnitSizes() {
               Common Sizes
             </p>
             <div className="flex justify-start gap-3 mb-8 flex-wrap">
-              {category.sizes.map((s) => (
+              {category.sizes.map((s, i) => (
                 <button
-                  key={`${s.width}-${s.depth}`}
+                  key={`${s.width}-${s.depth + i}`}
                   onClick={() => setSelectedSize(s)}
                   // Styling to match the screenshot: Blue border, white BG for inactive; Solid Blue BG for active.
                   className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-colors duration-200 ${

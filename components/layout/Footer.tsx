@@ -91,19 +91,24 @@ export default function Footer() {
               Company
             </h3>
             <ul className="space-y-3">
+            <li>
+                <a href="/locations" className={footerLinkClass}>
+                  Locations
+                </a>
+              </li>
               <li>
                 <a href="/about" className={footerLinkClass}>
                   About Us
                 </a>
               </li>
               <li>
-                <a href="/services" className={footerLinkClass}>
-                  Services
+                <a href="/faq" className={footerLinkClass}>
+                  FAQ
                 </a>
               </li>
               <li>
-                <a href="/locations" className={footerLinkClass}>
-                  Locations
+                <a href="/services" className={footerLinkClass}>
+                  Services
                 </a>
               </li>
             </ul>
@@ -135,12 +140,12 @@ export default function Footer() {
 
         <div className="w-12 h-[2px] bg-[#e65c3a] mb-6 mx-auto"></div>
         <div className="text-center text-sm py-6">
-          Copyright © {new Date().getFullYear()} Packmyload Inc. All rights
-          reserved.
+          <h6>Copyright © {new Date().getFullYear()} Spacedey Storage Ltd • Oregun, Ikeja, Lagos, Nigeria. All rights
+          reserved.</h6>
         </div>
         <button
           onClick={handleSupportClick}
-          className={`fixed bottom-6 left-4 z-[70] flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-700 sm:left-6 ${
+          className={`fixed bottom-6 left-4 z-70 flex items-center gap-2 rounded-full bg-blue-600 px-4 py-3 text-white shadow-lg shadow-blue-900/25 transition hover:bg-blue-700 sm:left-6 ${
             isSupportModalOpen ? 'pointer-events-none translate-y-3 opacity-0' : 'opacity-100'
           }`}
         >

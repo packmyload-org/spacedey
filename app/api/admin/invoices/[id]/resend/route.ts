@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/auth/admin';
-import { connectTypeORM } from '@/lib/db';
-import Invoice, { InvoiceStatus } from '@/lib/db/entities/Invoice';
+import { InvoiceStatus } from '@/lib/db/entities/Invoice';
+import { getAdminInvoiceDetail } from '@/lib/services/adminInvoices';
 import { PaymentBillingType } from '@/lib/db/entities/Payment';
 import { resolveInvoiceLinkedUser } from '@/lib/services/invoiceUsers';
 import {
@@ -33,25 +33,21 @@ export async function POST(
       );
     }
 
-    const dataSource = await connectTypeORM();
-    const invoiceRepo = dataSource.getRepository(Invoice);
-    const invoice = await invoiceRepo
-      .createQueryBuilder('invoice')
-      .withDeleted()
-      .leftJoinAndSelect('invoice.user', 'user')
-      .leftJoinAndSelect('invoice.booking', 'booking')
-      .leftJoinAndSelect('booking.site', 'site')
-      .where('invoice.id = :id', { id })
-      .getOne();
+    const invoiceDetail = await getAdminInvoiceDetail(id);
 
-    if (!invoice) {
+    if (!invoiceDetail) {
       return NextResponse.json(
         { ok: false, error: 'Invoice not found' },
         { status: 404 }
       );
     }
 
-    const user = resolveInvoiceLinkedUser(invoice.user);
+    const user = resolveInvoiceLinkedUser({
+      id: invoiceDetail.user.id,
+      email: invoiceDetail.user.email,
+      firstName: invoiceDetail.user.firstName,
+      lastName: invoiceDetail.user.lastName,
+    } as Parameters<typeof resolveInvoiceLinkedUser>[0]);
 
     if (user.isFallback) {
       return NextResponse.json(
@@ -64,9 +60,9 @@ export async function POST(
     }
 
     const appUrl = new URL(request.url).origin;
-    const eventKeySuffix = `${invoice.id}:${Date.now()}`;
+    const eventKeySuffix = `${invoiceDetail.id}:${Date.now()}`;
     let notificationIds: string[] = [];
-    const billingTypeValue = invoice.booking?.billingMetadata?.billingType;
+    const billingTypeValue = invoiceDetail.booking?.billingMetadata?.billingType;
     const billingType =
       billingTypeValue === PaymentBillingType.RECURRING
         ? PaymentBillingType.RECURRING
@@ -74,7 +70,7 @@ export async function POST(
           ? PaymentBillingType.ONE_TIME
           : undefined;
 
-    if (invoice.status === InvoiceStatus.PAID) {
+    if (invoiceDetail.status === InvoiceStatus.PAID) {
       notificationIds = await queueOrderConfirmationNotifications({
         source: `admin-resend-${eventKeySuffix}`,
         appUrl,
@@ -82,29 +78,29 @@ export async function POST(
           {
             to: user.email,
             firstName: user.firstName,
-            siteName: invoice.booking?.site?.name || 'Spacedey storage',
-            invoiceNumber: invoice.invoiceNumber,
-            amountPaid: Number(invoice.total),
-            currency: invoice.currency,
+            siteName: invoiceDetail.booking?.site?.name || 'Spacedey storage',
+            invoiceNumber: invoiceDetail.invoiceNumber,
+            amountPaid: Number(invoiceDetail.total),
+            currency: invoiceDetail.currency,
             billingType,
           },
         ],
       });
     } else {
-      const isOverdue = invoice.status === InvoiceStatus.OVERDUE;
+      const isOverdue = invoiceDetail.status === InvoiceStatus.OVERDUE;
       const reminderId = await queueReminderNotification({
         eventKey: `admin-invoice-reminder:${eventKeySuffix}`,
         recipientEmail: user.email,
         recipientName: user.firstName,
         subject: isOverdue ? 'Your Spacedey invoice is overdue' : 'Your Spacedey invoice is due soon',
-        intro: `Hi ${user.firstName || 'there'}, invoice ${invoice.invoiceNumber} for ${invoice.booking?.site?.name || 'your storage booking'} needs your attention.`,
+        intro: `Hi ${user.firstName || 'there'}, invoice ${invoiceDetail.invoiceNumber} for ${invoiceDetail.booking?.site?.name || 'your storage booking'} needs your attention.`,
         body: [
           `Amount: ${new Intl.NumberFormat('en-NG', {
             style: 'currency',
-            currency: invoice.currency,
+            currency: invoiceDetail.currency,
             maximumFractionDigits: 2,
-          }).format(Number(invoice.total))}.`,
-          `Due date: ${invoice.dueDate.toLocaleDateString('en-NG')}.`,
+          }).format(Number(invoiceDetail.total))}.`,
+          `Due date: ${new Date(invoiceDetail.dueDate).toLocaleDateString('en-NG')}.`,
           isOverdue
             ? 'This invoice is now overdue. Please review payment as soon as possible.'
             : 'This invoice is coming due soon. Please review it before the deadline.',

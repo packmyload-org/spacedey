@@ -39,6 +39,8 @@ const defaultAddOns: AddOn[] = [
       { icon: "✓", text: "Price starts at ₦4,500. per square feet/month" },
       { icon: "✓", text: "Cancel anytime, no hidden fees" },
     ],
+    linkText: "Learn more about Spacedey Blue",
+    linkHref: "https://spacedey.com",
   },
   {
     id: "packing-supplies",
@@ -52,6 +54,8 @@ const defaultAddOns: AddOn[] = [
       { icon: "✓", text: "Helps keep boxes secure in storage" },
       { icon: "✓", text: "Useful for both personal and business items" },
     ],
+    linkText: "Learn more about Packing Supplies",
+    linkHref: "https://packmyload.com",
   },
   {
     id: "insurance",
@@ -74,7 +78,7 @@ const defaultAddOns: AddOn[] = [
     id: "move-in-support",
     name: "Move-In Support",
     description:
-      "Plan smoother drop-offs and business inventory moves with service support built around recurring storage use and quick access.",
+      "Plan smoother drop-offs and business inventory moves with service support from our sister company packmyload.com built around recurring storage use and quick access.",
     image: "/images/services/truck.png",
     price: 15000,
     features: [
@@ -82,6 +86,8 @@ const defaultAddOns: AddOn[] = [
       { icon: "✓", text: "Supports business and household moves" },
       { icon: "✓", text: "Pairs well with flexible unit access" },
     ],
+    linkText: "Learn more about PackMyLoad",
+    linkHref: "https://packmyload.com",
   },
 ];
 

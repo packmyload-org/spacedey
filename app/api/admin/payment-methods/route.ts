@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth/admin';
 import { PaymentProvider } from '@/lib/db/entities/Payment';
 import {
@@ -19,8 +18,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const dataSource = await connectTypeORM();
-    const methods = await getPaymentMethodStatuses(dataSource);
+    const methods = await getPaymentMethodStatuses();
 
     return NextResponse.json({
       ok: true,
@@ -76,8 +74,7 @@ export async function PATCH(request: NextRequest) {
       updates[method.provider] = method.enabled;
     }
 
-    const dataSource = await connectTypeORM();
-    const methods = await updatePaymentMethodStatuses(dataSource, updates);
+    const methods = await updatePaymentMethodStatuses(updates);
 
     return NextResponse.json({
       ok: true,

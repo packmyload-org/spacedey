@@ -1,7 +1,7 @@
 import { cache } from 'react';
-import type { Repository } from 'typeorm';
-import { connectTypeORM } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 import BlogPost from '@/lib/db/entities/BlogPost';
+import { mapBlogPost } from '@/lib/db/mappers';
 
 export interface SerializedBlogPost {
   id: string;
@@ -44,16 +44,20 @@ export function slugifyBlogTitle(value: string): string {
 }
 
 export async function ensureUniqueBlogSlug(
-  repo: Repository<BlogPost>,
   rawSlug: string,
   excludeId?: string
 ): Promise<string> {
+  const supabase = createAdminClient();
   const baseSlug = slugifyBlogTitle(rawSlug) || `post-${Date.now()}`;
   let candidate = baseSlug;
   let suffix = 1;
 
   while (true) {
-    const existing = await repo.findOne({ where: { slug: candidate } });
+    const { data: existing } = await supabase
+      .from('blog_posts')
+      .select('id, slug')
+      .eq('slug', candidate)
+      .maybeSingle();
 
     if (!existing || existing.id === excludeId) {
       return candidate;
@@ -64,22 +68,20 @@ export async function ensureUniqueBlogSlug(
   }
 }
 
-export async function getBlogPostRepository() {
-  const dataSource = await connectTypeORM();
-  return dataSource.getRepository(BlogPost);
-}
-
 const listPublishedBlogPostsCached = cache(async (): Promise<SerializedBlogPost[]> => {
-  const repo = await getBlogPostRepository();
-  const posts = await repo.find({
-    where: { published: true },
-    order: {
-      publishedAt: 'DESC',
-      createdAt: 'DESC',
-    },
-  });
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('published', true)
+    .order('publishedAt', { ascending: false })
+    .order('createdAt', { ascending: false });
 
-  return posts.map(serializeBlogPost);
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => serializeBlogPost(mapBlogPost(row)));
 });
 
 const getPublishedBlogPostBySlugCached = cache(

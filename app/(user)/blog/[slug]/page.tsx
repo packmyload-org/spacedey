@@ -50,14 +50,14 @@ export async function generateMetadata(
   const keywords = getBlogKeywords(post.title, post.excerpt);
 
   return {
-    title: post.title,
+    title: post.title.split(':')[0].slice(0, 20) + '...',
     description: post.excerpt,
     keywords,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: post.title,
+      title: post.title.split(':')[0].slice(0, 20) + '...',
       description: post.excerpt,
       url: canonicalUrl,
       type: 'article',
@@ -70,12 +70,12 @@ export async function generateMetadata(
               url: post.image,
               alt: post.title,
             },
-          ]
+          ] 
         : undefined,
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.title,
+      title: post.title.split(':')[0].slice(0, 20) + '...',
       description: post.excerpt,
       images: post.image ? [post.image] : undefined,
     },

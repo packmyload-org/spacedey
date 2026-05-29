@@ -12,7 +12,7 @@ import { buildPageMetadata, serializeJsonLd } from '@/lib/seo';
 import { SIZING_FAQS } from '@/lib/sizingSeoContent';
 
 export const metadata: Metadata = buildPageMetadata({
-  title: 'Storage Unit Sizes Guide',
+  title: 'Pricing | Storage Unit Prices and Sizes Guide',
   description:
     'Compare storage unit sizes, understand what fits in each option, and choose the right Spacedey unit for personal or business storage in Nigeria.',
   path: '/sizing',

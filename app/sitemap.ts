@@ -1,6 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { connectTypeORM } from '@/lib/db';
-import Site from '@/lib/db/entities/Site';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { listPublishedBlogPosts } from '@/lib/services/blogPosts';
 import { getSiteUrl } from '@/lib/seo';
 import { ChangeFrequency } from '@/lib/enums/changeFrequency';
@@ -30,21 +29,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   try {
-    const appDataSource = await connectTypeORM();
-    const repo = appDataSource.getRepository(Site);
-    const sites = await repo.find({
-      select: {
-        id: true,
-        updatedAt: true,
-      },
-      order: {
-        updatedAt: 'DESC',
-      },
-    });
+    const supabase = createAdminClient();
+    const { data: sites, error } = await supabase
+      .from('sites')
+      .select('id, updatedAt')
+      .order('updatedAt', { ascending: false });
 
-    locationRoutes = sites.map((site) => ({
+    if (error) {
+      throw error;
+    }
+
+    locationRoutes = (sites ?? []).map((site) => ({
       url: `${siteUrl}/locations/${site.id}`,
-      lastModified: site.updatedAt,
+      lastModified: new Date(site.updatedAt),
       changeFrequency: ChangeFrequency.WEEKLY,
       priority: SitemapPriority.LOCATION,
     }));

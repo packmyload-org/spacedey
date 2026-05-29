@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import BlogPost from '@/lib/db/entities/BlogPost';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth/admin';
 import { ensureUniqueBlogSlug, serializeBlogPost, slugifyBlogTitle } from '@/lib/services/blogPosts';
+import { mapBlogPost } from '@/lib/db/mappers';
+import type { Database } from '@/lib/supabase/database.types';
 
 function normalizeOptionalString(value: unknown) {
   const normalized = String(value || '').trim();
@@ -24,15 +25,22 @@ export async function GET(
 
   try {
     const { id } = await params;
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(BlogPost);
-    const post = await repo.findOne({ where: { id } });
+    const supabase = createAdminClient();
+    const { data: row, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-    if (!post) {
+    if (error) {
+      throw error;
+    }
+
+    if (!row) {
       return NextResponse.json({ ok: false, error: 'Blog post not found.' }, { status: 404 });
     }
 
-    return NextResponse.json({ ok: true, post: serializeBlogPost(post) });
+    return NextResponse.json({ ok: true, post: serializeBlogPost(mapBlogPost(row)) });
   } catch (error) {
     console.error('Get admin blog post error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';
@@ -61,64 +69,69 @@ export async function PATCH(
       return NextResponse.json({ ok: false, error: 'Invalid request body.' }, { status: 400 });
     }
 
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(BlogPost);
-    const post = await repo.findOne({ where: { id } });
+    const supabase = createAdminClient();
+    const { data: existingRow, error: lookupError } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-    if (!post) {
+    if (lookupError) {
+      throw lookupError;
+    }
+
+    if (!existingRow) {
       return NextResponse.json({ ok: false, error: 'Blog post not found.' }, { status: 404 });
     }
 
-    if (body.title !== undefined) {
-      post.title = String(body.title || '').trim();
-    }
+    const post = mapBlogPost(existingRow);
+    const updates: Database['public']['Tables']['blog_posts']['Update'] = {};
 
-    if (body.excerpt !== undefined) {
-      post.excerpt = String(body.excerpt || '').trim();
-    }
-
-    if (body.content !== undefined) {
-      post.content = String(body.content || '').trim();
-    }
-
-    if (body.author !== undefined) {
-      post.author = String(body.author || '').trim();
-    }
-
-    if (body.image !== undefined) {
-      post.image = normalizeOptionalString(body.image);
-    }
+    if (body.title !== undefined) updates.title = String(body.title || '').trim();
+    if (body.excerpt !== undefined) updates.excerpt = String(body.excerpt || '').trim();
+    if (body.content !== undefined) updates.content = String(body.content || '').trim();
+    if (body.author !== undefined) updates.author = String(body.author || '').trim();
+    if (body.image !== undefined) updates.image = normalizeOptionalString(body.image);
 
     if (body.slug !== undefined || body.title !== undefined) {
-      const nextSlug = String(body.slug || post.title).trim();
-      post.slug = await ensureUniqueBlogSlug(repo, slugifyBlogTitle(nextSlug), post.id);
+      const nextSlug = String(body.slug || updates.title || post.title).trim();
+      updates.slug = await ensureUniqueBlogSlug(slugifyBlogTitle(nextSlug), id);
     }
 
     if (body.published !== undefined) {
       const nextPublished = body.published === true;
-      const wasPublished = post.published;
-
-      post.published = nextPublished;
-
-      if (nextPublished && !wasPublished) {
-        post.publishedAt = new Date();
-      }
-
-      if (!nextPublished) {
-        post.publishedAt = null;
-      }
+      updates.published = nextPublished;
+      updates.publishedAt = nextPublished && !post.published
+        ? new Date().toISOString()
+        : nextPublished
+          ? post.publishedAt?.toISOString() ?? new Date().toISOString()
+          : null;
     }
 
-    if (!post.title || !post.excerpt || !post.content || !post.author) {
+    const title = (updates.title as string | undefined) ?? post.title;
+    const excerpt = (updates.excerpt as string | undefined) ?? post.excerpt;
+    const content = (updates.content as string | undefined) ?? post.content;
+    const author = (updates.author as string | undefined) ?? post.author;
+
+    if (!title || !excerpt || !content || !author) {
       return NextResponse.json(
         { ok: false, error: 'Title, excerpt, content, and author are required.' },
         { status: 400 }
       );
     }
 
-    await repo.save(post);
+    const { data: updatedRow, error: updateError } = await supabase
+      .from('blog_posts')
+      .update(updates)
+      .eq('id', id)
+      .select('*')
+      .single();
 
-    return NextResponse.json({ ok: true, post: serializeBlogPost(post) });
+    if (updateError) {
+      throw updateError;
+    }
+
+    return NextResponse.json({ ok: true, post: serializeBlogPost(mapBlogPost(updatedRow)) });
   } catch (error) {
     console.error('Update blog post error:', error);
     const message = error instanceof Error ? error.message : 'Internal Server Error';
@@ -141,15 +154,12 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    const dataSource = await connectTypeORM();
-    const repo = dataSource.getRepository(BlogPost);
-    const post = await repo.findOne({ where: { id } });
+    const supabase = createAdminClient();
+    const { error } = await supabase.from('blog_posts').delete().eq('id', id);
 
-    if (!post) {
-      return NextResponse.json({ ok: false, error: 'Blog post not found.' }, { status: 404 });
+    if (error) {
+      throw error;
     }
-
-    await repo.remove(post);
 
     return NextResponse.json({ ok: true, message: 'Blog post deleted successfully.' });
   } catch (error) {

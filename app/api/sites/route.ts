@@ -1,7 +1,6 @@
-// app/api/sites/route.ts
 import { NextResponse } from 'next/server';
-import { connectTypeORM } from '@/lib/db';
-import Site from '@/lib/db/entities/Site';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { mapSite } from '@/lib/db/mappers';
 import { ApiSite, ApiSitesResponse } from '@/lib/types/local';
 import { StorageUnitStatus } from '@/lib/db/entities/StorageUnit';
 import { calculateMonthlyStorageRate } from '@/lib/pricing/storagePricing';
@@ -9,12 +8,19 @@ import { expireStalePendingBookings } from '@/lib/services/bookingLifecycle';
 
 export async function GET() {
   try {
-    const appDataSource = await connectTypeORM();
-    await expireStalePendingBookings(appDataSource);
-    const repo = appDataSource.getRepository(Site);
-    const sites = await repo.find({ relations: ['unitTypes', 'units', 'units.unitType'] });
-    const apiSites: ApiSite[] = sites.map((site) => {
-      const siteUnits = site.units || [];
+    await expireStalePendingBookings();
+    const supabase = createAdminClient();
+    const { data: siteRows, error } = await supabase
+      .from('sites')
+      .select('*, unit_types(*), storage_units(*, unit_type:unit_types(*))');
+
+    if (error) {
+      throw error;
+    }
+
+    const apiSites: ApiSite[] = (siteRows ?? []).map((row) => {
+      const site = mapSite(row);
+      const siteUnits = site.units ?? [];
 
       return {
         id: site.id.toString(),
@@ -75,8 +81,7 @@ export async function GET() {
       };
     });
 
-    const response: ApiSitesResponse & { ok: true } = { ok: true, sites: apiSites };
-    return NextResponse.json(response);
+    return NextResponse.json({ ok: true, sites: apiSites } satisfies ApiSitesResponse & { ok: true });
   } catch (error: unknown) {
     console.error('API Route /api/sites Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Internal Server Error';
