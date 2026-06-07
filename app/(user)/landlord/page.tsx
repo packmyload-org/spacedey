@@ -13,10 +13,10 @@ import React from "react";
 export const metadata: Metadata = buildPageMetadata({
    title: 'Landlord | Partner Your Property With Spacedey',
    description:
-      'Affordable landlord partnerships, expansion opportunities, and storage demand across Nigeria.',
+      'Affordable landlord partnerships, expansion opportunities, and self storage demands across Lagos & Nigeria.',
    path: '/landlord',
    keywords: [
-      'self storage landlord partnership',
+      'self storage', 'landlord partnership',
       'rent warehouse space nigeria',
       'property partnership lagos',
       'storage facility partnership',
