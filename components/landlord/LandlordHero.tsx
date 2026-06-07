@@ -46,9 +46,9 @@ export default function HeroSection() {
       </div>
     
     </div>
-        <div className="relative w-full h-24">
+        {/* <div className="relative w-full h-24">
           <Image src="/images/LandlordHero2.jpg" alt="" fill className="object-cover" />
-        </div>
+        </div> */}
         {/* <div className="relative w-full h-24 my-10">
           <Image src="/images/Landlordpartners.jpg" alt="" fill className="object-cover" />
         </div> */}

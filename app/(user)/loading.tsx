@@ -66,9 +66,9 @@ export default function Loading() {
 
             <div className="mt-10 rounded-[28px] bg-white p-5 shadow-2xl">
               <div className="mb-5 flex flex-wrap justify-center gap-3 border-b border-neutral-200 pb-4">
-                {statsSkeletonWidths.map((width) => (
+                {statsSkeletonWidths.map((width, i) => (
                   <div
-                    key={width}
+                    key={width + i}
                     className={`h-4 ${width} animate-pulse rounded-full bg-[#E9EEFF]`}
                   />
                 ))}
@@ -103,9 +103,9 @@ export default function Loading() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
-            {cardSkeletonHeights.map((height) => (
+            {cardSkeletonHeights.map((height, i) => (
               <div
-                key={height}
+                key={height + i}
                 className={`overflow-hidden rounded-[28px] border border-[#E5ECFF] bg-white p-6 shadow-sm`}
               >
                 <div className={`w-full ${height} animate-pulse rounded-[22px] bg-[#EEF3FF]`} />

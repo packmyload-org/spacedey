@@ -22,6 +22,7 @@ export const metadata: Metadata = buildPageMetadata({
       'storage facility partnership',
       'unused property income nigeria',
    ],
+   noIndex: false
 });
 
 const page = () => {

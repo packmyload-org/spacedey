@@ -17,6 +17,7 @@ export const metadata: Metadata = buildPageMetadata({
     'packing guide lagos',
     'self storage advice',
   ],
+  noIndex: false
 });
 
 export default async function Page() {

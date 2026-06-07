@@ -10,20 +10,20 @@ const TRUSTED_USERS = [
 
 const HERO_GALLERY = [
   {
+    src: "https://res.cloudinary.com/packmyload/image/upload/v1780825136/best-self-storage-facility-lagos-nigeria.jpg_evi2fx.jpg",
+    alt: "Spacedey-style self storage imagery for customers in Nigeria",
+  },
+  {
     src: "/images/hero2.jpg",
     alt: "Secure self storage facility available through Spacedey",
   },
   {
-    src: "/images/hero3.jpg",
+    src: "https://res.cloudinary.com/packmyload/image/upload/v1780825136/household-goods-furniture-storage-moving-nigeria.jpg_jwfubn.jpg",
     alt: "Storage unit interior prepared for move-in",
   },
   {
-    src: "/images/hero4.jpg",
+    src: "https://res.cloudinary.com/packmyload/image/upload/v1780825135/premium-self-storage-lekki-ikeja.jpg_ovvpzt.jpg",
     alt: "Organized storage space for household and business items",
-  },
-  {
-    src: "/images/hero5.jpg",
-    alt: "Spacedey-style self storage imagery for customers in Nigeria",
   },
 ];
 
@@ -86,7 +86,7 @@ export default function HeroSection({ states }: Readonly<HeroSectionProps>) {
                   height={340}
                   quality={60}
                   sizes="(max-width: 639px) 23vw, 300px"
-                  className="h-auto w-full rounded-md object-cover"
+                  className="h-[200px] w-full rounded-md object-cover"
                 />
               </div>
             ))}

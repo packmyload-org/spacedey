@@ -62,7 +62,7 @@ const LandlordWhatWeLookFor = () => {
           </div>
 
           {/* Column 3: Image */}
-          <div className="lg:col-span-5 flex items-start justify-center lg:justify-end">
+          {/* <div className="lg:col-span-5 flex items-start justify-center lg:justify-end">
             <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src="images/Size1b.jpg"
@@ -74,7 +74,7 @@ const LandlordWhatWeLookFor = () => {
                 loading="lazy"
               />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

@@ -208,9 +208,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#5D74B0]">Next steps</p>
               <h2 className="mt-3 text-2xl font-black text-[#0F172A]">Keep the research moving</h2>
               <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {actionLinks.map((link) => (
+                {actionLinks.map((link, i) => (
                   <Link
-                    key={link.href}
+                    key={link.href + i}
                     href={link.href}
                     className="rounded-3xl border border-[#D8E2FF] bg-white p-5 transition hover:-translate-y-1"
                   >
