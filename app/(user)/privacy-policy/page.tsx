@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Privacy Policy | Spacedey",
+  title: "Privacy Policy",
   description:
     "Learn about how Spacedey collects, uses, and protects your personal information.",
   path: "/privacy-policy",
