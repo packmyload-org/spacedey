@@ -1,5 +1,5 @@
 "use client";
-//login form component
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -135,6 +135,7 @@ export default function LoginForm() {
               placeholder="Enter your password"
               autoComplete="current-password"
               inputClassName={`${getAuthInputClass(Boolean(fieldErrors.password)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
+              showRequirements={password !== ''}
             />
           </div>
 

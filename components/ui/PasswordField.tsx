@@ -53,7 +53,7 @@ export default function PasswordField({
     }`;
   const passwordManagerProps =
     autoComplete === 'new-password'
-      ? ({ passwordRules: getPasswordRulesAttribute() } as Record<string, string>)
+      ? ({ passwordrules: getPasswordRulesAttribute() } as Record<string, string>)
       : {};
 
   return (

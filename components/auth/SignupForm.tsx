@@ -197,7 +197,7 @@ export default function SignupForm() {
           placeholder="Choose a password"
           autoComplete="new-password"
           inputClassName={getInputClass('password')}
-          showRequirements
+          showRequirements={password !== ''}
         />
 
         <PasswordField
@@ -210,6 +210,7 @@ export default function SignupForm() {
           placeholder="Repeat password"
           autoComplete="new-password"
           inputClassName={getInputClass('confirm')}
+          showRequirements={confirm !== ''} 
         />
       </div>
 

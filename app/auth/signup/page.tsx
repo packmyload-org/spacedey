@@ -13,7 +13,7 @@ export default function SignupPage() {
 				<div className="w-full max-w-lg">
 					<SignupForm />
 				</div>
-		</main>
+			</main>
 		</>
 	);
 }

@@ -11,19 +11,19 @@ const TRUSTED_USERS = [
 const HERO_GALLERY = [
   {
     src: "https://res.cloudinary.com/packmyload/image/upload/v1780825136/best-self-storage-facility-lagos-nigeria.jpg_evi2fx.jpg",
-    alt: "Spacedey-style self storage imagery for customers in Nigeria",
-  },
-  {
-    src: "/images/hero2.jpg",
-    alt: "Secure self storage facility available through Spacedey",
-  },
-  {
-    src: "https://res.cloudinary.com/packmyload/image/upload/v1780825136/household-goods-furniture-storage-moving-nigeria.jpg_jwfubn.jpg",
-    alt: "Storage unit interior prepared for move-in",
+    alt: "best self storage facility lagos nigeria Spacedey",
   },
   {
     src: "https://res.cloudinary.com/packmyload/image/upload/v1780825135/premium-self-storage-lekki-ikeja.jpg_ovvpzt.jpg",
-    alt: "Organized storage space for household and business items",
+    alt: "premium self storage lekki ikeja",
+  },
+  {
+    src: "https://res.cloudinary.com/packmyload/image/upload/v1780825137/secure-warehouse-with-247-surveillance-lagos.jpg_ceswis.jpg",
+    alt: "secure warehouse with 247 surveillance lagos",
+  },
+  {
+    src: "https://res.cloudinary.com/packmyload/image/upload/v1780825137/storage-kings-flex-storage.jpg_wyiok8.jpg",
+    alt: "Storage kings flex storage",
   },
 ];
 
