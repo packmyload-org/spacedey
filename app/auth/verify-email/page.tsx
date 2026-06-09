@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import Header from '@/components/layout/Header';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -66,6 +67,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={<main className="min-h-screen bg-gray-50" />}>
+      <Header/>
       <VerifyEmailContent />
     </Suspense>
   );

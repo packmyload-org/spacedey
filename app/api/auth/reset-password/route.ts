@@ -8,9 +8,8 @@ import { normalizeEmail } from '@/lib/utils/email';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const token = String(body?.token || '').trim();
-    const email = normalizeEmail(body?.email || '');
-    const password = String(body?.password || '').trim();
+    const token = String(body?.token).trim();
+    const password = String(body?.password).trim();
 
     if (!token || !password) {
       return NextResponse.json(
@@ -36,10 +35,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (email && email !== payload.email) {
+    if (!payload.email) {
       return NextResponse.json(
-        { ok: false, error: 'This reset link does not match the provided email address.' },
-        { status: 400 }
+        { ok: false, error: 'This reset link contain an email address.' },
+        { status: 500 }
       );
     }
 

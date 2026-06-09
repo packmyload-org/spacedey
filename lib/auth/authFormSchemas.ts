@@ -66,7 +66,6 @@ export const resetPasswordFormSchema = z
         });
       }
     }),
-    email: emailSchema,
     password: passwordStrengthSchema,
     confirm: requiredString("Confirm password is required."),
   })

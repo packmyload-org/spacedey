@@ -185,7 +185,7 @@ export async function sendForgotPasswordEmail(args: {
   );
 
   const appUrl = resolveAppUrl(args.appUrl);
-  const resetUrl = `${appUrl}/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(args.email)}`;
+  const resetUrl = `${appUrl}/auth/reset-password?token=${encodeURIComponent(token)}`;
 
   await sendEmail({
     to: args.email,

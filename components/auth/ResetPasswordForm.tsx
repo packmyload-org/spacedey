@@ -2,24 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PasswordField from '@/components/ui/PasswordField';
-import { EMAIL_INPUT_PROPS, normalizeEmail } from '@/lib/utils/email';
 import { getFieldErrors, resetPasswordFormSchema } from '@/lib/auth/authFormSchemas';
 import { getAuthInputClass } from '@/lib/auth/authInputStyles';
 
-interface ResetPasswordFormProps {
-  initialToken?: string;
-  initialEmail?: string;
-}
 
-export default function ResetPasswordForm({
-  initialToken = '',
-  initialEmail = '',
-}: ResetPasswordFormProps) {
+export default function ResetPasswordForm() {
   const router = useRouter();
-  const [token, setToken] = useState(initialToken);
-  const [email, setEmail] = useState(normalizeEmail(initialEmail));
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token') === 'string' ? searchParams.get('token') : '';
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -34,7 +26,6 @@ export default function ResetPasswordForm({
 
     const validation = resetPasswordFormSchema.safeParse({
       token,
-      email,
       password,
       confirm,
     });
@@ -55,7 +46,6 @@ export default function ResetPasswordForm({
         },
         body: JSON.stringify({
           token: payload.token,
-          email: payload.email,
           password: payload.password,
         }),
       });
@@ -93,45 +83,6 @@ export default function ResetPasswordForm({
       )}
 
       <form onSubmit={handleSubmit}>
-        {!initialToken && (
-          <div className="mb-4">
-            <input
-              type="text"
-              value={token}
-              onChange={(e) => {
-                setToken(e.target.value);
-                if (fieldErrors.token) {
-                  setFieldErrors((current) => ({ ...current, token: '' }));
-                }
-              }}
-              placeholder="Reset token"
-              className={getAuthInputClass(Boolean(fieldErrors.token))}
-            />
-            {fieldErrors.token ? (
-              <div className="mt-1 text-xs text-red-500">{fieldErrors.token}</div>
-            ) : null}
-          </div>
-        )}
-
-        <div className="mb-4">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(normalizeEmail(e.target.value));
-              if (fieldErrors.email) {
-                setFieldErrors((current) => ({ ...current, email: '' }));
-              }
-            }}
-            placeholder="Email Address"
-            className={getAuthInputClass(Boolean(fieldErrors.email))}
-            {...EMAIL_INPUT_PROPS}
-          />
-          {fieldErrors.email ? (
-            <div className="mt-1 text-xs text-red-500">{fieldErrors.email}</div>
-          ) : null}
-        </div>
-
         <div className="mb-4">
           <PasswordField
             name="newPassword"
@@ -152,7 +103,7 @@ export default function ResetPasswordForm({
             placeholder="New password"
             autoComplete="new-password"
             inputClassName={`${getAuthInputClass(Boolean(fieldErrors.password)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
-            showRequirements
+            showRequirements={password !== ''}
           />
         </div>
 
@@ -176,6 +127,7 @@ export default function ResetPasswordForm({
             placeholder="Confirm new password"
             autoComplete="new-password"
             inputClassName={`${getAuthInputClass(Boolean(fieldErrors.confirm)).replace('px-4 py-3', 'px-4 py-3 pr-12')}`}
+            showRequirements={confirm !== ''}
           />
         </div>
 
