@@ -51,5 +51,8 @@
     "ts-node": "^10.9.1",
     "tsx": "^4.21.0",
     "typescript": "^5"
-  }
+  },
+  "trustedDependencies": [
+    "unrs-resolver"
+  ]
 }
