@@ -1,17 +1,23 @@
-import Script from 'next/script';
+import Script from "next/script";
 
 type GoogleTagManagerProps = {
   containerId?: string;
 };
 
-export default function GoogleTagManager({ containerId }: GoogleTagManagerProps) {
+export default function GoogleTagManager({
+  containerId,
+}: GoogleTagManagerProps) {
   if (!containerId) {
     return null;
   }
 
   return (
     <>
-      <Script id="gtm-consent" strategy="afterInteractive" data-cookieconsent="ignore">
+      <Script
+        id="gtm-consent"
+        strategy="afterInteractive"
+        data-cookieconsent="ignore"
+      >
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag() {
@@ -21,9 +27,9 @@ export default function GoogleTagManager({ containerId }: GoogleTagManagerProps)
             ad_personalization: "denied",
             ad_storage: "denied",
             ad_user_data: "denied",
-            analytics_storage: "granted",
-            functionality_storage: "granted",
-            personalization_storage: "granted",
+            analytics_storage: "denied",
+            functionality_storage: "denied",
+            personalization_storage: "denied",
             security_storage: "granted",
             wait_for_update: 500,
           });
@@ -41,7 +47,7 @@ export default function GoogleTagManager({ containerId }: GoogleTagManagerProps)
           src={`https://www.googletagmanager.com/ns.html?id=${containerId}`}
           height="0"
           width="0"
-          style={{ display: 'none', visibility: 'hidden' }}
+          style={{ display: "none", visibility: "hidden" }}
         />
       </noscript>
     </>

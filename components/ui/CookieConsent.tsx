@@ -1,285 +1,433 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import * as ConsentStore from "@/lib/consent";
 
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
+// ---------------------------------------------------------------------------
+// Toggle switch
+// ---------------------------------------------------------------------------
+
+interface ToggleProps {
+  id: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: () => void;
+  label: string;
+  description: string;
 }
 
-interface ConsentCategories {
-  necessary: boolean;
-  preferences: boolean;
-  statistics: boolean;
-  marketing: boolean;
+function Toggle({
+  id,
+  checked,
+  disabled = false,
+  onChange,
+  label,
+  description,
+}: ToggleProps) {
+  return (
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <label
+          htmlFor={id}
+          className={`text-sm font-semibold text-gray-900 ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+        >
+          {label}
+        </label>
+        <p className="mt-0.5 text-xs text-gray-500">{description}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        id={id}
+        onClick={disabled ? undefined : onChange}
+        disabled={disabled}
+        className={[
+          "relative shrink-0 h-6 w-11 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d1d73]",
+          checked ? "bg-[#0d1d73]" : "bg-gray-200",
+          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
+        ].join(" ")}
+      >
+        <span
+          className={[
+            "absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform",
+            checked ? "translate-x-5" : "translate-x-0",
+          ].join(" ")}
+        />
+        <span className="sr-only">{checked ? "Enabled" : "Disabled"}</span>
+      </button>
+    </div>
+  );
 }
+
+// ---------------------------------------------------------------------------
+// CookieConsent
+// ---------------------------------------------------------------------------
 
 export default function CookieConsent() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [consent, setConsent] = useState<ConsentCategories>({
-    necessary: true, // Always true
-    preferences: false,
-    statistics: false,
-    marketing: false,
-  });
+  // -------------------------------------------------------------------------
+  // State
+  // null  = not yet hydrated (SSR guard — renders nothing)
+  // true  = banner visible
+  // false = banner dismissed
+  // -------------------------------------------------------------------------
+  const [bannerOpen, setBannerOpen] = useState<boolean | null>(null);
+  const [prefsOpen, setPrefsOpen] = useState(false);
+  const [preferences, setPreferences] = useState(false);
+  const [statistics, setStatistics] = useState(false);
+  const [marketing, setMarketing] = useState(false);
 
+  // -------------------------------------------------------------------------
+  // Refs for focus management
+  // -------------------------------------------------------------------------
+  const firstFocusRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // -------------------------------------------------------------------------
+  // Mount — init ConsentStore and decide banner visibility
+  // -------------------------------------------------------------------------
   useEffect(() => {
-    setIsMounted(true);
-    const storedConsent = localStorage.getItem("cookieConsent");
-    
-    if (!storedConsent) {
-      setIsVisible(true);
+    const stored = ConsentStore.init();
+    if (stored) {
+      setPreferences(stored.preferences);
+      setStatistics(stored.statistics);
+      setMarketing(stored.marketing);
+      setBannerOpen(false);
     } else {
-      const parsed = JSON.parse(storedConsent);
-      setConsent(parsed);
+      setBannerOpen(true);
     }
   }, []);
 
-  const updateGTMConsent = (categories: ConsentCategories) => {
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag("consent", "update", {
-        ad_personalization: categories.marketing ? "granted" : "denied",
-        ad_storage: categories.marketing ? "granted" : "denied",
-        ad_user_data: categories.marketing ? "granted" : "denied",
-        analytics_storage: categories.statistics ? "granted" : "denied",
-        functionality_storage: categories.preferences ? "granted" : "denied",
-        personalization_storage: categories.preferences ? "granted" : "denied",
-        security_storage: "granted", // Always granted
-      });
+  // -------------------------------------------------------------------------
+  // Auto-focus the primary action when the banner opens
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (bannerOpen === true) {
+      firstFocusRef.current?.focus();
     }
-  };
+  }, [bannerOpen]);
 
+  // -------------------------------------------------------------------------
+  // Focus trap — keeps keyboard navigation inside the dialog
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!bannerOpen || !containerRef.current) return;
+    const container = containerRef.current;
+
+    const getFocusable = () =>
+      Array.from(
+        container.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [bannerOpen]);
+
+  // -------------------------------------------------------------------------
+  // consent:reopen — any part of the app can dispatch this event to reopen
+  // the banner (e.g. a "Cookie settings" link in the footer)
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    const openBanner = () => {
+      try {
+        const stored = ConsentStore.read();
+        if (stored) {
+          setPreferences(stored.preferences);
+          setStatistics(stored.statistics);
+          setMarketing(stored.marketing);
+        }
+      } catch {
+        // Open banner anyway with whatever state we already have
+      }
+      setBannerOpen(true);
+    };
+
+    try {
+      window.addEventListener("consent:reopen", openBanner);
+    } catch {
+      // Graceful no-op in very old browsers
+    }
+
+    return () => {
+      try {
+        window.removeEventListener("consent:reopen", openBanner);
+      } catch {
+        // Ignore
+      }
+    };
+  }, []);
+
+  // -------------------------------------------------------------------------
+  // Action handlers — every path saves; no silent dismiss
+  // -------------------------------------------------------------------------
   const handleAcceptAll = () => {
-    const allAccepted: ConsentCategories = {
-      necessary: true,
+    ConsentStore.save({
       preferences: true,
       statistics: true,
       marketing: true,
-    };
-    saveConsent(allAccepted);
+      savedAt: Date.now(),
+    });
+    setBannerOpen(false);
+    setPrefsOpen(false);
   };
 
   const handleRejectAll = () => {
-    const minimalConsent: ConsentCategories = {
-      necessary: true,
+    ConsentStore.save({
       preferences: false,
       statistics: false,
       marketing: false,
-    };
-    saveConsent(minimalConsent);
+      savedAt: Date.now(),
+    });
+    setBannerOpen(false);
+    setPrefsOpen(false);
   };
 
   const handleSavePreferences = () => {
-    saveConsent(consent);
+    ConsentStore.save({
+      preferences,
+      statistics,
+      marketing,
+      savedAt: Date.now(),
+    });
+    setBannerOpen(false);
+    setPrefsOpen(false);
   };
 
-  const saveConsent = (categories: ConsentCategories) => {
-    localStorage.setItem("cookieConsent", JSON.stringify(categories));
-    localStorage.setItem("cookieConsentTimestamp", new Date().toISOString());
-    
-    // Trigger custom event for third-party scripts
-    window.dispatchEvent(
-      new CustomEvent("cookieConsentUpdated", { detail: categories })
-    );
+  // -------------------------------------------------------------------------
+  // SSR guard — return nothing until hydrated
+  // -------------------------------------------------------------------------
+  if (bannerOpen === null) return null;
 
-    // Update GTM consent
-    updateGTMConsent(categories);
-
-    setConsent(categories);
-    setIsVisible(false);
-    setShowDetails(false);
-  };
-
-  const toggleCategory = (category: keyof ConsentCategories) => {
-    if (category === "necessary") return; // Necessary cannot be toggled
-    setConsent((prev) => ({
-      ...prev,
-      [category]: !prev[category],
-    }));
-  };
-
-  if (!isMounted || !isVisible) return null;
-
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-50 sm:left-6 sm:right-6 md:bottom-6 md:left-auto md:right-6 md:max-w-md">
-      <div className="bg-white rounded-lg shadow-2xl border border-gray-200 p-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Cookie Settings</h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Your privacy matters to us
-            </p>
-          </div>
-          <button
-            onClick={() => setIsVisible(false)}
-            aria-label="Close"
-            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+    <>
+      {/* --------------------------------------------------------------- */}
+      {/* Banner                                                            */}
+      {/* --------------------------------------------------------------- */}
+      <AnimatePresence>
+        {bannerOpen && (
+          <motion.div
+            key="consent-banner"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="consent-title"
+            ref={containerRef}
+            className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 shadow-2xl"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
           >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+            <div className="mx-auto max-w-4xl px-5 py-5">
+              {/* Heading */}
+              <h2
+                id="consent-title"
+                className="text-base font-bold text-gray-900"
+              >
+                Cookie Settings
+              </h2>
 
-        {/* Description */}
-        <p className="text-sm text-gray-600 mb-6">
-          We use cookies to enhance your browsing experience, analyze site
-          traffic, and personalize content. By clicking "Accept," you consent
-          to our use of cookies for all purposes.
-        </p>
+              {/* Description */}
+              <p className="mt-1 text-sm text-gray-600">
+                We use cookies to enhance your experience, analyse site traffic,
+                and personalise content. Choose which cookies you allow below.
+                See our{" "}
+                <a
+                  href="/privacy-policy"
+                  className="underline underline-offset-2 hover:text-gray-900 transition-colors"
+                >
+                  Privacy Policy
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/cookie-policy"
+                  className="underline underline-offset-2 hover:text-gray-900 transition-colors"
+                >
+                  Cookie Policy
+                </a>{" "}
+                for details.
+              </p>
 
-        {/* Cookie Categories Detailed View */}
-        {showDetails ? (
-          <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
-            {/* Necessary */}
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                checked={true}
-                disabled
-                className="w-5 h-5 mt-0.5 cursor-not-allowed accent-[#0d1d73]"
-                aria-label="Necessary cookies"
-                name="necessary"
-                id="necessary"
-              />
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-900" htmlFor="necessary">
-                  Necessary
-                </label>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Essential for site functionality and security.
-                </p>
+              {/* --------------------------------------------------------- */}
+              {/* Preferences panel                                           */}
+              {/* --------------------------------------------------------- */}
+              <div className="mt-3">
+                <button
+                  type="button"
+                  aria-expanded={prefsOpen}
+                  aria-controls="consent-prefs-panel"
+                  onClick={() => setPrefsOpen((v) => !v)}
+                  className="text-sm font-semibold text-[#0d1d73] underline underline-offset-2 hover:text-blue-900 transition-colors"
+                >
+                  {prefsOpen ? "Hide preferences" : "Manage preferences"}
+                </button>
+
+                <AnimatePresence>
+                  {prefsOpen && (
+                    <motion.div
+                      id="consent-prefs-panel"
+                      key="prefs-panel"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22 }}
+                      style={{ overflow: "hidden" }}
+                    >
+                      <div className="mt-4 space-y-4 border-t border-gray-100 pt-4">
+                        {/* Necessary — always on */}
+                        <Toggle
+                          id="consent-necessary"
+                          checked={true}
+                          disabled={true}
+                          onChange={() => undefined}
+                          label="Necessary"
+                          description="Essential for the site to function correctly. Cannot be disabled."
+                        />
+
+                        {/* Preferences */}
+                        <Toggle
+                          id="consent-preferences"
+                          checked={preferences}
+                          onChange={() => setPreferences((v) => !v)}
+                          label="Preferences"
+                          description="Remember your settings and personalise your experience."
+                        />
+
+                        {/* Statistics */}
+                        <Toggle
+                          id="consent-statistics"
+                          checked={statistics}
+                          onChange={() => setStatistics((v) => !v)}
+                          label="Statistics"
+                          description="Help us understand how visitors use the site so we can improve it."
+                        />
+
+                        {/* Marketing */}
+                        <Toggle
+                          id="consent-marketing"
+                          checked={marketing}
+                          onChange={() => setMarketing((v) => !v)}
+                          label="Marketing"
+                          description="Allow personalised ads and remarketing based on your activity."
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* --------------------------------------------------------- */}
+              {/* Action buttons                                              */}
+              {/* --------------------------------------------------------- */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleRejectAll}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  Reject all
+                </button>
+                {prefsOpen && (
+                  <button
+                    type="button"
+                    onClick={handleSavePreferences}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  >
+                    Save preferences
+                  </button>
+                )}
+                <button
+                  ref={firstFocusRef}
+                  type="button"
+                  onClick={handleAcceptAll}
+                  className="rounded-lg bg-[#0d1d73] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-900"
+                >
+                  Accept all
+                </button>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Preferences */}
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                checked={consent.preferences}
-                onChange={() => toggleCategory("preferences")}
-                className="w-5 h-5 mt-0.5 cursor-pointer accent-[#0d1d73]"
-                aria-label="Preferences cookies"
-                name="preferences"
-                id="preferences"
-              />
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-900" htmlFor="preferences">
-                  Preferences
-                </label>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Remember your settings and preferences.
-                </p>
-              </div>
-            </div>
-
-            {/* Statistics */}
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                checked={consent.statistics}
-                onChange={() => toggleCategory("statistics")}
-                className="w-5 h-5 mt-0.5 cursor-pointer accent-[#0d1d73]"
-                aria-label="Statistics cookies"
-                name="statistics"
-                id="statistics"
-              />
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-900" htmlFor="statistics">
-                  Statistics
-                </label>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Help us understand how you use our site.
-                </p>
-              </div>
-            </div>
-
-            {/* Marketing */}
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                checked={consent.marketing}
-                onChange={() => toggleCategory("marketing")}
-                className="w-5 h-5 mt-0.5 cursor-pointer accent-[#0d1d73]"
-                aria-label="Marketing cookies"
-                name="marketing"
-                id="marketing"
-              />
-              <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-900" htmlFor="marketing">
-                  Marketing
-                </label>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Personalized ads and marketing campaigns.
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {/* Toggle Details Button */}
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="text-sm text-[#0d1d73] hover:underline mb-4 font-medium transition-colors"
-        >
-          {showDetails ? "Hide details" : "Show details"}
-        </button>
-
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          {showDetails ? (
-            <>
-              <button
-                onClick={handleRejectAll}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Reject All
-              </button>
-              <button
-                onClick={handleSavePreferences}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#0d1d73] hover:bg-blue-900 rounded-lg transition-colors"
-              >
-                Save Preferences
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleRejectAll}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Reject
-              </button>
-              <button
-                onClick={handleAcceptAll}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-[#0d1d73] hover:bg-blue-900 rounded-lg transition-colors"
-              >
-                Accept All
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Legal Links */}
-        <div className="flex gap-4 justify-center mt-4 text-xs">
-          <a
-            href="/privacy-policy"
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+      {/* --------------------------------------------------------------- */}
+      {/* Floating re-open button (FAB) — visible after banner is dismissed */}
+      {/* --------------------------------------------------------------- */}
+      <AnimatePresence>
+        {bannerOpen === false && (
+          <motion.button
+            key="consent-fab"
+            type="button"
+            onClick={() => {
+              try {
+                const stored = ConsentStore.read();
+                if (stored) {
+                  setPreferences(stored.preferences);
+                  setStatistics(stored.statistics);
+                  setMarketing(stored.marketing);
+                }
+              } catch {
+                // Open banner anyway
+              }
+              setBannerOpen(true);
+            }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            aria-label="Open cookie preferences"
+            className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg bg-white border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 shadow-lg hover:bg-gray-50 transition-colors"
           >
-            Privacy Policy
-          </a>
-          <span className="text-gray-300">•</span>
-          <a
-            href="/cookie-policy"
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            Cookie Policy
-          </a>
-        </div>
-      </div>
-    </div>
+            {/* Cookie icon */}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle
+                cx="8"
+                cy="8"
+                r="7"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+              <circle cx="5.5" cy="6" r="1" fill="currentColor" />
+              <circle cx="9" cy="5" r="0.75" fill="currentColor" />
+              <circle cx="10.5" cy="8.5" r="1" fill="currentColor" />
+              <circle cx="6.5" cy="10" r="0.75" fill="currentColor" />
+              <circle cx="8.5" cy="11.5" r="0.5" fill="currentColor" />
+            </svg>
+            <span aria-hidden="true">Cookie settings</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
