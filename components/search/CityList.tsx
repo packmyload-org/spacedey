@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useMemo } from 'react';
-import LocationCard from '@/components/home/LocationCard';
-import { ApiSite } from '@/lib/types/local';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo } from "react";
+import LocationCard from "@/components/home/LocationCard";
+import { ApiSite } from "@/lib/types/local";
 import {
   formatSiteCount,
   formatUnitDimensions,
   getSiteCity,
   getSiteState,
-} from '@/lib/utils/siteLocations';
+} from "@/lib/utils/siteLocations";
 
 interface CityListProps {
   searchQuery: string;
@@ -25,10 +25,12 @@ const getSiteProps = (site: ApiSite) => {
   return {
     name: site.name,
     address: site.address,
-    hours: '8am - 6pm',
+    hours: "8am - 6pm",
     image: site.image,
     units: (site.unitTypes || []).slice(0, 3).map((ut) => {
-      const nextAvailableUnit = ut.units?.find((unit) => unit.status === 'available');
+      const nextAvailableUnit = ut.units?.find(
+        (unit) => unit.status === "available",
+      );
 
       return {
         id: nextAvailableUnit?.id || ut.id,
@@ -37,7 +39,9 @@ const getSiteProps = (site: ApiSite) => {
         storageUnitId: nextAvailableUnit?.id,
         name: ut.name,
         dimensionsLabel: formatUnitDimensions(ut.dimensions),
-        originalPrice: (ut.price.originalAmount || ut.price.amount * 1.2).toFixed(0),
+        originalPrice: (
+          ut.price.originalAmount || ut.price.amount * 1.2
+        ).toFixed(0),
         currentPrice: ut.price.amount.toFixed(0),
         maxQuantity: ut.availableCount,
         availableCount: ut.availableCount,
@@ -62,8 +66,8 @@ export default function CityList({
     const stateMap = new Map<string, Map<string, ApiSite[]>>();
 
     sites.forEach((site) => {
-      const stateName = getSiteState(site) || 'Unknown state';
-      const cityName = getSiteCity(site) || 'Unknown city';
+      const stateName = getSiteState(site) || "Unknown state";
+      const cityName = getSiteCity(site) || "Unknown city";
 
       if (!stateMap.has(stateName)) {
         stateMap.set(stateName, new Map<string, ApiSite[]>());
@@ -90,7 +94,10 @@ export default function CityList({
         return {
           name: stateName,
           cities,
-          siteCount: cities.reduce((total, city) => total + city.sites.length, 0),
+          siteCount: cities.reduce(
+            (total, city) => total + city.sites.length,
+            0,
+          ),
         };
       })
       .sort((left, right) => left.name.localeCompare(right.name));
@@ -107,7 +114,9 @@ export default function CityList({
         state.cities.some((city) => {
           return (
             city.name.toLowerCase().includes(normalizedQuery) ||
-            city.sites.some((site) => site.name.toLowerCase().includes(normalizedQuery))
+            city.sites.some((site) =>
+              site.name.toLowerCase().includes(normalizedQuery),
+            )
           );
         })
       );
@@ -126,21 +135,26 @@ export default function CityList({
     return null;
   }, [filteredStates, normalizedQuery, selectedState, stateGroups]);
 
-  const activeStateName = activeState?.name ?? '';
+  const activeStateName = activeState?.name ?? "";
 
   const visibleCities = useMemo(() => {
     if (!activeState) {
       return [];
     }
 
-    if (!normalizedQuery || normalizedQuery === activeState.name.toLowerCase()) {
+    if (
+      !normalizedQuery ||
+      normalizedQuery === activeState.name.toLowerCase()
+    ) {
       return activeState.cities;
     }
 
     return activeState.cities.filter((city) => {
       return (
         city.name.toLowerCase().includes(normalizedQuery) ||
-        city.sites.some((site) => site.name.toLowerCase().includes(normalizedQuery))
+        city.sites.some((site) =>
+          site.name.toLowerCase().includes(normalizedQuery),
+        )
       );
     });
   }, [activeState, normalizedQuery]);
@@ -150,7 +164,9 @@ export default function CityList({
       return null;
     }
 
-    return activeState.cities.find((city) => city.name === selectedCity) || null;
+    return (
+      activeState.cities.find((city) => city.name === selectedCity) || null
+    );
   }, [activeState, selectedCity]);
 
   const content = activeCity ? (
@@ -250,9 +266,9 @@ export default function CityList({
 
   return (
     <div className="flex h-screen min-h-0 flex-col px-6 pb-6 pt-4">
-      <h1 className="mb-5 text-2xl font-semibold capitalize">
+      <h2 className="mb-5 text-2xl font-semibold capitalize">
         Explore self storage sites
-      </h1>
+      </h2>
       <div className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto pr-1">
         {content}
       </div>
