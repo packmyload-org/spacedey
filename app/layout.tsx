@@ -70,6 +70,7 @@ export default function RootLayout({
   const { googleTagManagerId, vercelInsightsEnabled } = env.integrations.analytics;
   return (
     <html lang="en">
+    <meta name="google-adsense-account" content="ca-pub-4793128467613169"></meta>
       <body className="antialiased" suppressHydrationWarning>
         <Script
           type="application/ld+json"
